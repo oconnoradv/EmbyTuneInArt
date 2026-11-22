@@ -1,4 +1,4 @@
-# EmbyTuneInArt — genre artwork packs for the Emby TuneIn plugin
+# EmbyTuneInArt — genre art-packs for the EmbyTuneIn plugin
 
 EmbyTuneInArt builds optional artwork packs for the music genre folders of the
 [Emby TuneIn plugin](https://github.com/oconnoradv/EmbyTuneIn). `Build-GenreArtwork.ps1` renders one original
