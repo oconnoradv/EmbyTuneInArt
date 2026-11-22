@@ -1,6 +1,7 @@
 ﻿<#
-Builds 1280x720 JPEG genre, language or location artwork packs for the Emby TuneIn plugin. -Theme picks the overall look (Neon, Retro, Futuristic, Cartoon, Cat, Dog,
-Nature, Blocky, Rebel, Imperial, Elegant, Tile or Classic). Run on Windows PowerShell with the fonts that ship with Windows 11 (Bahnschrift,
+Builds 1280x720 JPEG genre, language or location artwork packs for the Emby TuneIn plugin. -Theme picks the overall look
+(Neon, Retro, Futuristic, Cartoon, Cat, Dog, Nature, Blocky, Rebel, Imperial, Elegant, Tile, Classic, or a Spotlight
+variant). Run on Windows PowerShell with the fonts that ship with Windows 11 (Bahnschrift,
 Segoe UI Variable, Segoe UI, Segoe UI Black, Cascadia, Impact, Georgia and Franklin Gothic). It also writes tunein-artwork.json, a manifest the TuneIn plugin uses to identify the pack.
 -Pack also writes a ZIP for the matching plugins\configurations\TuneInArtwork scope folder.
 #>
@@ -18,7 +19,7 @@ param(
     [ValidateRange(1, 10000)]
     [int]$MaxLocationRequests = 1000,
     [switch]$NeutralLanguages,
-    [ValidateSet('Neon', 'Retro', 'Futuristic', 'Cartoon', 'Cat', 'Dog', 'Nature', 'Blocky', 'Rebel', 'Imperial', 'Elegant', 'Tile', 'Classic')]
+    [ValidateSet('Neon', 'Retro', 'Futuristic', 'Cartoon', 'Cat', 'Dog', 'Nature', 'Blocky', 'Rebel', 'Imperial', 'Elegant', 'Tile', 'Classic', 'FuturisticSpotlight', 'CartoonSpotlight', 'ClassicSpotlight')]
     [string]$Theme = 'Futuristic',
     # Writes <Output>\..\<PackName>.zip containing the cards and an install note; defaults to artpack-<theme>.
     [switch]$Pack,
@@ -1370,7 +1371,13 @@ function New-Card($info, [string]$file) {
     $g0.Dispose(); $bmp.Save($file, $codec, $ep); $bmp.Dispose()
 }
 
-$script:T = $Themes[$Theme]
+$baseTheme = $Theme -replace 'Spotlight$', ''
+$script:T = $Themes[$baseTheme]
+$spotlightIds = @{
+    FuturisticSpotlight = @('g2698', 'g4149', 'c57942', 'g54', 'g71', 'g373')
+    CartoonSpotlight = @('g2698', 'g4149', 'c57942', 'g54', 'g71', 'g373')
+    ClassicSpotlight = @('g2698', 'g4149')
+}
 foreach ($d in @(@('Color', { param($p) Rgb $p[0] $p[1] $p[2] }), @('OX', 1000), @('OY', 360), @('Scale', 1), @('SubPrefix', ''))) { if (-not $script:T.ContainsKey($d[0])) { $script:T[$d[0]] = $d[1] } }
 $__cm = New-Object Drawing.Imaging.ColorMatrix; $__cm.Matrix33 = if ($script:T.Art.Glow) { $script:T.Art.Glow } else { 0.65 }; $script:GlowAttr.SetColorMatrix($__cm)
 
@@ -1408,7 +1415,16 @@ foreach ($info in $genres.Values) {
         if ($info.Sub) { foreach ($rx in $Overrides.Keys) { if ($info.Name -match $rx) { $info.Motif = $Overrides[$rx]; break } } }
         if ($info.Style -eq 'World' -and $Places.ContainsKey(($place = $info.Name -replace ' Music$'))) { $info.Lat = $Places[$place][0]; $info.Lon = $Places[$place][1] }
     }
-    New-Card $info (Join-Path $Output "$($info.Id).jpg")
+    $target = Join-Path $Output "$($info.Id).jpg"
+    $spotlight = Join-Path $PSScriptRoot "spotlight\$Theme\$($info.Id).jpg"
+    if ($Scope -eq 'genres' -and $Theme -ne $baseTheme -and $spotlightIds[$Theme] -contains $info.Id) {
+        if (-not (Test-Path -LiteralPath $spotlight -PathType Leaf)) {
+            throw "Missing Spotlight artwork: $spotlight"
+        }
+        Copy-Item -LiteralPath $spotlight -Destination $target -Force
+    } else {
+        New-Card $info $target
+    }
     [void]$rendered.Add($info.Id)
     Write-Host "$($info.Id)  $($info.Name)  [$($info.Style)/$($info.Motif)]"
 }
@@ -1426,7 +1442,7 @@ $images = @($rendered | Sort-Object | ForEach-Object {
 })
 $manifest = [ordered]@{
     schemaVersion = 1; scope = $Scope; packId = $PackName; packName = $Theme; theme = $Theme; version = $PackVersion
-    description = $script:T.Description; minPluginVersion = '1.2.8.0'
+    description = $(if ($Scope -eq 'genres' -and $Theme -ne $baseTheme) { "$baseTheme with illustrated Spotlight cards for selected genres." } else { $script:T.Description }); minPluginVersion = '1.2.8.0'
     sourceUrl = 'https://github.com/oconnoradv/EmbyTuneInArt'; toolCommit = $commit; license = 'GPL-3.0'
     builtUtc = [DateTime]::UtcNow.ToString('yyyy-MM-ddTHH:mm:ssZ'); imageCount = $images.Count; images = $images
 }
