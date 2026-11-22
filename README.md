@@ -11,7 +11,7 @@ page; build your own to change the look.
 
 ## Themes
 
-Pick a theme with `-Theme <name>` (default `Neon`). Each sample shows Punk, Smooth Jazz, Christmas Music and
+Pick a theme with `-Theme <name>` (default `Futuristic`). Each sample shows Punk, Smooth Jazz, Christmas Music and
 Classic Hip Hop.
 
 | Theme | Look | Sample |

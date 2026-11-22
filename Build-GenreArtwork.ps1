@@ -9,7 +9,7 @@ param(
     [string]$Output = (Join-Path $PSScriptRoot 'output\genres'),
     [string[]]$Only,
     [ValidateSet('Neon', 'Retro', 'Futuristic', 'Cartoon', 'Cat', 'Dog', 'Nature', 'Blocky', 'Rebel', 'Imperial', 'Elegant', 'Tile', 'Classic')]
-    [string]$Theme = 'Neon',
+    [string]$Theme = 'Futuristic',
     # Writes <Output>\..\<PackName>.zip containing the cards and an install note; defaults to artpack-<theme>.
     [switch]$Pack,
     [string]$PackName,
