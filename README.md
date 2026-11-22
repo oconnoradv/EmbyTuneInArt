@@ -52,7 +52,7 @@ These are generated cards, reduced for display. Each row pairs a location with a
 Japan (`r101255`) and Japanese (`l178`), Ireland (`r101252`) and Irish (`l176`), then Seattle-Tacoma
 (`r100014`) and Korean (`l180`). The Seattle card uses a labeled Washington state outline and an approximate
 Seattle marker, not metro boundaries. Language flags are representative rather than exclusive.
-The scenic backgrounds are fictional.
+Scenic backgrounds and map-fill textures are decorative illustrations, not geographic or terrain data.
 
 **Cartoon**
 
@@ -67,9 +67,10 @@ The scenic backgrounds are fictional.
 ![Classic location and language cards: Japan and Japanese, Ireland and Irish, Seattle regional map and Korean](docs/samples/scoped-classic.jpg)
 
 When no verified location or ancestor map is available, a labeled generic globe is used. Languages without a
-representative flag use a neutral globe. This isolated Seattle root and Arabic (`l122`) show the fallbacks:
+representative flag use a neutral globe. North America (`r101218`) and Arabic (`l122`) show the fallbacks
+in Cartoon, Futuristic and Classic:
 
-![Futuristic generic location and neutral Arabic language examples](docs/samples/scoped-fallbacks.jpg)
+![Arabic neutral-language and North America generic-location examples in Cartoon, Futuristic and Classic](docs/samples/scoped-fallbacks.jpg)
 
 ## Install a ready-made pack
 
@@ -102,7 +103,7 @@ Requirements:
 - Internet access to `opml.radiotime.com`, which supplies the current catalog.
 - For native scripts, Windows fonts including Meiryo, Microsoft YaHei, Malgun Gothic, Nirmala UI,
   Leelawadee UI, Myanmar Text and MV Boli. The build fails if a selected font is unavailable.
-  Noto Sans Khmer is bundled for Khmer.
+  Noto Sans Khmer and Noto Serif KR are bundled; Classic Japanese uses Windows MS Mincho.
 
 1. **Clone the repository.**
 
@@ -177,7 +178,8 @@ Requirements:
    the provider does not label regions versus cities. Map coverage is limited; cities can use the nearest verified
    ancestor outline labeled `Regional map`; unmatched
    regions, ambiguous/unsupported geometry and antimeridian-spanning shapes use a globe explicitly labeled
-   **Generic location**. A map is a stylized outline, not a navigation map. The Seattle-Tacoma card marks
+   **Generic location**. Longitude is scaled at the map's midpoint latitude to preserve local proportions.
+   The map-fill textures are decorative, not terrain. A map is a stylized outline, not a navigation map. The Seattle-Tacoma card marks
    approximate Seattle coordinates on the Washington state outline; it does not depict metro boundaries.
 
 6. **Share it (optional).** Publish the ZIP as a release, for example with
@@ -267,8 +269,9 @@ only names, country names and geometry were retained. Natural Earth data is
 [public domain](https://www.naturalearthdata.com/about/terms-of-use/). The flag motifs are original geometric drawings.
 Japan and Ireland outlines additionally use Natural Earth
 [`ne_50m_admin_0_countries`](https://github.com/nvkelso/natural-earth-vector/blob/v5.1.2/geojson/ne_50m_admin_0_countries.geojson).
-The three reusable scoped backgrounds in `data\scenes` were AI-generated for this project; they depict fictional
-scenery, not the actual locations. They and the produced artwork are distributed under GPL-3.0.
+The scoped scenic layers in `data\scoped-scenes` and map materials in `data\materials` were AI-generated for
+this project and are decorative, not geographic or terrain data. Specific scenes are used only for the matching
+sample subjects; other cards use neutral scenes. They and the produced artwork are distributed under GPL-3.0.
 The Korean flag construction follows the
 [Republic of Korea Ministry of the Interior and Safety](https://www.mois.go.kr/eng/sub/a03/nationalSymbol/screen.do).
 The approximate [Seattle coordinates](https://www.geodatos.net/en/coordinates/united-states/seattle) are used
@@ -276,3 +279,6 @@ only for the Seattle-Tacoma regional marker.
 `data\NotoSansKhmer-Regular.ttf` is from
 [Noto Fonts](https://github.com/notofonts/noto-fonts/tree/ffebf8c1ee449e544955a7e813c54f9b73848eac/hinted/ttf/NotoSansKhmer)
 and is distributed under the [SIL Open Font License 1.1](data/Noto-OFL.txt).
+`data\NotoSerifKR-Regular.otf` is from
+[Noto CJK](https://github.com/notofonts/noto-cjk/blob/f8d157532fbfaeda587e826d4cd5b21a49186f7c/Serif/SubsetOTF/KR/NotoSerifKR-Regular.otf)
+and is also distributed under the [SIL Open Font License 1.1](data/Noto-OFL.txt).

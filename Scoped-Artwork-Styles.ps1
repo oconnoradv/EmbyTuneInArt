@@ -1,14 +1,19 @@
-function Scoped-Scenery($g, $theme, $seed) {
+function Scoped-Scenery($g, $theme, $info) {
+    $folder = Join-Path $PSScriptRoot "data\scoped-scenes\$theme"
+    $subjects = @{ r101255='Japan'; l178='Japanese'; r101252='Ireland'; l176='Irish'; r100014='Seattle-Tacoma'; l180='Korean' }
+    $subject = if ($info.ProviderName) { $info.ProviderName } else { $info.Name }
+    $path = $null
+    if ($subjects.ContainsKey($info.Id) -and $subjects[$info.Id] -ceq $subject) {
+        $path = Join-Path $folder "$($info.Id).png"
+    }
+    if (-not $path) {
+        $name = if ($theme -eq 'Futuristic') { 'neutral.png' } else { "neutral-$($info.Seed % 3).png" }
+        $path = Join-Path $folder $name
+    }
     if (-not $script:ScopedScenes) { $script:ScopedScenes = @{} }
-    if (-not $script:ScopedScenes.ContainsKey($theme)) {
-        $path = Join-Path $PSScriptRoot ("data\scenes\" + $theme.ToLowerInvariant() + '.png')
-        $script:ScopedScenes[$theme] = [Drawing.Image]::FromFile($path)
-    }
-    $g.DrawImage($script:ScopedScenes[$theme], 0, 0, 1280, 720)
-    if ($theme -eq 'Classic') {
-        $tints = @((Rgb 120 0 25), (Rgb 0 95 35), (Rgb 0 36 100))
-        $g.FillRectangle((Br (Argb 60 $tints[$seed % 3])), 0, 0, 1280, 720)
-    }
+    if (-not $script:ScopedScenes.ContainsKey($path)) { $script:ScopedScenes[$path] = [Drawing.Image]::FromFile($path) }
+    $g.DrawImage($script:ScopedScenes[$path], 0, 0, 1280, 720)
+    if ($theme -eq 'Cartoon') { $g.DrawRectangle((New-Object Drawing.Pen (Rgb 245 213 143), 6), 12, 12, 1256, 696) }
 }
 
 function Scoped-Flag($g, $flag, $x, $y, $w, $h, $theme) {
@@ -37,37 +42,66 @@ function Scoped-Flag($g, $flag, $x, $y, $w, $h, $theme) {
             $g.Restore($state3)
         }
     }
-    if ($theme -ne 'Futuristic') {
-        for ($i = 0; $i -lt 420; $i += 4) {
-            $v = [Math]::Sin($i / 35.0) + 0.4 * [Math]::Sin($i / 13.0)
-            $shade = if ($v -lt 0) { Rgb 0 0 0 } else { Rgb 255 255 255 }
-            $g.FillRectangle((Br (Argb ([int]([Math]::Abs($v) * 20)) $shade)), $i, 0, 4, 280)
+    for ($i = -100; $i -lt 520; $i += 4) {
+        $v = [Math]::Sin($i / 35.0) + 0.4 * [Math]::Sin($i / 13.0)
+        $shade = if ($v -lt 0) { Rgb 0 0 0 } else { Rgb 255 255 255 }
+        $fold = [Drawing.PointF[]]@((P $i 0), (P ($i+4) 0), (P ($i-76) 280), (P ($i-80) 280))
+        $g.FillPolygon((Br (Argb ([int]([Math]::Abs($v) * 48)) $shade)), $fold)
+    }
+    if ($theme -eq 'Cartoon') { $g.DrawRectangle((New-Object Drawing.Pen (Rgb 12 30 45), 5), 0, 0, 420, 280) }
+    $g.Restore($state)
+}
+
+function Scoped-FlagDisplay($g, $info, $theme) {
+    $width = if ($theme -eq 'Futuristic') { 560 } else { 620 }
+    $height = [int]($width * $(if ($info.Flag -eq 'Ireland') { 0.5 } elseif ($info.Flag -eq 'Iceland') { 0.72 } else { 2.0/3 }))
+    $flag = New-Object Drawing.Bitmap $width, $height
+    $paint = [Drawing.Graphics]::FromImage($flag)
+    $paint.SmoothingMode = 'AntiAlias'
+    Scoped-Flag $paint $info.Flag 0 0 $width $height $theme
+    $paint.Dispose()
+    if ($theme -eq 'Futuristic') {
+        $pts = [Drawing.PointF[]]@((P -290 (-$height/2 - 20)), (P 275 (-$height/2 + 20)), (P -285 ($height/2 - 20)))
+        $frame = [Drawing.PointF[]]@((P -305 (-$height/2 - 35)), (P 290 (-$height/2 + 5)), (P 295 ($height/2 + 35)), (P -300 ($height/2 - 35)))
+        $g.DrawPolygon((New-Object Drawing.Pen (Rgb 26 217 255), 7), $frame)
+        $g.DrawImage($flag, $pts)
+        $scan = New-Object Drawing.Pen (Argb 40 (Rgb 25 139 255)), 2
+        for ($y = -$height/2; $y -lt $height/2; $y += 8) { L $g $scan -280 $y 270 $y }
+    } else {
+        if ($theme -eq 'Cartoon') {
+            $g.DrawLine((New-Object Drawing.Pen (Rgb 19 24 26), 16), -325, (-$height/2-35), -325, ($height/2+40))
+            $g.DrawLine((New-Object Drawing.Pen (Rgb 231 184 90), 7), -325, (-$height/2-35), -325, ($height/2+40))
+            FE $g (Br (Rgb 237 192 100)) -325 (-$height/2-42) 14 14
+        }
+        for ($x = 0; $x -lt $width; $x += 4) {
+            $wave = 16 * [Math]::Sin($x / 110.0) + 10 * [Math]::Sin($x / 55.0)
+            $dest = New-Object Drawing.Rectangle ([int]($x-$width/2)), ([int](-$height/2+$wave)), 4, $height
+            $g.DrawImage($flag, $dest, $x, 0, 4, $height, [Drawing.GraphicsUnit]::Pixel)
         }
     }
-    $g.DrawRectangle((New-Object Drawing.Pen (Rgb 12 30 45), 5), 0, 0, 420, 280)
-    $g.Restore($state)
+    $flag.Dispose()
 }
 
 function Scoped-Motif($g, $info, $theme, $cx, $cy) {
     $state = $g.Save(); $g.TranslateTransform($cx, $cy)
     if ($info.Motif -eq 'flag') {
-        $height = if ($info.Flag -eq 'Ireland') { 310 } elseif ($info.Flag -eq 'Iceland') { 446.4 } else { 413.33 }
-        if ($theme -eq 'Futuristic') { $g.DrawRectangle((New-Object Drawing.Pen (Rgb 0 228 255), 6), -325, (-$height / 2 - 14), 650, ($height + 28)) }
-        Scoped-Flag $g $info.Flag -310 (-$height / 2) 620 $height $theme
+        Scoped-FlagDisplay $g $info $theme
     } elseif ($info.Motif -eq 'map') {
-        $fill = if ($theme -eq 'Futuristic') { Rgb 8 103 144 } else { Rgb 225 183 96 }
+        if ($theme -eq 'Cartoon') { $g.ScaleTransform(1.4, 1.4) }
         $edge = if ($theme -eq 'Futuristic') { Rgb 48 235 255 } elseif ($theme -eq 'Cartoon') { Rgb 13 30 34 } else { Rgb 250 220 148 }
         $shape = New-Object Drawing.Drawing2D.GraphicsPath
         foreach ($ring in $info.MapRings) { if ($ring.Count -ge 6) { $shape.AddPolygon((Pts $ring)) } }
-        $g.FillPath((Br $fill), $shape)
-        if ($theme -in 'Cartoon','Futuristic') {
-            $clip = $g.Save(); $g.SetClip($shape)
-            $textureColor = if ($theme -eq 'Futuristic') { Argb 115 (Rgb 61 238 255) } else { Argb 65 (Rgb 56 85 60) }
-            $texture = New-Object Drawing.Pen $textureColor, 1
-            for ($y = -240; $y -le 240; $y += 15) { L $g $texture -250 $y 250 ($y + 90) }
-            if ($theme -eq 'Futuristic') { for ($x = -240; $x -le 240; $x += 25) { L $g $texture $x -240 ($x+100) 240 } }
-            $g.Restore($clip); $texture.Dispose()
+        if ($theme -eq 'Futuristic') {
+            $g.DrawPath((New-Object Drawing.Pen (Argb 55 (Rgb 0 160 255)), 15), $shape)
+            $g.DrawPath((New-Object Drawing.Pen (Argb 100 (Rgb 18 204 255)), 6), $shape)
         }
+        $materialPath = Join-Path $PSScriptRoot "data\materials\$($theme.ToLowerInvariant()).png"
+        if (-not $script:ScopedMaterials) { $script:ScopedMaterials = @{} }
+        if (-not $script:ScopedMaterials.ContainsKey($materialPath)) { $script:ScopedMaterials[$materialPath] = [Drawing.Image]::FromFile($materialPath) }
+        $material = $script:ScopedMaterials[$materialPath]
+        $clip = $g.Save(); $g.SetClip($shape)
+        $g.DrawImage($material, (New-Object Drawing.Rectangle -210,-210,420,420), (New-Object Drawing.Rectangle 0,256,512,512), [Drawing.GraphicsUnit]::Pixel)
+        $g.Restore($clip)
         $g.DrawPath((New-Object Drawing.Pen $edge, $(if($theme -eq 'Cartoon'){5}else{2})), $shape)
         $shape.Dispose()
         if ($info.MapPoint) {
@@ -89,9 +123,9 @@ function New-ScopedCard($info, [string]$file, [string]$theme) {
     $bmp = New-Object Drawing.Bitmap 1280, 720
     $g = [Drawing.Graphics]::FromImage($bmp); $g.SmoothingMode = 'AntiAlias'; $g.InterpolationMode = 'HighQualityBicubic'
     $script:CurrentRTL = [bool]$info.RTL
-    Scoped-Scenery $g $theme $info.Seed
-    $cx = if ($theme -eq 'Classic') { 320 } else { 640 }
-    $cy = if ($theme -eq 'Classic') { 300 } elseif ($theme -eq 'Futuristic') { 255 } else { 270 }
+    Scoped-Scenery $g $theme $info
+    $cx = if ($theme -eq 'Classic') { 320 } elseif ($theme -eq 'Cartoon') { 360 } else { 640 }
+    $cy = if ($theme -eq 'Classic') { 300 } elseif ($theme -eq 'Futuristic') { 240 } elseif ($info.Motif -eq 'map') { 310 } else { 245 }
     Scoped-Motif $g $info $theme $cx $cy
     $displayTitle = $info.Name
     $font = if ($info.NativeFont) { $info.NativeFont } else { 'Segoe UI' }
@@ -99,27 +133,56 @@ function New-ScopedCard($info, [string]$file, [string]$theme) {
         $displayTitle = [string][char]0x65E5 + [char]0x672C; $font = 'Meiryo'
     } elseif ($info.Id -eq 'r101252' -and $info.Name -eq 'Ireland') {
         $displayTitle = [string][char]0x00C9 + 'ire'
+    } elseif ($info.Id -eq 'r100014' -and $info.Name -eq 'Seattle-Tacoma') {
+        $displayTitle = 'Seattle'
     }
-    if ($theme -eq 'Classic' -and $displayTitle -match '^[\p{IsBasicLatin}\p{IsLatin-1Supplement}\p{IsLatinExtended-A}]+$') { $font = 'Georgia' }
-    $cyTitle = if ($theme -eq 'Classic') { 338 } else { 560 }
-    $maxW = if ($theme -eq 'Classic') { 560 } else { 1080 }
-    $bold = $theme -eq 'Cartoon' -and (Get-TitleFamily $font).IsStyleAvailable([Drawing.FontStyle]::Bold)
-    $title = Center-Title $g $displayTitle $font $bold 'Title' 0 $cyTitle $maxW 135 120
+    if ($theme -eq 'Cartoon' -and $displayTitle -match '^[\p{IsBasicLatin}\p{IsLatin-1Supplement}\p{IsLatinExtended-A}]+$') {
+        $font = 'Georgia'
+        if (-not $info.ProviderName) { $displayTitle = $displayTitle.ToUpperInvariant() }
+    }
+    if ($theme -eq 'Classic') {
+        if ($font -eq 'Meiryo') { $font = 'MS Mincho' }
+        elseif ($font -eq 'Malgun Gothic') { $font = 'Noto Serif KR' }
+        elseif ($displayTitle -match '^[\p{IsBasicLatin}\p{IsLatin-1Supplement}\p{IsLatinExtended-A}]+$') { $font = 'Georgia' }
+    }
+    $cyTitle = if ($theme -eq 'Classic') { 325 } else { 575 }
+    $maxW = if ($theme -eq 'Classic' -or ($theme -eq 'Cartoon' -and $info.Motif -eq 'map')) { 560 } else { 1080 }
+    $bold = $theme -in 'Cartoon','Futuristic' -and (Get-TitleFamily $font).IsStyleAvailable([Drawing.FontStyle]::Bold)
+    $title = Center-Title $g $displayTitle $font $bold 'Title' 0 $cyTitle $maxW 150 160
     if ($theme -eq 'Classic') { $title.Transform((New-Object Drawing.Drawing2D.Matrix 1, 0, 0, 1, 280, 0)) }
+    if ($theme -eq 'Cartoon' -and $info.Motif -eq 'map') { $title.Transform((New-Object Drawing.Drawing2D.Matrix 1, 0, 0, 1, 250, 0)) }
+    if ($theme -ne 'Classic') {
+        $bottom = $title.GetBounds().Bottom
+        if ($bottom -gt 630) { $title.Transform((New-Object Drawing.Drawing2D.Matrix 1, 0, 0, 1, 0, (630-$bottom))) }
+    }
     $color = if ($theme -eq 'Futuristic') { Rgb 226 252 255 } else { Rgb 255 225 164 }
     if ($theme -eq 'Cartoon') { $g.DrawPath((Outline-Pen (Rgb 8 28 34) 15), (Shifted $title 5 5)); $g.DrawPath((Outline-Pen (Rgb 8 28 34) 12), $title) }
+    elseif ($theme -eq 'Futuristic') { $g.DrawPath((Outline-Pen (Argb 100 (Rgb 0 162 255)) 8), $title) }
     else { $g.FillPath((Br (Argb 170 (Rgb 0 0 0))), (Shifted $title 4 5)) }
     $g.FillPath((Br $color), $title)
     $name = if ($info.ProviderName) { $info.ProviderName } else { $info.Name }
     $kind = if ($info.ProviderName) { 'LANGUAGE' } else { 'LOCATION' }
-    $label = "$name  |  $kind".ToUpperInvariant()
-    $labelFont = New-Object Drawing.Font 'Segoe UI', 25, ([Drawing.FontStyle]::Bold), ([Drawing.GraphicsUnit]::Pixel)
+    $label = "$name  $([char]0x2022)  $kind".ToUpperInvariant()
+    if ($theme -eq 'Classic') { $label = Spaced $label }
+    $labelFont = New-Object Drawing.Font 'Segoe UI', $(if($theme -eq 'Classic'){22}else{25}), ([Drawing.FontStyle]::Bold), ([Drawing.GraphicsUnit]::Pixel)
     $fmt = New-Object Drawing.StringFormat; $fmt.Alignment = 'Center'
-    $area = if ($theme -eq 'Classic') { New-Object Drawing.RectangleF 660, 431, 560, 44 } else { New-Object Drawing.RectangleF 70, 630, 1140, 44 }
+    $area = if ($theme -eq 'Classic') { New-Object Drawing.RectangleF 660, 455, 560, 44 }
+        elseif ($theme -eq 'Cartoon' -and $info.Motif -eq 'map') { New-Object Drawing.RectangleF 650, 645, 570, 44 }
+        else { New-Object Drawing.RectangleF 70, 645, 1140, 44 }
+    if ($theme -eq 'Classic') {
+        $gold = New-Object Drawing.Pen (Rgb 233 190 104), 2
+        L $g $gold 700 430 885 430; L $g $gold 955 430 1140 430
+        $g.DrawEllipse($gold, 910, 420, 20, 20)
+    }
+    if ($theme -ne 'Classic') {
+        $shadowArea = $area; $shadowArea.Offset(2, 2)
+        $g.DrawString($label, $labelFont, (Br (Rgb 0 0 0)), $shadowArea, $fmt)
+    }
     $g.DrawString($label, $labelFont, (Br $color), $area, $fmt)
     if ($info.Label -in 'Generic location','Regional map') {
         $small = New-Object Drawing.Font 'Segoe UI', 22, ([Drawing.FontStyle]::Bold), ([Drawing.GraphicsUnit]::Pixel)
-        $g.DrawString($info.Label.ToUpperInvariant(), $small, (Br $color), (New-Object Drawing.RectangleF ($cx-230), ($cy+205), 460, 32), $fmt)
+        $y = if ($theme -eq 'Cartoon' -and $info.Motif -eq 'map') { 480 } else { $cy+225 }
+        $g.DrawString($info.Label.ToUpperInvariant(), $small, (Br $color), (New-Object Drawing.RectangleF ($cx-230), $y, 460, 32), $fmt)
     }
     $codec = [Drawing.Imaging.ImageCodecInfo]::GetImageEncoders() | Where-Object MimeType -eq 'image/jpeg'
     $ep = New-Object Drawing.Imaging.EncoderParameters 1

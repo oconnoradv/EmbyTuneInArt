@@ -862,12 +862,14 @@ $Places = @{
 }
 
 function Get-TitleFamily([string]$name) {
-    if ($name -eq 'Noto Sans Khmer') {
-        if (-not $script:PrivateFonts) {
-            $script:PrivateFonts = New-Object Drawing.Text.PrivateFontCollection
-            $script:PrivateFonts.AddFontFile((Join-Path $PSScriptRoot 'data\NotoSansKhmer-Regular.ttf'))
+    $files = @{ 'Noto Sans Khmer'='NotoSansKhmer-Regular.ttf'; 'Noto Serif KR'='NotoSerifKR-Regular.otf' }
+    if ($files.ContainsKey($name)) {
+        if (-not $script:PrivateFonts) { $script:PrivateFonts = @{} }
+        if (-not $script:PrivateFonts.ContainsKey($name)) {
+            $script:PrivateFonts[$name] = New-Object Drawing.Text.PrivateFontCollection
+            $script:PrivateFonts[$name].AddFontFile((Join-Path $PSScriptRoot "data\$($files[$name])"))
         }
-        $family = @($script:PrivateFonts.Families | Where-Object { $_.Name -eq $name })
+        $family = @($script:PrivateFonts[$name].Families | Where-Object { $_.Name -eq $name })
         if ($family.Count -ne 1) { throw "Bundled font '$name' could not be loaded." }
         return $family[0]
     }
@@ -1481,9 +1483,9 @@ Delete the images and refresh again to return to the default icons. Also delete 
 Scoped packs require the TuneIn 1.2.8.0 RC1 build with scoped artwork support; older builds with the same version number do not support scoped packs.
 Flags are representative, not exclusive to a language. Unknown language names retain the provider's label.
 City and unmatched locations may use a labeled regional ancestor map or generic fallback.
-Scenic backgrounds are fictional AI-generated decoration, not location-specific imagery.
+Scenic backgrounds and map-fill textures are AI-generated illustrations, not geographic or terrain data.
 Natural Earth country and region geometry is public domain: https://www.naturalearthdata.com/about/terms-of-use/
-Noto Sans Khmer is distributed under the SIL Open Font License 1.1; see Noto-OFL.txt.
+Noto Sans Khmer and Noto Serif KR are distributed under the SIL Open Font License 1.1; see Noto-OFL.txt.
 "@ }
     if (Test-Path $zip) { Remove-Item $zip }
     $archive = [IO.Compression.ZipFile]::Open($zip, 'Create')

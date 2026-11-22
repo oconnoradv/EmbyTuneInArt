@@ -183,7 +183,7 @@ function Get-Locations {
     return ,$items
 }
 
-function Get-MapRings($geometry) {
+function Get-MapProjection($geometry) {
     $polygons = @()
     if ($geometry.type -eq 'Polygon') { $polygons += ,$geometry.coordinates }
     elseif ($geometry.type -eq 'MultiPolygon') { foreach ($polygon in $geometry.coordinates) { $polygons += ,$polygon } }
@@ -200,12 +200,20 @@ function Get-MapRings($geometry) {
     $xmin = ($xs | Measure-Object -Minimum).Minimum; $xmax = ($xs | Measure-Object -Maximum).Maximum
     $ymin = ($ys | Measure-Object -Minimum).Minimum; $ymax = ($ys | Measure-Object -Maximum).Maximum
     if (($xmax - $xmin) -gt 180 -or $xmax -eq $xmin -or $ymax -eq $ymin) { return }
-    $scale = [Math]::Min(420 / ($xmax - $xmin), 420 / ($ymax - $ymin))
+    $lonFactor = [Math]::Cos((($ymin + $ymax) / 2) * [Math]::PI / 180)
+    if ($lonFactor -le 0) { return }
+    return @{ Rings = $rings; XMin = $xmin; XMax = $xmax; YMin = $ymin; YMax = $ymax
+        LonFactor = $lonFactor; Scale = [Math]::Min(420 / (($xmax - $xmin) * $lonFactor), 420 / ($ymax - $ymin)) }
+}
+
+function Get-MapRings($geometry) {
+    $projection = Get-MapProjection $geometry
+    if (-not $projection) { return }
     $result = New-Object System.Collections.ArrayList
-    foreach ($ring in $rings) {
+    foreach ($ring in $projection.Rings) {
         $values = foreach ($point in $ring) {
-            [float](($point[0] - ($xmin + $xmax) / 2) * $scale)
-            [float]((($ymin + $ymax) / 2 - $point[1]) * $scale)
+            [float](($point[0] - ($projection.XMin + $projection.XMax) / 2) * $projection.LonFactor * $projection.Scale)
+            [float]((($projection.YMin + $projection.YMax) / 2 - $point[1]) * $projection.Scale)
         }
         [void]$result.Add([float[]]$values)
     }
@@ -213,16 +221,10 @@ function Get-MapRings($geometry) {
 }
 
 function Get-MapPoint($geometry, [double]$lon, [double]$lat) {
-    $polygons = if ($geometry.type -eq 'Polygon') { ,$geometry.coordinates } else { $geometry.coordinates }
-    $xs = @(); $ys = @()
-    foreach ($polygon in $polygons) {
-        foreach ($point in $polygon[0]) { $xs += [double]$point[0]; $ys += [double]$point[1] }
-    }
-    $xmin = ($xs | Measure-Object -Minimum).Minimum; $xmax = ($xs | Measure-Object -Maximum).Maximum
-    $ymin = ($ys | Measure-Object -Minimum).Minimum; $ymax = ($ys | Measure-Object -Maximum).Maximum
-    if ($lon -lt $xmin -or $lon -gt $xmax -or $lat -lt $ymin -or $lat -gt $ymax) { throw 'Map marker falls outside its verified map bounds.' }
-    $scale = [Math]::Min(420 / ($xmax - $xmin), 420 / ($ymax - $ymin))
-    return ,@([float](($lon - ($xmin + $xmax) / 2) * $scale), [float]((($ymin + $ymax) / 2 - $lat) * $scale))
+    $projection = Get-MapProjection $geometry
+    if (-not $projection) { throw 'Cannot project marker on invalid map geometry.' }
+    if ($lon -lt $projection.XMin -or $lon -gt $projection.XMax -or $lat -lt $projection.YMin -or $lat -gt $projection.YMax) { throw 'Map marker falls outside its verified map bounds.' }
+    return ,@([float](($lon - ($projection.XMin + $projection.XMax) / 2) * $projection.LonFactor * $projection.Scale), [float]((($projection.YMin + $projection.YMax) / 2 - $lat) * $projection.Scale))
 }
 
 function Set-LocationArt($items) {

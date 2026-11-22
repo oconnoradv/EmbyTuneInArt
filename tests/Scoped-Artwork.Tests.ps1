@@ -104,6 +104,12 @@ Assert $failed 'Complete traversal must fail on unsupported location pagination.
 $polygon = [pscustomobject]@{ type='Polygon'; coordinates=@(, @(@(0,0), @(2,0), @(2,1), @(0,0))) }
 $rings = Get-MapRings $polygon
 Assert ($rings.Count -eq 1 -and $rings[0].Count -eq 8) 'Single polygon ring was flattened.'
+$highLatitude = [pscustomobject]@{ type='Polygon'; coordinates=@(, @(@(-5,50), @(5,50), @(5,60), @(-5,60), @(-5,50))) }
+$projected = Get-MapRings $highLatitude
+$marker = Get-MapPoint $highLatitude -5 60
+$aspect = [Math]::Abs(($projected[0][2] - $projected[0][0]) / ($projected[0][5] - $projected[0][1]))
+Assert ([Math]::Abs($aspect - [Math]::Cos(55 * [Math]::PI / 180)) -lt 0.0001) 'Projection must correct longitude aspect at the map latitude.'
+Assert ([Math]::Abs($marker[0] - $projected[0][6]) -lt 0.001 -and [Math]::Abs($marker[1] - $projected[0][7]) -lt 0.001) 'Markers must use the same projection as map rings.'
 $wrapped = [pscustomobject]@{ type='Polygon'; coordinates=@(, @(@(-179,0), @(179,0), @(179,1), @(-179,0))) }
 Assert (-not (Get-MapRings $wrapped)) 'Antimeridian-spanning geometry must use the generic fallback.'
 Write-Host 'Scoped artwork tests passed.'
