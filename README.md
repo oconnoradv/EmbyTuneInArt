@@ -1,4 +1,4 @@
-﻿# EmbyLogoTool — TuneIn genre artwork builder
+﻿# TuneInArtGen — TuneIn genre artwork builder
 
 `Build-GenreArtwork.ps1` is an offline maintainer tool. It renders the original neon cards (1280×720 JPEG)
 that the [Emby TuneIn plugin](https://github.com/oconnoradv/EmbyTuneIn) bundles for its music genre folders.
