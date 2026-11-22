@@ -2,7 +2,7 @@
 
 EmbyTuneInArt builds optional artwork packs for the music genre folders of the
 [Emby TuneIn plugin](https://github.com/oconnoradv/EmbyTuneIn). `Build-GenreArtwork.ps1` renders one original
-1280×720 card per TuneIn music genre and subgenre in one of ten [themes](#themes). Each parent genre gets its own
+1280×720 card per TuneIn music genre and subgenre in one of eleven [themes](#themes). Each parent genre gets its own
 typography, palette and line art. The cards contain no TuneIn logos or station images.
 
 The plugin ships with its default category icons. Packs are optional: install one and the Music genre folders in
@@ -26,6 +26,7 @@ Classic Hip Hop.
 | `Blocky` | Chunky pixel art inspired by voxel sandbox games: blocky sky, clouds and grass-and-dirt ground. | ![Blocky sample](docs/samples/blocky.jpg) |
 | `Rebel` | Scrappy sci-fi resistance: starfield, a dusky planet, weathered orange titles and hazard stripes. | ![Rebel sample](docs/samples/rebel.jpg) |
 | `Imperial` | Cold, symmetrical sci-fi empire: steel panels, corridor lights and red accent bars. | ![Imperial sample](docs/samples/imperial.jpg) |
+| `Elegant` | Quiet charcoal, a warm vignette, champagne hairline art and serif titles. | ![Elegant sample](docs/samples/elegant.jpg) |
 
 Themes are original designs. `Blocky`, `Rebel` and `Imperial` evoke familiar genres of game and film art without
 using any franchise's names, logos, emblems or fonts.

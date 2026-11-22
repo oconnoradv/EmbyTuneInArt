@@ -1,14 +1,14 @@
 ﻿<#
 Builds a 1280x720 JPEG music genre artwork pack for the Emby TuneIn plugin. Every card's typography, palette and line
 art depend on the TuneIn parent genre; -Theme picks the overall look (Neon, Retro, Futuristic, Cartoon, Cat, Dog,
-Nature, Blocky, Rebel or Imperial). Run on Windows PowerShell with the fonts that ship with Windows 11 (Bahnschrift,
-Segoe UI Variable, Segoe UI Black, Cascadia, Impact, Georgia and Franklin Gothic). -Pack also writes a ZIP that users
+Nature, Blocky, Rebel, Imperial or Elegant). Run on Windows PowerShell with the fonts that ship with Windows 11 (Bahnschrift,
+Segoe UI Variable, Segoe UI, Segoe UI Black, Cascadia, Impact, Georgia and Franklin Gothic). -Pack also writes a ZIP that users
 extract into Emby's plugins\configurations\TuneInArtwork\genres folder.
 #>
 param(
     [string]$Output = (Join-Path $PSScriptRoot 'output\genres'),
     [string[]]$Only,
-    [ValidateSet('Neon', 'Retro', 'Futuristic', 'Cartoon', 'Cat', 'Dog', 'Nature', 'Blocky', 'Rebel', 'Imperial')]
+    [ValidateSet('Neon', 'Retro', 'Futuristic', 'Cartoon', 'Cat', 'Dog', 'Nature', 'Blocky', 'Rebel', 'Imperial', 'Elegant')]
     [string]$Theme = 'Neon',
     # Writes <Output>\..\<PackName>.zip containing the cards and an install note; defaults to artpack-<theme>.
     [switch]$Pack,
@@ -1205,6 +1205,30 @@ $Themes = @{
         }
         Font = 'Bahnschrift SemiBold SemiConden'; Case = 'Upper'; Shear = 0; Max = 190
         SubFont = 'Bahnschrift'; Sub = { param($cl, $pal) Rgb 214 40 40 }
+    }
+    Elegant    = @{
+        Description = 'Quiet charcoal, a warm vignette, champagne hairline art and serif titles.'
+        Color = { param($p) $l = 0.3 * $p[0] + 0.59 * $p[1] + 0.11 * $p[2]; RgbF (0.1 * $p[0] + 0.35 * $l + 130) (0.1 * $p[1] + 0.3 * $l + 112) (0.1 * $p[2] + 0.22 * $l + 84) }
+        Art = @{ Mode = 'Flat'; K = 0.85 }
+        Background = { param($gr, $cl, $pal, $info)
+            $gr.FillRectangle((Linear (Rgb 26 28 34) (Rgb 12 13 17)), 0, 0, 1280, 720)
+            $vp = New-Object Drawing.Drawing2D.GraphicsPath; $vp.AddEllipse(480, -160, 1040, 1040); $vb = New-Object Drawing.Drawing2D.PathGradientBrush $vp; $vb.CenterColor = Argb 34 (Rgb 214 182 124); $vb.SurroundColors = @((Argb 0 (Rgb 214 182 124))); $gr.FillPath($vb, $vp)
+            if (-not $script:Dither) {
+                $nb = New-Object Drawing.Bitmap 256, 256; $nr = New-Object Random 7
+                for ($y = 0; $y -lt 256; $y++) { for ($x = 0; $x -lt 256; $x++) { $v = $nr.Next(3); if ($v -eq 1) { $nb.SetPixel($x, $y, (Argb 6 (Rgb 255 255 255))) } elseif ($v -eq 2) { $nb.SetPixel($x, $y, (Argb 6 (Rgb 0 0 0))) } } }
+                $script:Dither = New-Object Drawing.TextureBrush $nb
+            }
+            $gr.FillRectangle($script:Dither, 0, 0, 1280, 720)
+            $gold = Rgb 201 169 110
+            $gr.DrawRectangle((New-Object Drawing.Pen (Argb 120 $gold), 1.5), 34, 34, 1212, 652)
+            $gr.DrawRectangle((New-Object Drawing.Pen (Argb 50 $gold), 1), 44, 44, 1192, 632)
+        }
+        Title = { param($gr, $title, $cl, $pal, $st)
+            $gr.FillPath((Br (Argb 120 (Rgb 0 0 0))), (Shifted $title 3 4)); $gr.FillPath((Br (Rgb 238 229 210)), $title)
+            $gp = New-Object Drawing.Pen (Argb 200 (Rgb 201 169 110)), 2; L $gr $gp 98 540 210 540
+        }
+        Font = 'Georgia'; Bold = $false; Case = 'Title'; Shear = 0; Max = 170
+        SubFont = 'Segoe UI Light'; Sub = { param($cl, $pal) Rgb 201 169 110 }
     }
 }
 
