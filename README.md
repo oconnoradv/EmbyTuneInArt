@@ -39,7 +39,7 @@ using any franchise's names, logos, emblems or fonts.
    [Releases](https://github.com/oconnoradv/EmbyTuneInArt/releases).
 2. In Emby, open **Settings → TuneIn**. Under the animated TuneIn header, the page shows the artwork folder,
    for example `C:\ProgramData\Emby-Server\programdata\plugins\configurations\TuneInArtwork\genres`.
-3. Create that folder if it does not exist and extract the pack's `.jpg` files into it.
+3. Create that folder if it does not exist and extract the pack's `.jpg` files and `tunein-artwork.json` into it.
 4. Reload the TuneIn settings page. It should report the number of installed genre images.
 5. Open **Catalog Refresh** and refresh **Music**. Genre folders now show the pack's cards.
 
@@ -73,8 +73,8 @@ Requirements:
 3. **Adjust the look (optional).** Try other `-Theme` values or edit the tables described under
    [Customizing](#customizing), then repeat step 2 until you are happy.
 
-4. **Build the full pack.** This writes every card to `.\output\genres` and the ZIP to `.\output\artpack-retro.zip`
-   (`-PackName` overrides the name; it defaults to `artpack-<theme>`). A full run writes about 123 cards.
+4. **Build the full pack.** This writes every card and `tunein-artwork.json` to `.\output\genres` and the ZIP to `.\output\artpack-retro.zip`
+   (`-PackName` overrides the name; it defaults to `artpack-<theme>`. `-PackVersion` sets the manifest version; it defaults to `1`). A full run writes about 123 cards.
 
    ```powershell
    powershell -NoProfile -ExecutionPolicy Bypass -File Build-GenreArtwork.ps1 -Theme Retro -Pack
@@ -91,6 +91,25 @@ Requirements:
    `gh release create artpack-<name>-v1 .\output\<name>.zip`.
 
 Each card prints `id  name  [style/motif]` as it is drawn.
+
+## Pack manifest
+
+Every build writes `tunein-artwork.json` next to the cards, and `-Pack` includes it in the ZIP. It is installed
+in the `genres` folder with the images so the TuneIn plugin can identify the pack:
+
+| Field | Meaning |
+|---|---|
+| `schemaVersion` | Manifest format version, currently `1`. |
+| `packId`, `packName`, `theme`, `version` | Pack identity, for example `artpack-cartoon`, `Cartoon`, `Cartoon`, `1`. |
+| `description` | The theme's one-line description. |
+| `minPluginVersion` | Oldest TuneIn plugin version the pack supports (`1.2.8.0`). |
+| `sampleImageUrl`, `sourceUrl` | A sample image and the repository the pack was built from. |
+| `toolCommit`, `builtUtc`, `license` | The tool commit, build time and licence (`GPL-3.0`). |
+| `imageCount`, `images` | One entry per card: `id`, `name`, `parent`, `file`, `bytes` and lower-case `sha256`. |
+
+The plugin can count installed images and compare each file's SHA-256 with the manifest. A missing or
+different hash means the user added or replaced that image. The manifest lists only cards present in the output
+folder, so a `-Only` build describes just those cards.
 
 ## Roadmap
 

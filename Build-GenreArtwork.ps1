@@ -2,8 +2,8 @@
 Builds a 1280x720 JPEG music genre artwork pack for the Emby TuneIn plugin. Every card's typography, palette and line
 art depend on the TuneIn parent genre; -Theme picks the overall look (Neon, Retro, Futuristic, Cartoon, Cat, Dog,
 Nature, Blocky, Rebel, Imperial, Elegant, Tile or Classic). Run on Windows PowerShell with the fonts that ship with Windows 11 (Bahnschrift,
-Segoe UI Variable, Segoe UI, Segoe UI Black, Cascadia, Impact, Georgia and Franklin Gothic). -Pack also writes a ZIP that users
-extract into Emby's plugins\configurations\TuneInArtwork\genres folder.
+Segoe UI Variable, Segoe UI, Segoe UI Black, Cascadia, Impact, Georgia and Franklin Gothic). It also writes tunein-artwork.json, a manifest the TuneIn plugin uses to identify the pack.
+-Pack also writes a ZIP that users extract into Emby's plugins\configurations\TuneInArtwork\genres folder.
 #>
 param(
     [string]$Output = (Join-Path $PSScriptRoot 'output\genres'),
@@ -12,7 +12,9 @@ param(
     [string]$Theme = 'Neon',
     # Writes <Output>\..\<PackName>.zip containing the cards and an install note; defaults to artpack-<theme>.
     [switch]$Pack,
-    [string]$PackName
+    [string]$PackName,
+    # Pack version recorded in tunein-artwork.json.
+    [string]$PackVersion = '1'
 )
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Drawing
@@ -1358,15 +1360,32 @@ foreach ($info in $genres.Values) {
     Write-Host "$($info.Id)  $($info.Name)  [$($info.Style)/$($info.Motif)]"
 }
 
+# tunein-artwork.json identifies the installed pack to the TuneIn plugin. The SHA-256 hashes let it tell
+# pack images from ones a user has replaced.
+if (-not $PackName) { $PackName = 'artpack-' + $Theme.ToLowerInvariant() }
+$commit = try { (& git -C $PSScriptRoot rev-parse --short HEAD 2>$null) } catch { $null }
+$images = @(Get-ChildItem $Output -Filter *.jpg | Where-Object { $genres.Contains($_.BaseName) } | Sort-Object Name | ForEach-Object {
+    $info = $genres[$_.BaseName]
+    [ordered]@{ id = $info.Id; name = $info.Name; parent = $info.Parent; file = $_.Name; bytes = $_.Length
+        sha256 = (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant() }
+})
+$manifest = [ordered]@{
+    schemaVersion = 1; packId = $PackName; packName = $Theme; theme = $Theme; version = $PackVersion
+    description = $script:T.Description; minPluginVersion = '1.2.8.0'
+    sampleImageUrl = "https://raw.githubusercontent.com/oconnoradv/EmbyTuneInArt/main/docs/samples/$($Theme.ToLowerInvariant()).jpg"
+    sourceUrl = 'https://github.com/oconnoradv/EmbyTuneInArt'; toolCommit = $commit; license = 'GPL-3.0'
+    builtUtc = [DateTime]::UtcNow.ToString('yyyy-MM-ddTHH:mm:ssZ'); imageCount = $images.Count; images = $images
+}
+[IO.File]::WriteAllText((Join-Path $Output 'tunein-artwork.json'), ($manifest | ConvertTo-Json -Depth 4), (New-Object Text.UTF8Encoding $false))
+
 if ($Pack) {
-    if (-not $PackName) { $PackName = 'artpack-' + $Theme.ToLowerInvariant() }
     Add-Type -AssemblyName System.IO.Compression.FileSystem
     $zip = Join-Path (Split-Path ([IO.Path]::GetFullPath($Output)) -Parent) "$PackName.zip"
     $note = @"
 $PackName - genre artwork for the Emby TuneIn plugin ($Theme theme)
 Built by Build-GenreArtwork.ps1 from https://github.com/oconnoradv/EmbyTuneInArt (GPL-3.0).
 
-1. Extract the .jpg files into <Emby data>\plugins\configurations\TuneInArtwork\genres
+1. Extract the .jpg files and tunein-artwork.json into <Emby data>\plugins\configurations\TuneInArtwork\genres
    (the TuneIn settings page shows the exact folder).
 2. In TuneIn settings, open Catalog Refresh and refresh Music.
 Delete the files and refresh Music again to return to the default icons.
@@ -1377,6 +1396,7 @@ Delete the files and refresh Music again to return to the default icons.
         Get-ChildItem $Output -Filter *.jpg | Where-Object { $_.BaseName -match '^[cg]\d+$' } | ForEach-Object {
             [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, $_.FullName, $_.Name, 'Optimal')
         }
+        [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, (Join-Path $Output 'tunein-artwork.json'), 'tunein-artwork.json', 'Optimal')
         $writer = New-Object IO.StreamWriter ($archive.CreateEntry('README.txt').Open())
         try { $writer.Write($note.Replace("`r`n", "`n").Replace("`n", "`r`n")) } finally { $writer.Dispose() }
     } finally { $archive.Dispose() }
