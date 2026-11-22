@@ -69,6 +69,24 @@ Scenic backgrounds and map-fill textures are decorative illustrations, not geogr
 When no verified location or ancestor map is available, a labeled generic globe is used. Languages without a
 representative flag use a neutral globe.
 
+## Complete language and location packs
+
+The [complete scoped packs](https://github.com/oconnoradv/EmbyTuneInArt/releases/tag/scoped-language-location-v1)
+use a TuneIn catalog snapshot completed **2026-11-22 23:21:25 UTC**. Each theme contains 91 language cards
+and 2,031 location cards, all 1280×720. The packs were generated from tool commit
+`5bc718a6c138ba85e37c76c5903c70edba537c50`; checksums are included in the release.
+
+| Theme | Languages | Locations |
+|---|---|---|
+| Cartoon | [Download](https://github.com/oconnoradv/EmbyTuneInArt/releases/download/scoped-language-location-v1/artpack-cartoon-languages.zip) | [Download](https://github.com/oconnoradv/EmbyTuneInArt/releases/download/scoped-language-location-v1/artpack-cartoon-locations.zip) |
+| Futuristic | [Download](https://github.com/oconnoradv/EmbyTuneInArt/releases/download/scoped-language-location-v1/artpack-futuristic-languages.zip) | [Download](https://github.com/oconnoradv/EmbyTuneInArt/releases/download/scoped-language-location-v1/artpack-futuristic-locations.zip) |
+| Classic | [Download](https://github.com/oconnoradv/EmbyTuneInArt/releases/download/scoped-language-location-v1/artpack-classic-languages.zip) | [Download](https://github.com/oconnoradv/EmbyTuneInArt/releases/download/scoped-language-location-v1/artpack-classic-locations.zip) |
+
+Complete coverage means one image for each discovered ID, not a detailed local map or a flag for every card.
+The locations comprise 142 verified country outlines, 63 verified region outlines, 1,615 regional-ancestor
+maps and 211 generic fallbacks. Languages use four representative flags and 87 neutral motifs; uncurated
+language names retain their TuneIn labels. Scenic art and map textures are decorative, not terrain data.
+
 ## Install a ready-made pack
 
 1. Download a pack ZIP, for example `artpack-neon-v1.zip`, from
