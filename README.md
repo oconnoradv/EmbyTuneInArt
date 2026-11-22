@@ -1,38 +1,75 @@
-﻿# TuneInArtGen — TuneIn genre artwork builder
+# EmbyTuneInArt — genre artwork packs for the Emby TuneIn plugin
 
-`Build-GenreArtwork.ps1` is an offline maintainer tool. It renders the original neon cards (1280×720 JPEG)
-that the [Emby TuneIn plugin](https://github.com/oconnoradv/EmbyTuneIn) bundles for its music genre folders.
-The plugin does not run, download or build this artwork. Copy the JPEGs this tool produces into the plugin's
-`MediaBrowser.Plugins.TuneIn\Images\genres` folder and commit them there.
+EmbyTuneInArt builds optional artwork packs for the music genre folders of the
+[Emby TuneIn plugin](https://github.com/oconnoradv/EmbyTuneIn). `Build-GenreArtwork.ps1` renders one original
+1280×720 neon card per TuneIn music genre and subgenre. Each parent genre gets its own typography, palette and
+line art. The cards contain no TuneIn logos or station images.
 
-The cards are original artwork: neon line art, futuristic type and a spaced subtitle. They contain no
-TuneIn logos or station images.
+The plugin ships with its default category icons. Packs are optional: install one and the Music genre folders in
+Emby show its cards instead. Ready-made packs are on the [Releases](https://github.com/oconnoradv/EmbyTuneInArt/releases)
+page; build your own to change the look.
 
-## Requirements
+## Install a ready-made pack
 
-- Windows PowerShell 5.1 (`System.Drawing`).
-- Windows 11 fonts: Bahnschrift, Segoe UI Variable, Segoe UI Black, Cascadia Mono and Impact. On other
-  systems, GDI+ falls back to a different font and the cards look different.
+1. Download a pack ZIP, for example `artpack-neon-v1.zip`, from
+   [Releases](https://github.com/oconnoradv/EmbyTuneInArt/releases).
+2. In Emby, open **Settings → TuneIn**. Under the animated TuneIn header, the page shows the artwork folder,
+   for example `C:\ProgramData\Emby-Server\programdata\plugins\configurations\TuneInArtwork\genres`.
+3. Create that folder if it does not exist and extract the pack's `.jpg` files into it.
+4. Reload the TuneIn settings page. It should report the number of installed genre images.
+5. Open **Catalog Refresh** and refresh **Music**. Genre folders now show the pack's cards.
+
+To go back to the default icons, delete the images and refresh Music again. Only files named after a TuneIn guide
+ID (`c57943.jpg`, `g79.png`) are used; genres without an image keep the Music icon.
+
+## Build your own pack, step by step
+
+Requirements:
+
+- Windows 11 with Windows PowerShell 5.1 (`System.Drawing`).
+- The Windows 11 fonts Bahnschrift, Segoe UI Variable, Segoe UI Black, Cascadia Mono and Impact. Elsewhere GDI+
+  substitutes fonts and the cards look different.
 - Internet access to `opml.radiotime.com`, which supplies the current genre list.
 
-## Usage
+1. **Clone the repository.**
 
-Run from this repository's root:
+   ```powershell
+   git clone https://github.com/oconnoradv/EmbyTuneInArt.git
+   cd EmbyTuneInArt
+   ```
 
-```powershell
-# All genres, into .\output\genres (default)
-powershell -NoProfile -ExecutionPolicy Bypass -File Build-GenreArtwork.ps1
+2. **Preview a few genres.** `-Only` takes guide IDs or `-like` name patterns. Open the folder to check the cards.
 
-# All genres, straight into a plugin checkout
-powershell -NoProfile -ExecutionPolicy Bypass -File Build-GenreArtwork.ps1 -Output C:\src\EmbyTuneIn\MediaBrowser.Plugins.TuneIn\Images\genres
+   ```powershell
+   powershell -NoProfile -ExecutionPolicy Bypass -File Build-GenreArtwork.ps1 -Output .\preview -Only 'Punk','Christmas*','Smooth Jazz'
+   ```
 
-# A preview of selected genres in a scratch folder. -Only matches a guide ID or a -like name pattern.
-powershell -NoProfile -ExecutionPolicy Bypass -File Build-GenreArtwork.ps1 -Output $env:TEMP\genres -Only 'c57944','Christmas*','Trance'
-```
+3. **Adjust the look (optional).** Edit the style tables described under [Customizing](#customizing), then
+   repeat step 2 until you are happy.
 
-Each card prints `id  name  [style/motif]`. A full run takes about 20 seconds and writes about 123 files
-(about 8.4 MB at JPEG quality 80).
+4. **Build the full pack.** This writes every card to `.\output\genres` and the ZIP to `.\output\my-pack.zip`.
+   A full run takes about 20 seconds and writes about 123 cards (about 8.4 MB).
 
+   ```powershell
+   powershell -NoProfile -ExecutionPolicy Bypass -File Build-GenreArtwork.ps1 -Pack -PackName my-pack
+   ```
+
+5. **Install it** by following [Install a ready-made pack](#install-a-ready-made-pack) from step 2, using your ZIP.
+   To install straight from a build on the Emby server, point `-Output` at the artwork folder:
+
+   ```powershell
+   powershell -NoProfile -ExecutionPolicy Bypass -File Build-GenreArtwork.ps1 -Output 'C:\ProgramData\Emby-Server\programdata\plugins\configurations\TuneInArtwork\genres'
+   ```
+
+6. **Share it (optional).** Publish the ZIP as a release, for example with
+   `gh release create artpack-<name>-v1 .\output\<name>.zip`.
+
+Each card prints `id  name  [style/motif]` as it is drawn.
+
+## Roadmap
+
+- **GUI front end.** A future version will add a graphical front end to simplify usage: pick genres, preview cards,
+  tune styles and glow, and build or install a pack without editing the script or using the command line.
 ## How it works
 
 1. **Genre list.** The tool reads `Browse.ashx?c=music` for top-level genres (IDs `c…`/`g…`) and
@@ -63,5 +100,9 @@ Each card prints `id  name  [style/motif]`. A full run takes about 20 seconds an
 - **New TuneIn genres** are picked up automatically and use their parent's defaults. Add an override
   when a more specific motif fits.
 
-After you copy regenerated cards into the plugin, bump `GenreRevision` in `TuneInCategoryArtwork.cs`, so that Emby replaces the cached
-folder images.
+After you replace installed images, refresh Music again. The plugin notices the changed files and replaces
+Emby's cached folder images.
+
+## License
+
+EmbyTuneInArt and the artwork it produces are licensed under the [GNU General Public License v3.0](LICENSE).

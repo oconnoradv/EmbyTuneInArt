@@ -1,12 +1,15 @@
 ﻿<#
-Builds the bundled 1280x720 JPEG music genre artwork: original neon genre cards whose typography,
-palette, and line art depend on the TuneIn parent genre. Run on Windows PowerShell (needs the
-Bahnschrift, Segoe UI Variable, Cascadia, and Impact fonts that ship with Windows 11). Copy the output into the
-Emby TuneIn plugin's MediaBrowser.Plugins.TuneIn\Images\genres folder; the plugin never builds or downloads it.
+Builds a 1280x720 JPEG music genre artwork pack for the Emby TuneIn plugin: original neon genre cards
+whose typography, palette, and line art depend on the TuneIn parent genre. Run on Windows PowerShell (needs
+the Bahnschrift, Segoe UI Variable, Cascadia, and Impact fonts that ship with Windows 11). -Pack also writes
+a ZIP that users extract into Emby's plugins\configurations\TuneInArtwork\genres folder.
 #>
 param(
     [string]$Output = (Join-Path $PSScriptRoot 'output\genres'),
-    [string[]]$Only
+    [string[]]$Only,
+    # Writes <Output>\..\<PackName>.zip containing the cards and an install note.
+    [switch]$Pack,
+    [string]$PackName = 'artpack-neon'
 )
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Drawing
@@ -883,4 +886,28 @@ foreach ($info in $genres.Values) {
     if ($info.Style -eq 'World' -and $Places.ContainsKey(($place = $info.Name -replace ' Music$'))) { $info.Lat = $Places[$place][0]; $info.Lon = $Places[$place][1] }
     New-Card $info (Join-Path $Output "$($info.Id).jpg")
     Write-Host "$($info.Id)  $($info.Name)  [$($info.Style)/$($info.Motif)]"
+}
+
+if ($Pack) {
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    $zip = Join-Path (Split-Path ([IO.Path]::GetFullPath($Output)) -Parent) "$PackName.zip"
+    $note = @"
+$PackName - genre artwork for the Emby TuneIn plugin
+Built by Build-GenreArtwork.ps1 from https://github.com/oconnoradv/EmbyTuneInArt (GPL-3.0).
+
+1. Extract the .jpg files into <Emby data>\plugins\configurations\TuneInArtwork\genres
+   (the TuneIn settings page shows the exact folder).
+2. In TuneIn settings, open Catalog Refresh and refresh Music.
+Delete the files and refresh Music again to return to the default icons.
+"@
+    if (Test-Path $zip) { Remove-Item $zip }
+    $archive = [IO.Compression.ZipFile]::Open($zip, 'Create')
+    try {
+        Get-ChildItem $Output -Filter *.jpg | Where-Object { $_.BaseName -match '^[cg]\d+$' } | ForEach-Object {
+            [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, $_.FullName, $_.Name, 'Optimal')
+        }
+        $writer = New-Object IO.StreamWriter ($archive.CreateEntry('README.txt').Open())
+        try { $writer.Write($note.Replace("`r`n", "`n").Replace("`n", "`r`n")) } finally { $writer.Dispose() }
+    } finally { $archive.Dispose() }
+    Write-Host "Pack: $zip"
 }
