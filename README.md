@@ -46,6 +46,40 @@ Spotlight includes Punk and Grunge. These selected cards are supplied as fixed A
 For language and location packs, Spotlight variants render the corresponding base theme; the fixed genre
 illustrations are never used.
 
+## Language pack samples
+
+These are generated cards, reduced for display. In each sheet, Japanese (`l178`) has a representative flag;
+Arabic (`l122`), Hindi (`l175`) and French (`l98`) use neutral globes. Titles appear in their native scripts.
+
+**Cartoon**
+
+![Cartoon language cards: Japanese with a representative flag, Arabic, Hindi and French with neutral globes](docs/samples/languages-cartoon.jpg)
+
+**Futuristic**
+
+![Futuristic language cards: Japanese with a representative flag, Arabic, Hindi and French with neutral globes](docs/samples/languages-futuristic.jpg)
+
+**Classic**
+
+![Classic language cards: Japanese with a representative flag, Arabic, Hindi and French with neutral globes](docs/samples/languages-classic.jpg)
+
+## Location pack samples
+
+Each generated sheet shows Canada (`r101227`) and Alberta (`r100447`) with verified map outlines, followed by
+Calgary (`r100598`) with the explicitly labeled generic location fallback. These are previews, not complete packs.
+
+**Cartoon**
+
+![Cartoon location cards: Canada and Alberta maps, and Calgary's generic location globe](docs/samples/locations-cartoon.jpg)
+
+**Futuristic**
+
+![Futuristic location cards: Canada and Alberta maps, and Calgary's generic location globe](docs/samples/locations-futuristic.jpg)
+
+**Classic**
+
+![Classic location cards: Canada and Alberta maps, and Calgary's generic location globe](docs/samples/locations-classic.jpg)
+
 ## Install a ready-made pack
 
 1. Download a pack ZIP, for example `artpack-neon-v1.zip`, from
