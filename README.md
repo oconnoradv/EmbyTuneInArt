@@ -2,12 +2,33 @@
 
 EmbyTuneInArt builds optional artwork packs for the music genre folders of the
 [Emby TuneIn plugin](https://github.com/oconnoradv/EmbyTuneIn). `Build-GenreArtwork.ps1` renders one original
-1280×720 neon card per TuneIn music genre and subgenre. Each parent genre gets its own typography, palette and
-line art. The cards contain no TuneIn logos or station images.
+1280×720 card per TuneIn music genre and subgenre in one of ten [themes](#themes). Each parent genre gets its own
+typography, palette and line art. The cards contain no TuneIn logos or station images.
 
 The plugin ships with its default category icons. Packs are optional: install one and the Music genre folders in
 Emby show its cards instead. Ready-made packs are on the [Releases](https://github.com/oconnoradv/EmbyTuneInArt/releases)
 page; build your own to change the look.
+
+## Themes
+
+Pick a theme with `-Theme <name>` (default `Neon`). Each sample shows Punk, Smooth Jazz, Christmas Music and
+Classic Hip Hop.
+
+| Theme | Look | Sample |
+|---|---|---|
+| `Neon` | Glowing neon line art on dark gradients (the original pack). | ![Neon sample](docs/samples/neon.jpg) |
+| `Retro` | Cream paper, sunburst, stripes and offset print shadows in a muted 1970s palette. | ![Retro sample](docs/samples/retro.jpg) |
+| `Futuristic` | Holographic HUD rings, a perspective grid floor, scanlines and chromatic glow. | ![Futuristic sample](docs/samples/futuristic.jpg) |
+| `Cartoon` | Comic-panel border, burst rays and halftone dots with bold outlined line art. | ![Cartoon sample](docs/samples/cartoon.jpg) |
+| `Cat` | Pastel paw-print wallpaper with a headphone-wearing cartoon cat; fur colour varies by genre. | ![Cat sample](docs/samples/cat.jpg) |
+| `Dog` | Sunny bone-print wallpaper with a bandana-wearing cartoon dog; fur varies by genre. | ![Dog sample](docs/samples/dog.jpg) |
+| `Nature` | Layered mountain ridges, pines, a soft sun and earthy line art. | ![Nature sample](docs/samples/nature.jpg) |
+| `Blocky` | Chunky pixel art inspired by voxel sandbox games: blocky sky, clouds and grass-and-dirt ground. | ![Blocky sample](docs/samples/blocky.jpg) |
+| `Rebel` | Scrappy sci-fi resistance: starfield, a dusky planet, weathered orange titles and hazard stripes. | ![Rebel sample](docs/samples/rebel.jpg) |
+| `Imperial` | Cold, symmetrical sci-fi empire: steel panels, corridor lights and red accent bars. | ![Imperial sample](docs/samples/imperial.jpg) |
+
+Themes are original designs. `Blocky`, `Rebel` and `Imperial` evoke familiar genres of game and film art without
+using any franchise's names, logos, emblems or fonts.
 
 ## Install a ready-made pack
 
@@ -27,8 +48,8 @@ ID (`c57943.jpg`, `g79.png`) are used; genres without an image keep the Music ic
 Requirements:
 
 - Windows 11 with Windows PowerShell 5.1 (`System.Drawing`).
-- The Windows 11 fonts Bahnschrift, Segoe UI Variable, Segoe UI Black, Cascadia Mono and Impact. Elsewhere GDI+
-  substitutes fonts and the cards look different.
+- The Windows 11 fonts Bahnschrift, Segoe UI Variable, Segoe UI Black, Cascadia Mono, Impact, Georgia and
+  Franklin Gothic Medium. Elsewhere GDI+ substitutes fonts and the cards look different.
 - Internet access to `opml.radiotime.com`, which supplies the current genre list.
 
 1. **Clone the repository.**
@@ -41,17 +62,19 @@ Requirements:
 2. **Preview a few genres.** `-Only` takes guide IDs or `-like` name patterns. Open the folder to check the cards.
 
    ```powershell
-   powershell -NoProfile -ExecutionPolicy Bypass -File Build-GenreArtwork.ps1 -Output .\preview -Only 'Punk','Christmas*','Smooth Jazz'
+   powershell -NoProfile -ExecutionPolicy Bypass -Command "& .\Build-GenreArtwork.ps1 -Theme Retro -Output .\preview -Only 'Punk','Christmas*','Smooth Jazz'"
    ```
 
-3. **Adjust the look (optional).** Edit the style tables described under [Customizing](#customizing), then
-   repeat step 2 until you are happy.
+   Use `-Command` as shown: `-File` passes a comma-separated `-Only` list as one string.
 
-4. **Build the full pack.** This writes every card to `.\output\genres` and the ZIP to `.\output\my-pack.zip`.
-   A full run takes about 20 seconds and writes about 123 cards (about 8.4 MB).
+3. **Adjust the look (optional).** Try other `-Theme` values or edit the tables described under
+   [Customizing](#customizing), then repeat step 2 until you are happy.
+
+4. **Build the full pack.** This writes every card to `.\output\genres` and the ZIP to `.\output\artpack-retro.zip`
+   (`-PackName` overrides the name; it defaults to `artpack-<theme>`). A full run writes about 123 cards.
 
    ```powershell
-   powershell -NoProfile -ExecutionPolicy Bypass -File Build-GenreArtwork.ps1 -Pack -PackName my-pack
+   powershell -NoProfile -ExecutionPolicy Bypass -File Build-GenreArtwork.ps1 -Theme Retro -Pack
    ```
 
 5. **Install it** by following [Install a ready-made pack](#install-a-ready-made-pack) from step 2, using your ZIP.
@@ -81,20 +104,25 @@ Each card prints `id  name  [style/motif]` as it is drawn.
    A subgenre uses the parent's colours, rotated by a per-genre seed, so siblings differ.
 4. **Motif.** The `$Overrides` table maps subgenre name regexes to a motif and is checked in order; the
    first match wins. `$Places` gives a latitude and longitude, which mark World subgenres on the globe motif.
-5. **Rendering.** `New-Card` draws, in order:
-   - the gradient background, a soft radial glow and the HUD corners;
-   - the motif, through `Neon`;
-   - the title, auto-fitted on 1–3 lines by `Title-Path`;
-   - the `// PARENT` subtitle.
+5. **Theme.** `$Themes` holds one entry per theme. An entry can recolour the palette (`Color`), set the line-art
+   mode (`Art`: `Glow`, `Flat` with shadow and outline, or `Pixel`), and supply the `Background`, a `Clip`, a
+   `Character`, the `Title` treatment, font overrides and the subtitle style.
+6. **Rendering.** `New-Card` draws, in order:
+   - the theme background;
+   - the motif, through `Neon`, in the theme's line-art mode (scaled and moved by the theme's `OX`, `OY`, `Scale`);
+   - the theme character, if any (the Cat and Dog themes);
+   - the title, auto-fitted on 1–3 lines by `Title-Path` and drawn by the theme;
+   - the parent-genre subtitle.
 
 ## Customizing
 
 - **New motif:** add `function Motif-<name>($cl, $info)` that calls `Neon $cl[i] { param($g, $c, $k) ... }`.
   - Draw around (0,0), within about ±240 × ±290; `$script:OX`/`$script:OY` place the artwork.
-  - Build pens with `Pn $c <width> $k` so they get the glow and core scaling.
+  - Build pens with `Pn $c <width> $k` so every theme can scale the stroke.
   - Then reference the motif from `$Parents` or `$Overrides`.
-- **Glow strength:** `$script:Weight` scales every stroke (default 0.7). `$__cm.Matrix33` sets the glow
-  opacity (default 0.65). The `0.08, 0.04, 0.02` scales set the glow radius. Higher values look louder
+- **New theme:** copy a `$Themes` entry, rename it and add the name to the `-Theme` `ValidateSet`.
+- **Glow strength:** `$script:Weight` scales every stroke (default 0.7). A theme's `Art.Glow` sets the glow
+  opacity (Neon uses 0.65). The `0.08, 0.04, 0.02` scales set the glow radius. Higher values look louder
   and blurrier.
 - **Title look:** edit the matching `$Styles` entry. `Tube` titles are outlined; `Fill` titles are solid.
 - **New TuneIn genres** are picked up automatically and use their parent's defaults. Add an override

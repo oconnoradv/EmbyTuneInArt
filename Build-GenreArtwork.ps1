@@ -1,15 +1,18 @@
 ﻿<#
-Builds a 1280x720 JPEG music genre artwork pack for the Emby TuneIn plugin: original neon genre cards
-whose typography, palette, and line art depend on the TuneIn parent genre. Run on Windows PowerShell (needs
-the Bahnschrift, Segoe UI Variable, Cascadia, and Impact fonts that ship with Windows 11). -Pack also writes
-a ZIP that users extract into Emby's plugins\configurations\TuneInArtwork\genres folder.
+Builds a 1280x720 JPEG music genre artwork pack for the Emby TuneIn plugin. Every card's typography, palette and line
+art depend on the TuneIn parent genre; -Theme picks the overall look (Neon, Retro, Futuristic, Cartoon, Cat, Dog,
+Nature, Blocky, Rebel or Imperial). Run on Windows PowerShell with the fonts that ship with Windows 11 (Bahnschrift,
+Segoe UI Variable, Segoe UI Black, Cascadia, Impact, Georgia and Franklin Gothic). -Pack also writes a ZIP that users
+extract into Emby's plugins\configurations\TuneInArtwork\genres folder.
 #>
 param(
     [string]$Output = (Join-Path $PSScriptRoot 'output\genres'),
     [string[]]$Only,
-    # Writes <Output>\..\<PackName>.zip containing the cards and an install note.
+    [ValidateSet('Neon', 'Retro', 'Futuristic', 'Cartoon', 'Cat', 'Dog', 'Nature', 'Blocky', 'Rebel', 'Imperial')]
+    [string]$Theme = 'Neon',
+    # Writes <Output>\..\<PackName>.zip containing the cards and an install note; defaults to artpack-<theme>.
     [switch]$Pack,
-    [string]$PackName = 'artpack-neon'
+    [string]$PackName
 )
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Drawing
@@ -69,28 +72,74 @@ function CrescentPts([float]$r1, [float]$dx, [float]$dy, [float]$r2) {
     $outer.AddRange($inner); , $outer.ToArray()
 }
 
-$script:G = $null; $script:OX = 1000; $script:OY = 360; $script:Weight = 0.7
+$script:G = $null; $script:OX = 1000; $script:OY = 360; $script:Weight = 0.7; $script:ArtScale = 1
 # Glow layers are composited at reduced opacity so line art stays crisp rather than blurry.
 $script:GlowAttr = New-Object Drawing.Imaging.ImageAttributes
-$__cm = New-Object Drawing.Imaging.ColorMatrix; $__cm.Matrix33 = 0.65; $script:GlowAttr.SetColorMatrix($__cm)
 $script:Mask = New-Object Drawing.Bitmap 1280, 720
 $script:Smalls = foreach ($sc in 0.08, 0.04, 0.02) { New-Object Drawing.Bitmap ([int](1280 * $sc)), ([int](720 * $sc)) }
 $script:Full = New-Object Drawing.Rectangle 0, 0, 1280, 720
+# Pixel art is drawn at 1/8 scale and enlarged without smoothing; ShadeAttr turns a layer into its shadow.
+$script:Pix = New-Object Drawing.Bitmap 160, 90
+$script:ShadeAttr = New-Object Drawing.Imaging.ImageAttributes
+$__sm = New-Object Drawing.Imaging.ColorMatrix; $__sm.Matrix00 = 0; $__sm.Matrix11 = 0; $__sm.Matrix22 = 0; $__sm.Matrix33 = 0.45
+$script:ShadeAttr.SetColorMatrix($__sm)
 
-# Draws scriptblock $draw (Graphics, Color, width multiplier) as neon: blurred glow, crisp core, hot white center.
+# Moves the origin to ($ox, $oy), scaled about the artwork centre by the theme's $script:ArtScale.
+function Place($gr, [float]$ox, [float]$oy) {
+    $gr.TranslateTransform($script:OX, $script:OY); $gr.ScaleTransform($script:ArtScale, $script:ArtScale)
+    $gr.TranslateTransform($ox - $script:OX, $oy - $script:OY)
+}
+
+# Paints scriptblock $__paint (Graphics) at 1/8 scale, then enlarges it with hard pixel edges and a one-block shadow.
+function Pixel-Layer([scriptblock]$__paint) {
+    $__pg = [Drawing.Graphics]::FromImage($script:Pix); $__pg.Clear([Drawing.Color]::Transparent)
+    $__pg.SmoothingMode = 'None'; $__pg.ScaleTransform(0.125, 0.125)
+    & $__paint $__pg; $__pg.Dispose()
+    $script:G.InterpolationMode = 'NearestNeighbor'; $script:G.PixelOffsetMode = 'Half'
+    $script:G.DrawImage($script:Pix, (New-Object Drawing.Rectangle 8, 8, 1280, 720), 0, 0, 160, 90, 'Pixel', $script:ShadeAttr)
+    $script:G.DrawImage($script:Pix, $script:Full, 0, 0, 160, 90, 'Pixel')
+    $script:G.InterpolationMode = 'HighQualityBicubic'; $script:G.PixelOffsetMode = 'Default'
+}
+
+# Draws scriptblock $draw (Graphics, Color, width multiplier) in the theme's line-art style:
+# Glow (blurred glow, crisp core, hot white centre), Flat (optional shadow and outline) or Pixel.
 # Motif coordinates are relative to ($script:OX, $script:OY), the centre of the artwork area.
 function Neon($__col, [scriptblock]$__draw, [float]$__ox = $script:OX, [float]$__oy = $script:OY) {
+    $__art = $script:T.Art
+    if ($__art.Mode -eq 'Pixel') {
+        Pixel-Layer { param($__p) Place $__p $__ox $__oy; & $__draw $__p $__col $__art.K }
+        return
+    }
+    if ($__art.Mode -eq 'Flat') {
+        if ($__art.Shadow) {
+            $__st = $script:G.Save(); $script:G.TranslateTransform($__art.Shadow, $__art.Shadow); Place $script:G $__ox $__oy
+            & $__draw $script:G (Argb $__art.ShadowAlpha $__art.ShadowColor) $__art.K; $script:G.Restore($__st)
+        }
+        if ($__art.Outline) {
+            $__st = $script:G.Save(); Place $script:G $__ox $__oy
+            & $__draw $script:G $__art.Outline ($__art.K + $__art.OutlineK); $script:G.Restore($__st)
+        }
+        $__st = $script:G.Save(); Place $script:G $__ox $__oy
+        & $__draw $script:G $__col $__art.K; $script:G.Restore($__st)
+        return
+    }
     $__mg = [Drawing.Graphics]::FromImage($script:Mask); $__mg.Clear([Drawing.Color]::Transparent)
-    $__mg.SmoothingMode = 'AntiAlias'; $__mg.TranslateTransform($__ox, $__oy)
+    $__mg.SmoothingMode = 'AntiAlias'; Place $__mg $__ox $__oy
     & $__draw $__mg $__col 3; $__mg.Dispose()
     foreach ($__sm in $script:Smalls) {
         $__sg = [Drawing.Graphics]::FromImage($__sm); $__sg.Clear([Drawing.Color]::Transparent); $__sg.InterpolationMode = 'HighQualityBilinear'
         $__sg.DrawImage($script:Mask, 0, 0, $__sm.Width, $__sm.Height); $__sg.Dispose()
         $script:G.DrawImage($__sm, $script:Full, 0, 0, $__sm.Width, $__sm.Height, 'Pixel', $script:GlowAttr)
     }
-    $__st = $script:G.Save(); $script:G.TranslateTransform($__ox, $__oy)
+    if ($__art.Ghost) {
+        foreach ($__gh in @(@(-4, (Rgb 255 40 200)), @(4, (Rgb 40 220 255)))) {
+            $__st = $script:G.Save(); $script:G.TranslateTransform($__gh[0], 0); Place $script:G $__ox $__oy
+            & $__draw $script:G (Argb 90 $__gh[1]) 1; $script:G.Restore($__st)
+        }
+    }
+    $__st = $script:G.Save(); Place $script:G $__ox $__oy
     & $__draw $script:G $__col 1
-    & $__draw $script:G ([Drawing.Color]::FromArgb(150, 255, 255, 255)) 0.4
+    if ($__art.Core) { & $__draw $script:G $__art.Core 0.4 }
     $script:G.Restore($__st)
 }
 
@@ -430,7 +479,7 @@ function Motif-wave($cl, $info) {
             $g.DrawLines($pn, (Pts $pts))
         }
     }
-    if ($kind -eq 'calm') { Neon $cl[2] { param($g, $c, $k) $g.DrawPolygon((Pn $c 4 $k), (CrescentPts 60 25 -20 52)) } 180 -220 }
+    if ($kind -eq 'calm') { Neon $cl[2] { param($g, $c, $k) $g.DrawPolygon((Pn $c 4 $k), (CrescentPts 60 25 -20 52)) } ($script:OX + 180) ($script:OY - 220) }
 }
 
 function Motif-seqGrid($cl, $info) {
@@ -822,44 +871,382 @@ function Title-Path([string]$text, $st) {
     $mx.Translate(95 - $b.X, 330 - $b.Height / 2 - $b.Y); $best.Transform($mx); $best
 }
 
+# ---- Themes: background, line-art mode, typography and optional character for every card ----
+function RgbF([double]$r, [double]$gr, [double]$bl) { Rgb ([Math]::Max(0, [Math]::Min(255, $r))) ([Math]::Max(0, [Math]::Min(255, $gr))) ([Math]::Max(0, [Math]::Min(255, $bl))) }
+# Blends colour $a toward $b by $t (0..1).
+function Mix($a, $b, [double]$t) { RgbF ($a.R + ($b.R - $a.R) * $t) ($a.G + ($b.G - $a.G) * $t) ($a.B + ($b.B - $a.B) * $t) }
+# Returns $v, or the entry for $style (falling back to Default) when $v is a hashtable.
+function Pick($v, [string]$style) { if ($v -is [hashtable]) { if ($v.ContainsKey($style)) { $v[$style] } else { $v.Default } } else { $v } }
+function Linear($c1, $c2, [float]$y1 = 0, [float]$y2 = 720) { New-Object Drawing.Drawing2D.LinearGradientBrush (P 0 $y1), (P 0 $y2), $c1, $c2 }
+function Glow-Spot($gr, $col, [int]$alpha, [float]$cx, [float]$cy, [float]$r) {
+    $path = New-Object Drawing.Drawing2D.GraphicsPath; $path.AddEllipse($cx - $r, $cy - $r, 2 * $r, 2 * $r)
+    $rb = New-Object Drawing.Drawing2D.PathGradientBrush $path; $rb.CenterColor = Argb $alpha $col; $rb.SurroundColors = @([Drawing.Color]::Transparent)
+    $gr.FillPath($rb, $path)
+}
+# Runs $paint (Graphics) with the origin moved to ($x, $y), rotated by $deg and scaled by $s.
+function At($gr, [float]$x, [float]$y, [float]$deg, [float]$s, [scriptblock]$paint) {
+    $state = $gr.Save(); $gr.TranslateTransform($x, $y); $gr.RotateTransform($deg); $gr.ScaleTransform($s, $s); & $paint $gr; $gr.Restore($state)
+}
+function Shifted($path, [float]$dx, [float]$dy) { $p = $path.Clone(); $p.Transform((New-Object Drawing.Drawing2D.Matrix 1, 0, 0, 1, $dx, $dy)); $p }
+function Outline-Pen($col, [float]$w) { $pen = New-Object Drawing.Pen $col, $w; $pen.LineJoin = 'Round'; $pen }
+# Scatters $paint over the card on a jittered grid, skipping the soft circle behind the artwork.
+function Scatter($gr, $rnd, [float]$step, [scriptblock]$paint) {
+    for ($y = 30; $y -lt 720; $y += $step) {
+        for ($x = 30 + ($y / $step % 2) * $step / 2; $x -lt 1280; $x += $step) {
+            $px = $x + $rnd.Next(-18, 19); $py = $y + $rnd.Next(-18, 19)
+            if ([Math]::Pow($px - $script:OX, 2) + [Math]::Pow($py - $script:OY, 2) -lt 250 * 250) { continue }
+            At $gr $px $py ($rnd.Next(-35, 36)) (0.7 + $rnd.NextDouble() * 0.5) $paint
+        }
+    }
+}
+function PawPrint($gr, $brush) { FE $gr $brush 0 8 17 14; foreach ($t in @(@(-17, -10), @(-6, -20), @(6, -20), @(17, -10))) { FE $gr $brush $t[0] $t[1] 6 8 } }
+function Bone($gr, $brush) { $gr.FillRectangle($brush, -22, -5, 44, 10); foreach ($e in @(@(-22, -6), @(-22, 6), @(22, -6), @(22, 6))) { FE $gr $brush $e[0] $e[1] 8 8 } }
+# Fills a seeded mountain ridge that rises $rise pixels from left to right; returns its outline points.
+function Ridge($gr, $brush, [float]$base, [float]$rise, [float]$amp, $rnd) {
+    $p1 = $rnd.NextDouble() * 6; $p2 = $rnd.NextDouble() * 6
+    $v = @(0, 720); for ($x = 0; $x -le 1280; $x += 32) { $v += $x; $v += $base - $rise * $x / 1280 + $amp * ([Math]::Sin($x / 97 + $p1) + 0.5 * [Math]::Sin($x / 41 + $p2)) }
+    $v += 1280; $v += 720; $pts = Pts $v; $gr.FillPolygon($brush, $pts); , $pts
+}
+function Pine($gr, $brush, [float]$x, [float]$y, [float]$h) {
+    for ($i = 0; $i -lt 3; $i++) { $w = $h * (0.42 - 0.1 * $i); $top = $y - $h * (0.45 + 0.27 * $i); $gr.FillPolygon($brush, (Pts @(($x - $w), ($top + $h * 0.42), $x, $top, ($x + $w), ($top + $h * 0.42)))) }
+    $gr.FillRectangle($brush, $x - $h * 0.04, $y - $h * 0.06, $h * 0.08, $h * 0.08)
+}
+function Spaced([string]$s) { ($s.ToUpperInvariant().ToCharArray() | ForEach-Object { [string]$_ }) -join ' ' }
+
+# A cartoon cat in headphones, head centred at (1040, 560); fur colour and eye colour vary by genre.
+function Draw-Cat($gr, $cl, $info) {
+    $furs = @(@((Rgb 242 152 64), (Rgb 200 100 30)), @((Rgb 160 162 172), (Rgb 110 112 124)), @((Rgb 58 52 62), (Rgb 30 26 34)), @((Rgb 246 228 196), (Rgb 214 180 140)))
+    $fur = $furs[$info.Seed % 4]; $ink = Rgb 58 36 52; $pink = Rgb 255 150 170; $ol = Outline-Pen $ink 6; $fb = Br $fur[0]
+    FE $gr $fb 1040 740 175 125; E $gr $ol 1040 740 175 125
+    foreach ($s in -1, 1) {
+        $ear = Pts @((1040 + 112 * $s), 500, (1040 + 92 * $s), 382, (1040 + 30 * $s), 462)
+        $gr.FillPolygon($fb, $ear); $gr.DrawPolygon($ol, $ear)
+        $gr.FillPolygon((Br $pink), (Pts @((1040 + 96 * $s), 482, (1040 + 88 * $s), 412, (1040 + 50 * $s), 466)))
+    }
+    FE $gr $fb 1040 565 132 112; E $gr $ol 1040 565 132 112
+    if ($info.Seed % 4 -eq 0) { $sp = Pn $fur[1] 9 1.6; L $gr $sp 1040 462 1040 500; L $gr $sp 1010 466 1016 498; L $gr $sp 1070 466 1064 498 }
+    $eye = if ($info.Seed % 4 -eq 2) { Rgb 190 220 80 } else { $ink }
+    foreach ($s in -1, 1) {
+        FE $gr (Br $eye) (1040 + 46 * $s) 552 17 21
+        if ($info.Seed % 4 -eq 2) { FE $gr (Br $ink) (1040 + 46 * $s) 552 6 17 }
+        FE $gr (Br (Rgb 255 255 255)) (1046 + 46 * $s) 543 6 6
+        FE $gr (Br (Argb 110 $pink)) (1040 + 82 * $s) 600 18 11
+        $wp = Pn $ink 3 1; L $gr $wp (1040 + 70 * $s) 592 (1040 + 150 * $s) 578; L $gr $wp (1040 + 70 * $s) 604 (1040 + 150 * $s) 610
+    }
+    $gr.FillPolygon((Br $pink), (Pts @(1028, 584, 1052, 584, 1040, 597)))
+    $mp = Pn $ink 4 1; Arc $gr $mp 1028 598 12 0 180; Arc $gr $mp 1052 598 12 0 180
+    $band = New-Object Drawing.Pen $cl[0], 18; Arc $gr $band 1040 560 150 195 150
+    foreach ($s in -1, 1) { $cup = Rounded (1040 + 152 * $s - 24) 512 48 100 20; $gr.FillPath((Br $cl[0]), $cup); $gr.DrawPath($ol, $cup) }
+    foreach ($s in -1, 1) { FE $gr $fb (1040 + 62 * $s) 698 40 26; E $gr $ol (1040 + 62 * $s) 698 40 26 }
+}
+
+# A cartoon dog in a bandana, head centred at (1040, 560); fur, spot and tongue vary by genre.
+function Draw-Dog($gr, $cl, $info) {
+    $furs = @(@((Rgb 214 160 96), (Rgb 150 96 50)), @((Rgb 150 96 60), (Rgb 90 56 34)), @((Rgb 248 244 236), (Rgb 150 100 66)), @((Rgb 54 50 54), (Rgb 24 22 26)))
+    $fur = $furs[$info.Seed % 4]; $ink = Rgb 44 32 30; $ol = Outline-Pen $ink 6; $fb = Br $fur[0]
+    FE $gr $fb 1040 750 180 125; E $gr $ol 1040 750 180 125
+    $bandana = Pts @(920, 640, 1160, 640, 1040, 735)
+    $gr.FillPolygon((Br $cl[0]), $bandana); $gr.DrawPolygon($ol, $bandana)
+    foreach ($d in @(@(990, 668), @(1040, 690), @(1090, 668), @(1040, 652))) { FE $gr (Br (Argb 200 (Rgb 255 255 255))) $d[0] $d[1] 7 7 }
+    FE $gr $fb 1040 560 126 116; E $gr $ol 1040 560 126 116
+    if ($info.Seed % 4 -eq 2) { FE $gr (Br $fur[1]) 1088 530 40 36 }
+    foreach ($s in -1, 1) {
+        At $gr (1040 + 122 * $s) 520 (-22 * $s) 1 { param($g) FE $g (Br $fur[1]) 0 52 40 92; E $g $ol 0 52 40 92 }
+        FE $gr (Br $ink) (1040 + 44 * $s) 538 15 17; FE $gr (Br (Rgb 255 255 255)) (1046 + 44 * $s) 531 5 5
+    }
+    $snout = Mix $fur[0] (Rgb 255 250 240) 0.55
+    FE $gr (Br $snout) 1040 612 64 46; E $gr (Outline-Pen $ink 4) 1040 612 64 46
+    if ($info.Seed % 2) { FE $gr (Br (Rgb 240 110 120)) 1040 650 17 22; L $gr (Pn (Rgb 200 70 90) 3 1) 1040 640 1040 662 }
+    FE $gr (Br $ink) 1040 590 23 16
+    $mp = Pn $ink 4 1; L $gr $mp 1040 604 1040 622; Arc $gr $mp 1022 620 18 10 160; Arc $gr $mp 1058 620 18 10 160
+    foreach ($s in -1, 1) { FE $gr $fb (1040 + 66 * $s) 702 42 26; E $gr $ol (1040 + 66 * $s) 702 42 26 }
+}
+
+$Ink = Rgb 62 36 22
+$Themes = @{
+    Neon       = @{
+        Description = 'Glowing neon line art on dark gradients (the original pack).'
+        Art = @{ Mode = 'Glow'; Glow = 0.65; Core = (Argb 150 (Rgb 255 255 255)) }
+        Background = { param($gr, $cl, $pal, $info)
+            $gr.FillRectangle((Linear $pal[0] $pal[1]), 0, 0, 1280, 720)
+            Glow-Spot $gr $cl[0] 35 1000 360 320
+            $hud = New-Object Drawing.Pen (Argb 170 $pal[3]), 4
+            foreach ($cn in @(@(40, 40, 1, 1), @(1240, 40, -1, 1), @(40, 680, 1, -1), @(1240, 680, -1, -1))) {
+                L $gr $hud $cn[0] $cn[1] ($cn[0] + 60 * $cn[2]) $cn[1]; L $gr $hud $cn[0] $cn[1] $cn[0] ($cn[1] + 60 * $cn[3])
+            }
+        }
+        Title = { param($gr, $title, $cl, $pal, $st)
+            if ($st.Mode -eq 'Tube') { Neon $cl[0] { param($g, $c, $k) $g.DrawPath((Pn $c 5.7 $k), $title) } 0 0 }
+            else { Neon $cl[0] { param($g, $c, $k) $g.FillPath((Br $c), $title) } 0 0; $gr.FillPath((Br (Rgb 250 248 255)), $title) }
+        }
+        SubFont = @{ Indie = 'Cascadia Mono'; Default = 'Bahnschrift' }; SubPrefix = '//  '; Sub = { param($cl, $pal) Argb 235 $pal[3] }
+    }
+    Retro      = @{
+        Description = 'Cream paper, sunburst, stripes and offset print shadows in a muted 1970s palette.'
+        Color = { param($p) RgbF ((0.65 * $p[0] + 52) * 0.85) ((0.65 * $p[1] + 31) * 0.85) ((0.65 * $p[2] + 17) * 0.85) }
+        Art = @{ Mode = 'Flat'; K = 1.8; Shadow = 7; ShadowColor = $Ink; ShadowAlpha = 110 }
+        Background = { param($gr, $cl, $pal, $info)
+            $gr.FillRectangle((Linear (Rgb 246 235 210) (Rgb 234 214 176)), 0, 0, 1280, 720)
+            $ray = Br (Argb 34 $cl[1])
+            for ($a = 0; $a -lt 360; $a += 15) {
+                $t1 = $a * [Math]::PI / 180; $t2 = ($a + 7.5) * [Math]::PI / 180
+                $gr.FillPolygon($ray, (Pts @(1000, 360, (1000 + 1400 * [Math]::Cos($t1)), (360 + 1400 * [Math]::Sin($t1)), (1000 + 1400 * [Math]::Cos($t2)), (360 + 1400 * [Math]::Sin($t2)))))
+            }
+            FE $gr (Br (Argb 60 $cl[1])) 1000 360 300 300
+            for ($i = 0; $i -lt 3; $i++) { $gr.FillRectangle((Br $cl[$i]), 0, 618 + 18 * $i, 1280, 12) }
+            $rnd = New-Object Random $info.Seed; $grain = Br (Argb 18 $Ink)
+            for ($n = 0; $n -lt 2500; $n++) { $gr.FillRectangle($grain, $rnd.Next(1280), $rnd.Next(720), 2, 2) }
+            $gr.DrawPath((New-Object Drawing.Pen $Ink, 6), (Rounded 22 22 1236 676 34))
+        }
+        Clip = { Rounded 25 25 1230 670 31 }
+        Title = { param($gr, $title, $cl, $pal, $st)
+            $gr.FillPath((Br $cl[1]), (Shifted $title 14 14)); $gr.FillPath((Br $cl[0]), (Shifted $title 7 7)); $gr.FillPath((Br $Ink), $title)
+        }
+        Font = @{ Rock = 'Segoe UI Black'; HipHop = 'Segoe UI Black'; Pop = 'Segoe UI Black'; Electronic = 'Segoe UI Black'; Children = 'Segoe UI Black'; Indie = 'Franklin Gothic Medium'; Default = 'Georgia' }
+        Bold = $true; Shear = -0.1; Max = 180
+        SubFont = 'Franklin Gothic Medium'; Sub = { param($cl, $pal) $Ink }
+    }
+    Futuristic = @{
+        Description = 'Holographic HUD rings, a perspective grid floor, scanlines and chromatic glow.'
+        Color = { param($p) RgbF (0.6 * $p[0] + 44) (0.6 * $p[1] + 90) (0.6 * $p[2] + 102) }
+        Art = @{ Mode = 'Glow'; Glow = 0.45; Ghost = $true; Core = (Argb 170 (Rgb 255 255 255)) }
+        Background = { param($gr, $cl, $pal, $info)
+            $gr.FillRectangle((Linear (Rgb 4 8 22) (Rgb 6 20 36)), 0, 0, 1280, 720)
+            Glow-Spot $gr $cl[0] 40 1000 360 340
+            $state = $gr.Save(); $gr.SetClip((New-Object Drawing.Rectangle 0, 560, 1280, 160))
+            $fp = New-Object Drawing.Pen (Argb 60 $cl[0]), 2
+            for ($x = -1600; $x -le 2880; $x += 140) { L $gr $fp 640 470 $x 720 }
+            for ($i = 1; $i -le 8; $i++) { $y = 560 + 160 * [Math]::Pow($i / 8, 2); L $gr $fp 0 $y 1280 $y }
+            $gr.Restore($state); L $gr (New-Object Drawing.Pen (Argb 140 $cl[0]), 2) 0 560 1280 560
+            E $gr (New-Object Drawing.Pen (Argb 70 $cl[1]), 2) 1000 360 268 268
+            $dash = New-Object Drawing.Pen (Argb 100 $cl[0]), 3; $dash.DashPattern = @(6, 4); E $gr $dash 1000 360 300 300
+            $ap = New-Object Drawing.Pen (Argb 160 $cl[0]), 5
+            foreach ($a in -40, 140) { Arc $gr $ap 1000 360 330 $a 80 }
+            $tp = New-Object Drawing.Pen (Argb 90 $cl[1]), 2
+            for ($a = 0; $a -lt 360; $a += 10) { $t = $a * [Math]::PI / 180; L $gr $tp (1000 + 276 * [Math]::Cos($t)) (360 + 276 * [Math]::Sin($t)) (1000 + 290 * [Math]::Cos($t)) (360 + 290 * [Math]::Sin($t)) }
+            $bp = New-Object Drawing.Pen (Argb 180 $cl[1]), 3
+            foreach ($cn in @(@(40, 40, 1, 1), @(1240, 40, -1, 1), @(40, 680, 1, -1), @(1240, 680, -1, -1))) {
+                $x = $cn[0]; $y = $cn[1]; $sx = $cn[2]; $sy = $cn[3]
+                Poly $gr $bp @($x, ($y + 70 * $sy), $x, ($y + 20 * $sy), ($x + 20 * $sx), $y, ($x + 110 * $sx), $y) -Open
+            }
+            $sl = New-Object Drawing.Pen (Argb 26 (Rgb 0 0 0)), 2
+            for ($y = 0; $y -lt 720; $y += 4) { L $gr $sl 0 $y 1280 $y }
+        }
+        Title = { param($gr, $title, $cl, $pal, $st)
+            Neon $cl[0] { param($g, $c, $k) $g.DrawPath((Pn $c 2.6 $k), $title) } 0 0
+            $b = $title.GetBounds(); $gb = New-Object Drawing.Drawing2D.LinearGradientBrush (P 0 $b.Top), (P 0 ($b.Bottom + 1)), (Rgb 255 255 255), (Mix $cl[0] (Rgb 255 255 255) 0.25)
+            $gr.FillPath($gb, $title)
+        }
+        Font = 'Bahnschrift SemiLight'; Case = 'Upper'; Shear = 0; Max = 180
+        SubFont = 'Cascadia Mono'; SubPrefix = '>> '; Sub = { param($cl, $pal) $cl[1] }
+    }
+    Cartoon    = @{
+        Description = 'Comic-panel border, burst rays and halftone dots with bold outlined line art.'
+        Color = { param($p) RgbF (0.85 * $p[0] + 20) (0.85 * $p[1] + 20) (0.85 * $p[2] + 20) }
+        Art = @{ Mode = 'Flat'; K = 1.5; Shadow = 6; ShadowColor = (Rgb 0 0 0); ShadowAlpha = 255; Outline = (Rgb 20 20 24); OutlineK = 1.6 }
+        Background = { param($gr, $cl, $pal, $info)
+            $gr.Clear((Rgb 255 255 255)); $panel = Rounded 18 18 1244 684 26
+            $state = $gr.Save(); $gr.SetClip($panel)
+            $gr.FillRectangle((Br (Mix $cl[2] (Rgb 255 255 255) 0.72)), 0, 0, 1280, 720)
+            $ray = Br (Argb 150 (Rgb 255 255 255))
+            for ($a = 0; $a -lt 360; $a += 20) {
+                $t1 = $a * [Math]::PI / 180; $t2 = ($a + 9) * [Math]::PI / 180
+                $gr.FillPolygon($ray, (Pts @(1000, 360, (1000 + 1400 * [Math]::Cos($t1)), (360 + 1400 * [Math]::Sin($t1)), (1000 + 1400 * [Math]::Cos($t2)), (360 + 1400 * [Math]::Sin($t2)))))
+            }
+            $dot = Br (Argb 70 $cl[0])
+            for ($y = 11; $y -lt 720; $y += 22) { for ($x = 11 + 11 * [int]($y % 44 -eq 11); $x -lt 760; $x += 22) {
+                $r = 7 * (1 - [Math]::Sqrt($x * $x + (720 - $y) * (720 - $y)) / 760); if ($r -gt 0.8) { FE $gr $dot $x $y $r $r } } }
+            $gr.Restore($state); $gr.DrawPath((Outline-Pen (Rgb 20 20 24) 10), $panel)
+        }
+        Clip = { Rounded 23 23 1234 674 22 }
+        Title = { param($gr, $title, $cl, $pal, $st)
+            $sh = Shifted $title 9 9; $gr.DrawPath((Outline-Pen (Rgb 20 20 24) 18), $sh); $gr.FillPath((Br (Rgb 20 20 24)), $sh)
+            $gr.DrawPath((Outline-Pen (Rgb 20 20 24) 18), $title); $gr.FillPath((Br $cl[1]), $title)
+        }
+        Font = 'Segoe UI Black'; Shear = -0.06; Max = 180
+        SubFont = 'Segoe UI Black'; Sub = { param($cl, $pal) Rgb 20 20 24 }
+    }
+    Cat        = @{
+        Description = 'Pastel paw-print wallpaper with a headphone-wearing cartoon cat beside the line art.'
+        Color = { param($p) RgbF (0.75 * $p[0]) (0.75 * $p[1]) (0.75 * $p[2]) }
+        OX = 1000; OY = 245; Scale = 0.6
+        Art = @{ Mode = 'Flat'; K = 2.2; Shadow = 5; ShadowColor = (Rgb 120 70 110); ShadowAlpha = 60 }
+        Background = { param($gr, $cl, $pal, $info)
+            $gr.FillRectangle((Linear (Rgb 255 228 236) (Rgb 232 222 255)), 0, 0, 1280, 720)
+            $paw = Br (Argb 34 $cl[1]); Scatter $gr (New-Object Random $info.Seed) 110 { param($g) PawPrint $g $paw }
+            FE $gr (Br (Argb 170 (Rgb 255 255 255))) 1000 245 200 200
+            $gr.DrawPath((Outline-Pen $cl[0] 8), (Rounded 22 22 1236 676 34))
+        }
+        Character = { param($gr, $cl, $info) Draw-Cat $gr $cl $info }
+        Title = { param($gr, $title, $cl, $pal, $st)
+            $gr.FillPath((Br $cl[0]), (Shifted $title 7 7)); $gr.DrawPath((Outline-Pen (Rgb 255 255 255) 16), $title); $gr.FillPath((Br (Rgb 70 35 70)), $title)
+        }
+        Font = 'Segoe UI Black'; Shear = 0; Max = 170
+        SubFont = 'Segoe UI Black'; Sub = { param($cl, $pal) Rgb 110 60 110 }
+    }
+    Dog        = @{
+        Description = 'Sunny bone-print wallpaper with a bandana-wearing cartoon dog beside the line art.'
+        Color = { param($p) RgbF (0.75 * $p[0]) (0.75 * $p[1]) (0.75 * $p[2]) }
+        OX = 1000; OY = 245; Scale = 0.6
+        Art = @{ Mode = 'Flat'; K = 2.2; Shadow = 5; ShadowColor = (Rgb 60 70 110); ShadowAlpha = 60 }
+        Background = { param($gr, $cl, $pal, $info)
+            $gr.FillRectangle((Linear (Rgb 255 240 200) (Rgb 205 230 255)), 0, 0, 1280, 720)
+            $bone = Br (Argb 40 $cl[1]); Scatter $gr (New-Object Random $info.Seed) 110 { param($g) Bone $g $bone }
+            FE $gr (Br (Argb 170 (Rgb 255 255 255))) 1000 245 200 200
+            $gr.DrawPath((Outline-Pen $cl[0] 8), (Rounded 22 22 1236 676 34))
+        }
+        Character = { param($gr, $cl, $info) Draw-Dog $gr $cl $info }
+        Title = { param($gr, $title, $cl, $pal, $st)
+            $gr.FillPath((Br $cl[0]), (Shifted $title 7 7)); $gr.DrawPath((Outline-Pen (Rgb 255 255 255) 16), $title); $gr.FillPath((Br (Rgb 30 40 80)), $title)
+        }
+        Font = 'Segoe UI Black'; Shear = 0; Max = 170
+        SubFont = 'Segoe UI Black'; Sub = { param($cl, $pal) Rgb 30 40 80 }
+    }
+    Nature     = @{
+        Description = 'Layered mountain ridges, pines, a soft sun and earthy line art.'
+        Color = { param($p) RgbF ((0.5 * $p[0] + 52) * 0.9) ((0.5 * $p[1] + 62) * 0.9) ((0.5 * $p[2] + 35) * 0.9) }
+        Art = @{ Mode = 'Flat'; K = 1.6; Shadow = 5; ShadowColor = (Rgb 30 50 30); ShadowAlpha = 70 }
+        Background = { param($gr, $cl, $pal, $info)
+            $gr.FillRectangle((Linear (Rgb 196 222 234) (Rgb 246 236 212)), 0, 0, 1280, 720)
+            Glow-Spot $gr (Rgb 255 236 170) 200 1170 105 150; FE $gr (Br (Rgb 255 236 180)) 1170 105 52 52
+            $rnd = New-Object Random $info.Seed
+            [void](Ridge $gr (Br (Rgb 170 196 190)) 600 260 26 $rnd)
+            [void](Ridge $gr (Br (Rgb 118 156 126)) 650 190 20 $rnd)
+            $near = Ridge $gr (Br (Rgb 74 112 78)) 700 110 12 $rnd
+            $pb = Br (Rgb 46 80 52)
+            foreach ($i in 24..40) { if ($rnd.Next(3)) { Pine $gr $pb ($near[$i + 1].X + $rnd.Next(-10, 10)) ($near[$i + 1].Y + 14) (50 + $rnd.Next(40)) } }
+            $leaf = Br (Argb 150 (Rgb 80 120 70)); $stem = New-Object Drawing.Pen (Argb 150 (Rgb 80 120 70)), 4
+            $gr.DrawBezier($stem, (P 0 150), (P 70 120), (P 140 70), (P 190 0))
+            foreach ($l in @(@(40, 133, 30), @(90, 105, -40), @(115, 78, 35), @(160, 40, -35))) { At $gr $l[0] $l[1] $l[2] 1 { param($g) FE $g $leaf 0 -22 11 24 } }
+        }
+        Title = { param($gr, $title, $cl, $pal, $st)
+            $gr.FillPath((Br (Argb 210 (Rgb 252 248 236))), (Shifted $title 4 4)); $gr.FillPath((Br (Rgb 40 72 46)), $title)
+        }
+        Font = 'Georgia'; Bold = $true; Shear = 0; Max = 170
+        SubFont = 'Franklin Gothic Medium'; Sub = { param($cl, $pal) Rgb 54 84 58 }
+    }
+    Blocky     = @{
+        Description = 'Chunky pixel art inspired by voxel sandbox games: blocky sky, clouds and a grass-and-dirt ground.'
+        Art = @{ Mode = 'Pixel'; K = 5 }
+        Background = { param($gr, $cl, $pal, $info)
+            $rnd = New-Object Random $info.Seed
+            for ($y = 0; $y -lt 624; $y += 8) { $gr.FillRectangle((Br (Mix (Rgb 104 160 236) (Rgb 178 214 250) ($y / 624))), 0, $y, 1280, 8) }
+            $gr.FillRectangle((Br (Rgb 255 214 70)), 1136, 32, 72, 72); $gr.FillRectangle((Br (Rgb 255 244 150)), 1152, 48, 40, 40)
+            $cloud = Br (Argb 235 (Rgb 255 255 255))
+            foreach ($cx in 80, 470, 820) {
+                $x = $cx + 8 * $rnd.Next(-6, 6); $y = 24 + 8 * $rnd.Next(0, 4); $w = 8 * $rnd.Next(14, 22)
+                $gr.FillRectangle($cloud, $x, $y + 16, $w, 24); $gr.FillRectangle($cloud, $x + 24, $y, $w - 64, 16)
+            }
+            for ($x = 0; $x -lt 1280; $x += 8) {
+                $drip = 624 + 24 + 8 * [Math]::Max(0, $rnd.Next(-3, 3))
+                for ($y = 624; $y -lt 720; $y += 8) {
+                    $base = if ($y -lt $drip) { Rgb 96 164 58 } elseif ($rnd.Next(14) -eq 0) { Rgb 128 128 128 } else { Rgb 134 96 66 }
+                    $gr.FillRectangle((Br (Mix $base (Rgb 0 0 0) ($rnd.NextDouble() * 0.16))), $x, $y, 8, 8)
+                }
+            }
+        }
+        Title = { param($gr, $title, $cl, $pal, $st)
+            Pixel-Layer { param($p) $p.DrawPath((Outline-Pen (Rgb 40 40 40) 22), $title); $p.FillPath((Br (Rgb 236 236 228)), $title) }
+        }
+        Font = 'Segoe UI Black'; Case = 'Upper'; Shear = 0; Max = 170
+        SubFont = 'Cascadia Mono'; SubBold = $true; Sub = { param($cl, $pal) Rgb 236 236 228 }; SubShadow = (Rgb 40 40 40)
+    }
+    Rebel      = @{
+        Description = 'Scrappy sci-fi resistance: starfield, a dusky planet, weathered orange and hazard stripes.'
+        Color = { param($p) RgbF (0.5 * $p[0] + 125) (0.5 * $p[1] + 95) (0.5 * $p[2] + 62) }
+        Art = @{ Mode = 'Flat'; K = 1.7; Shadow = 6; ShadowColor = (Rgb 0 0 0); ShadowAlpha = 150 }
+        Background = { param($gr, $cl, $pal, $info)
+            $gr.FillRectangle((Linear (Rgb 8 10 22) (Rgb 26 16 24)), 0, 0, 1280, 720)
+            $rnd = New-Object Random $info.Seed
+            for ($n = 0; $n -lt 420; $n++) { $s = 1 + $rnd.Next(3); $gr.FillRectangle((Br (Argb (60 + $rnd.Next(190)) (Rgb 255 250 235))), $rnd.Next(1280), $rnd.Next(620), $s / 1.5, $s / 1.5) }
+            Glow-Spot $gr (Rgb 255 140 60) 70 1120 860 520
+            $planet = New-Object Drawing.Drawing2D.GraphicsPath; $planet.AddEllipse(760, 470, 720, 720)
+            $gr.FillPath((New-Object Drawing.Drawing2D.LinearGradientBrush (P 760 470), (P 1300 900), (Rgb 214 120 62), (Rgb 70 30 26)), $planet)
+            $state = $gr.Save(); $gr.SetClip($planet)
+            for ($i = 0; $i -lt 6; $i++) { $gr.FillRectangle((Br (Argb 40 (Rgb 60 20 10))), 700, 520 + 34 * $i + $rnd.Next(12), 800, 10 + $rnd.Next(10)) }
+            $gr.Restore($state)
+            $hz = Br (Rgb 236 120 32); $state = $gr.Save(); $gr.SetClip((New-Object Drawing.Rectangle 0, 650, 700, 26))
+            $gr.FillRectangle((Br (Rgb 30 26 28)), 0, 650, 700, 26)
+            for ($x = -40; $x -lt 720; $x += 44) { $gr.FillPolygon($hz, (Pts @($x, 676, ($x + 22), 676, ($x + 48), 650, ($x + 26), 650))) }
+            $gr.Restore($state)
+            $gr.FillRectangle((Br (Rgb 236 120 32)), 48, 130, 10, 400)
+            $scr = New-Object Drawing.Pen (Argb 26 (Rgb 255 255 255)), 1
+            for ($n = 0; $n -lt 90; $n++) { $x = $rnd.Next(1280); $y = $rnd.Next(720); L $gr $scr $x $y ($x + $rnd.Next(-40, 40)) ($y + $rnd.Next(-8, 8)) }
+        }
+        Title = { param($gr, $title, $cl, $pal, $st)
+            $gr.FillPath((Br (Argb 200 (Rgb 0 0 0))), (Shifted $title 6 6)); $gr.FillPath((Br (Rgb 236 120 32)), $title)
+            $state = $gr.Save(); $gr.SetClip($title); $rnd = New-Object Random $title.PointCount
+            $scr = New-Object Drawing.Pen (Argb 110 (Rgb 40 20 16)), 2
+            for ($n = 0; $n -lt 70; $n++) { $x = 95 + $rnd.Next(660); $y = 120 + $rnd.Next(420); L $gr $scr $x $y ($x + $rnd.Next(-50, 50)) ($y + $rnd.Next(-6, 6)) }
+            $gr.Restore($state)
+        }
+        Font = 'Bahnschrift SemiBold Condensed'; Bold = $true; Case = 'Upper'; Shear = 0; Max = 210
+        SubFont = 'Bahnschrift'; Sub = { param($cl, $pal) Rgb 236 226 206 }
+    }
+    Imperial   = @{
+        Description = 'Cold, symmetrical sci-fi empire: steel panels, corridor lights and red accent bars.'
+        Color = { param($p) $l = 0.3 * $p[0] + 0.59 * $p[1] + 0.11 * $p[2]; RgbF (0.25 * $p[0] + 0.55 * $l + 70) (0.15 * $p[1] + 0.55 * $l + 70) (0.15 * $p[2] + 0.55 * $l + 76) }
+        Art = @{ Mode = 'Glow'; Glow = 0.4; Core = (Argb 170 (Rgb 255 255 255)) }
+        Background = { param($gr, $cl, $pal, $info)
+            $gr.FillRectangle((Linear (Rgb 12 13 16) (Rgb 34 36 41)), 0, 0, 1280, 720)
+            $seam = New-Object Drawing.Pen (Argb 90 (Rgb 0 0 0)), 3; $hi = New-Object Drawing.Pen (Argb 18 (Rgb 255 255 255)), 1
+            for ($y = 90; $y -lt 720; $y += 90) { L $gr $seam 0 $y 1280 $y; L $gr $hi 0 ($y + 2) 1280 ($y + 2)
+                for ($x = 160 * (($y / 90) % 2); $x -lt 1280; $x += 320) { L $gr $seam $x ($y - 90) $x $y } }
+            $lt = Br (Argb 210 (Rgb 236 240 248))
+            for ($x = 70; $x -lt 1240; $x += 90) { $gr.FillRectangle($lt, $x, 24, 50, 10); $gr.FillRectangle($lt, $x, 686, 50, 10) }
+            Glow-Spot $gr (Rgb 200 210 230) 26 1000 360 330
+            $hex = for ($i = 0; $i -lt 6; $i++) { $t = ($i * 60 + 30) * [Math]::PI / 180; 1000 + 300 * [Math]::Cos($t); 360 + 300 * [Math]::Sin($t) }
+            $gr.DrawPolygon((New-Object Drawing.Pen (Argb 70 (Rgb 190 196 210)), 6), (Pts $hex))
+            $red = Br (Rgb 200 22 26)
+            $gr.FillRectangle($red, 60, 150, 8, 370); $gr.FillRectangle($red, 0, 612, 1280, 6); $gr.FillRectangle((Br (Argb 120 (Rgb 200 22 26))), 0, 624, 1280, 2)
+        }
+        Title = { param($gr, $title, $cl, $pal, $st)
+            $gr.FillPath((Br (Argb 180 (Rgb 0 0 0))), (Shifted $title 4 4)); $gr.FillPath((Br (Rgb 236 238 244)), $title)
+        }
+        Font = 'Bahnschrift SemiBold SemiConden'; Case = 'Upper'; Shear = 0; Max = 190
+        SubFont = 'Bahnschrift'; Sub = { param($cl, $pal) Rgb 214 40 40 }
+    }
+}
+
 function New-Card($info, [string]$file) {
-    $st = $Styles[$info.Style]
-    $pal = foreach ($p in $st.Pal) { Rgb $p[0] $p[1] $p[2] }
+    $T = $script:T
+    $st = $Styles[$info.Style].Clone()
+    if ($T.Font) { $st.Font = Pick $T.Font $info.Style }
+    foreach ($key in 'Bold', 'Case', 'Shear') { if ($T.ContainsKey($key)) { $st[$key] = $T[$key] } }
+    if ($T.Max) { $st.Max = [Math]::Min($st.Max, $T.Max) }
+    $pal = foreach ($p in $st.Pal) { & $T.Color $p }
     $cl = @($pal[2], $pal[3], $pal[4])
     if ($info.Sub) { $r = $info.Seed % 3; $cl = @($cl[$r], $cl[($r + 1) % 3], $cl[($r + 2) % 3]) }
     $bmp = New-Object Drawing.Bitmap 1280, 720
     $script:G = [Drawing.Graphics]::FromImage($bmp); $g0 = $script:G
     $g0.SmoothingMode = 'AntiAlias'; $g0.CompositingQuality = 'HighQuality'; $g0.InterpolationMode = 'HighQualityBicubic'
-    $g0.FillRectangle((New-Object Drawing.Drawing2D.LinearGradientBrush (P 0 0), (P 0 720), $pal[0], $pal[1]), 0, 0, 1280, 720)
-    $glow = New-Object Drawing.Drawing2D.GraphicsPath; $glow.AddEllipse(680, 40, 640, 640)
-    $rb = New-Object Drawing.Drawing2D.PathGradientBrush $glow; $rb.CenterColor = Argb 35 $cl[0]; $rb.SurroundColors = @([Drawing.Color]::Transparent)
-    $g0.FillPath($rb, $glow)
+    $script:OX = $T.OX; $script:OY = $T.OY; $script:ArtScale = 1
+    & $T.Background $g0 $cl $pal $info
 
-    $sub = $pal[3]
-    $hud = New-Object Drawing.Pen (Argb 170 $sub), 4
-    foreach ($cn in @(@(40, 40, 1, 1), @(1240, 40, -1, 1), @(40, 680, 1, -1), @(1240, 680, -1, -1))) {
-        $g0.DrawLine($hud, $cn[0], $cn[1], $cn[0] + 60 * $cn[2], $cn[1]); $g0.DrawLine($hud, $cn[0], $cn[1], $cn[0], $cn[1] + 60 * $cn[3])
-    }
-
+    if ($T.Clip) { $g0.SetClip((& $T.Clip)) }
+    $script:ArtScale = $T.Scale
     & "Motif-$($info.Motif)" $cl $info
+    $script:ArtScale = 1; $g0.ResetClip()
+    if ($T.Character) { & $T.Character $g0 $cl $info }
 
     $title = Title-Path $info.Name $st
-    if ($st.Mode -eq 'Tube') {
-        Neon $cl[0] { param($g, $c, $k) $g.DrawPath((Pn $c 5.7 $k), $title) } 0 0
-    } else {
-        Neon $cl[0] { param($g, $c, $k) $g.FillPath((Br $c), $title) } 0 0
-        $g0.FillPath((Br (Rgb 250 248 255)), $title)
-    }
+    & $T.Title $g0 $title $cl $pal $st
     $label = if ($info.Sub) { $info.Parent } else { 'Music' }
-    $spaced = '//  ' + (($label.ToUpperInvariant().ToCharArray() | ForEach-Object { [string]$_ }) -join ' ')
-    $subFont = if ($info.Style -eq 'Indie') { 'Cascadia Mono' } else { 'Bahnschrift' }
-    $g0.DrawString($spaced, (New-Object Drawing.Font $subFont, 28, ([Drawing.FontStyle]::Regular), ([Drawing.GraphicsUnit]::Pixel)), (Br (Argb 235 $sub)), 96, 560)
+    $fs = if ($T.SubBold) { [Drawing.FontStyle]::Bold } else { [Drawing.FontStyle]::Regular }
+    $font = New-Object Drawing.Font (Pick $T.SubFont $info.Style), 28, $fs, ([Drawing.GraphicsUnit]::Pixel)
+    $text = $T.SubPrefix + (Spaced $label)
+    if ($T.SubShadow) { $g0.DrawString($text, $font, (Br $T.SubShadow), 99, 563) }
+    $g0.DrawString($text, $font, (Br (& $T.Sub $cl $pal)), 96, 560)
 
     $codec = [Drawing.Imaging.ImageCodecInfo]::GetImageEncoders() | Where-Object MimeType -eq 'image/jpeg'
     $ep = New-Object Drawing.Imaging.EncoderParameters 1
     $ep.Param[0] = New-Object Drawing.Imaging.EncoderParameter ([Drawing.Imaging.Encoder]::Quality), ([long]80)
     $g0.Dispose(); $bmp.Save($file, $codec, $ep); $bmp.Dispose()
 }
+
+$script:T = $Themes[$Theme]
+foreach ($d in @(@('Color', { param($p) Rgb $p[0] $p[1] $p[2] }), @('OX', 1000), @('OY', 360), @('Scale', 1), @('SubPrefix', ''))) { if (-not $script:T.ContainsKey($d[0])) { $script:T[$d[0]] = $d[1] } }
+$__cm = New-Object Drawing.Imaging.ColorMatrix; $__cm.Matrix33 = if ($script:T.Art.Glow) { $script:T.Art.Glow } else { 0.65 }; $script:GlowAttr.SetColorMatrix($__cm)
 
 function Get-Opml([string]$url) {
     [xml][Text.Encoding]::UTF8.GetString((Invoke-WebRequest -UseBasicParsing $url).RawContentStream.ToArray())
@@ -889,10 +1276,11 @@ foreach ($info in $genres.Values) {
 }
 
 if ($Pack) {
+    if (-not $PackName) { $PackName = 'artpack-' + $Theme.ToLowerInvariant() }
     Add-Type -AssemblyName System.IO.Compression.FileSystem
     $zip = Join-Path (Split-Path ([IO.Path]::GetFullPath($Output)) -Parent) "$PackName.zip"
     $note = @"
-$PackName - genre artwork for the Emby TuneIn plugin
+$PackName - genre artwork for the Emby TuneIn plugin ($Theme theme)
 Built by Build-GenreArtwork.ps1 from https://github.com/oconnoradv/EmbyTuneInArt (GPL-3.0).
 
 1. Extract the .jpg files into <Emby data>\plugins\configurations\TuneInArtwork\genres
