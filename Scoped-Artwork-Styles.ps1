@@ -7,8 +7,16 @@ function Scoped-Scenery($g, $theme, $info) {
         $path = Join-Path $folder "$($info.Id).png"
     }
     if (-not $path) {
-        $name = if ($theme -eq 'Futuristic') { 'neutral.png' } else { "neutral-$($info.Seed % 3).png" }
-        $path = Join-Path $folder $name
+        if ($theme -eq 'Classic') {
+            $palettes = @(@((Rgb 45 4 14), (Rgb 113 12 26)), @((Rgb 3 35 24), (Rgb 7 79 48)), @((Rgb 4 18 42), (Rgb 8 47 81)))
+            $p = $palettes[$info.Seed % 3]
+            $g.FillRectangle((New-Object Drawing.Drawing2D.LinearGradientBrush (P 0 0), (P 1280 720), $p[0], $p[1]), 0, 0, 1280, 720)
+            $ornament = New-Object Drawing.Pen (Argb 100 (Rgb 224 181 94)), 2
+            $g.DrawBezier($ornament, (P 0 650), (P 450 540), (P 800 775), (P 1280 625))
+            $g.DrawBezier($ornament, (P 0 670), (P 450 560), (P 800 795), (P 1280 645))
+            return
+        }
+        $path = if ($theme -eq 'Futuristic') { Join-Path $folder 'l178.png' } else { Join-Path $PSScriptRoot 'data\scenes\cartoon.png' }
     }
     if (-not $script:ScopedScenes) { $script:ScopedScenes = @{} }
     if (-not $script:ScopedScenes.ContainsKey($path)) { $script:ScopedScenes[$path] = [Drawing.Image]::FromFile($path) }
@@ -88,19 +96,31 @@ function Scoped-Motif($g, $info, $theme, $cx, $cy) {
         Scoped-FlagDisplay $g $info $theme
     } elseif ($info.Motif -eq 'map') {
         if ($theme -eq 'Cartoon') { $g.ScaleTransform(1.4, 1.4) }
+        $fill = if ($theme -eq 'Futuristic') { Rgb 8 103 144 } else { Rgb 225 183 96 }
         $edge = if ($theme -eq 'Futuristic') { Rgb 48 235 255 } elseif ($theme -eq 'Cartoon') { Rgb 13 30 34 } else { Rgb 250 220 148 }
         $shape = New-Object Drawing.Drawing2D.GraphicsPath
         foreach ($ring in $info.MapRings) { if ($ring.Count -ge 6) { $shape.AddPolygon((Pts $ring)) } }
         if ($theme -eq 'Futuristic') {
+            $g.FillPath((Br (Argb 90 (Rgb 5 75 110))), $shape)
             $g.DrawPath((New-Object Drawing.Pen (Argb 55 (Rgb 0 160 255)), 15), $shape)
             $g.DrawPath((New-Object Drawing.Pen (Argb 100 (Rgb 18 204 255)), 6), $shape)
-        }
-        $materialPath = Join-Path $PSScriptRoot "data\materials\$($theme.ToLowerInvariant()).png"
-        if (-not $script:ScopedMaterials) { $script:ScopedMaterials = @{} }
-        if (-not $script:ScopedMaterials.ContainsKey($materialPath)) { $script:ScopedMaterials[$materialPath] = [Drawing.Image]::FromFile($materialPath) }
-        $material = $script:ScopedMaterials[$materialPath]
+        } else { $g.FillPath((Br $fill), $shape) }
         $clip = $g.Save(); $g.SetClip($shape)
-        $g.DrawImage($material, (New-Object Drawing.Rectangle -210,-210,420,420), (New-Object Drawing.Rectangle 0,256,512,512), [Drawing.GraphicsUnit]::Pixel)
+        if ($theme -eq 'Futuristic') {
+            $texture = New-Object Drawing.Pen (Argb 100 (Rgb 61 238 255)), 1
+            for ($y = -260; $y -le 260; $y += 9) { L $g $texture -260 $y 260 ($y + 100) }
+            for ($x = -300; $x -le 300; $x += 12) { L $g $texture $x -260 ($x+150) 260 }
+            $texture.Dispose()
+        } else {
+            $random = New-Object Random $info.Seed
+            $gold = Br (Argb 105 (Rgb 255 231 150))
+            $shade = if ($theme -eq 'Cartoon') { Br (Argb 105 (Rgb 49 105 53)) } else { Br (Argb 65 (Rgb 106 64 18)) }
+            for ($i = 0; $i -lt 2200; $i++) {
+                $x = $random.Next(-215,216); $y = $random.Next(-215,216)
+                $r = $random.Next(1,5)
+                $g.FillEllipse($(if ($i % 3 -eq 0) { $shade } else { $gold }), $x, $y, $r, $r)
+            }
+        }
         $g.Restore($clip)
         $g.DrawPath((New-Object Drawing.Pen $edge, $(if($theme -eq 'Cartoon'){5}else{2})), $shape)
         $shape.Dispose()
@@ -151,10 +171,6 @@ function New-ScopedCard($info, [string]$file, [string]$theme) {
     $title = Center-Title $g $displayTitle $font $bold 'Title' 0 $cyTitle $maxW 150 160
     if ($theme -eq 'Classic') { $title.Transform((New-Object Drawing.Drawing2D.Matrix 1, 0, 0, 1, 280, 0)) }
     if ($theme -eq 'Cartoon' -and $info.Motif -eq 'map') { $title.Transform((New-Object Drawing.Drawing2D.Matrix 1, 0, 0, 1, 250, 0)) }
-    if ($theme -ne 'Classic') {
-        $bottom = $title.GetBounds().Bottom
-        if ($bottom -gt 630) { $title.Transform((New-Object Drawing.Drawing2D.Matrix 1, 0, 0, 1, 0, (630-$bottom))) }
-    }
     $color = if ($theme -eq 'Futuristic') { Rgb 226 252 255 } else { Rgb 255 225 164 }
     if ($theme -eq 'Cartoon') { $g.DrawPath((Outline-Pen (Rgb 8 28 34) 15), (Shifted $title 5 5)); $g.DrawPath((Outline-Pen (Rgb 8 28 34) 12), $title) }
     elseif ($theme -eq 'Futuristic') { $g.DrawPath((Outline-Pen (Argb 100 (Rgb 0 162 255)) 8), $title) }
@@ -173,10 +189,6 @@ function New-ScopedCard($info, [string]$file, [string]$theme) {
         $gold = New-Object Drawing.Pen (Rgb 233 190 104), 2
         L $g $gold 700 430 885 430; L $g $gold 955 430 1140 430
         $g.DrawEllipse($gold, 910, 420, 20, 20)
-    }
-    if ($theme -ne 'Classic') {
-        $shadowArea = $area; $shadowArea.Offset(2, 2)
-        $g.DrawString($label, $labelFont, (Br (Rgb 0 0 0)), $shadowArea, $fmt)
     }
     $g.DrawString($label, $labelFont, (Br $color), $area, $fmt)
     if ($info.Label -in 'Generic location','Regional map') {

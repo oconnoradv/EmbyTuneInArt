@@ -67,10 +67,7 @@ Scenic backgrounds and map-fill textures are decorative illustrations, not geogr
 ![Classic location and language cards: Japan and Japanese, Ireland and Irish, Seattle regional map and Korean](docs/samples/scoped-classic.jpg)
 
 When no verified location or ancestor map is available, a labeled generic globe is used. Languages without a
-representative flag use a neutral globe. North America (`r101218`) and Arabic (`l122`) show the fallbacks
-in Cartoon, Futuristic and Classic:
-
-![Arabic neutral-language and North America generic-location examples in Cartoon, Futuristic and Classic](docs/samples/scoped-fallbacks.jpg)
+representative flag use a neutral globe.
 
 ## Install a ready-made pack
 
@@ -269,9 +266,9 @@ only names, country names and geometry were retained. Natural Earth data is
 [public domain](https://www.naturalearthdata.com/about/terms-of-use/). The flag motifs are original geometric drawings.
 Japan and Ireland outlines additionally use Natural Earth
 [`ne_50m_admin_0_countries`](https://github.com/nvkelso/natural-earth-vector/blob/v5.1.2/geojson/ne_50m_admin_0_countries.geojson).
-The scoped scenic layers in `data\scoped-scenes` and map materials in `data\materials` were AI-generated for
-this project and are decorative, not geographic or terrain data. Specific scenes are used only for the matching
-sample subjects; other cards use neutral scenes. They and the produced artwork are distributed under GPL-3.0.
+The scoped scenic layers in `data\scoped-scenes` and `data\scenes` were AI-generated for this project and are
+decorative, not geographic data. Specific scenes are used only for the matching sample subjects; other cards
+use neutral scenes. They and the produced artwork are distributed under GPL-3.0.
 The Korean flag construction follows the
 [Republic of Korea Ministry of the Interior and Safety](https://www.mois.go.kr/eng/sub/a03/nationalSymbol/screen.do).
 The approximate [Seattle coordinates](https://www.geodatos.net/en/coordinates/united-states/seattle) are used
