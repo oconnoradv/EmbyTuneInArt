@@ -114,7 +114,10 @@ function Get-Languages {
             $title = $culture.NativeName; $font = Get-LanguageFont $code; $rtl = $culture.TextInfo.IsRightToLeft
             if ($title -like 'Unknown Language*') { throw "Windows has no native name for '$name' ($code)." }
         } else { Write-Warning "No curated native name for '$name'; using the TuneIn label." }
-        $flag = if (-not $NeutralLanguages -and $name -in 'Japanese','Icelandic') { $name -replace 'Japanese','Japan' -replace 'Icelandic','Iceland' } else { $null }
+        $flag = if (-not $NeutralLanguages -and ($name -in 'Japanese','Icelandic' -or
+            ($name -in 'Irish','Korean' -and $baseTheme -in 'Cartoon','Futuristic','Classic'))) {
+            @{ Japanese='Japan'; Icelandic='Iceland'; Irish='Ireland'; Korean='South Korea' }[$name]
+        } else { $null }
         $items[$id] = @{
             Id=$id; Name=$title; ProviderName=$name; Parent='Languages'; Sub=$false; Style='Electronic'
             Motif=$(if ($flag) { 'flag' } else { 'neutral' }); Flag=$flag
@@ -139,17 +142,42 @@ function Get-Locations {
             $rootName = [string]$doc.opml.head.title
             if (-not $rootName.Trim()) { throw "Location $($entry.Id) has no title." }
             if ($entry.Level -eq 2) { $entry.Country = $rootName }
+            if ($entry.Level -eq 3 -and $KnownRegions.ContainsKey($entry.Id)) {
+                $parts = $KnownRegions[$entry.Id] -split '\|', 2
+                if ($parts[1] -eq $rootName) { $entry.Country = $parts[0] }
+            }
             $items[$entry.Id] = @{ Id=$entry.Id; Name=$rootName; Parent=$entry.Parent; Level=$entry.Level; Country=$entry.Country }
         }
-        if ($entry.Level -ge $LocationDepth) { continue }
-        foreach ($node in $doc.SelectNodes('/opml/body/outline[@type="link"][@guide_id]')) {
+        if (-not $AllLocations -and $entry.Level -ge $LocationDepth) { continue }
+        if ($AllLocations) {
+            foreach ($link in $doc.SelectNodes('/opml/body//outline[@type="link"]')) {
+                if ([string]$link.URL -match '(?i)(?:\?|&)(?:offset|page|cursor|start)=' -or
+                    [string]$link.key -match '(?i)(next|more|page)') {
+                    if ($link.key -ceq 'nextStations' -and [string]$link.URL -match '(?:\?|&)filter=s(?:&|$)') { continue }
+                    throw "Unsupported location pagination in $($entry.Id): $($link.URL)"
+                }
+            }
+        }
+        $selector = if ($AllLocations) { '/opml/body//outline[@type="link"][@guide_id]' } else { '/opml/body/outline[@type="link"][@guide_id]' }
+        foreach ($node in $doc.SelectNodes($selector)) {
             $id = [string]$node.guide_id; $name = ([string]$node.text).Trim()
-            if ($id -cnotmatch '^r[1-9][0-9]{0,9}$' -or -not $name -or $items.Contains($id)) { continue }
+            if ($id -cnotmatch '^r[1-9][0-9]{0,9}$') { continue }
+            if (-not $name) {
+                if ($AllLocations) { throw "Location $id has no title." }
+                continue
+            }
+            if ($AllLocations) {
+                $url = [Uri]$node.URL
+                if ($url.Scheme -notin @('http','https') -or $url.Host -cne 'opml.radiotime.com' -or
+                    -not $url.IsDefaultPort -or $url.UserInfo -or $url.AbsolutePath -cne '/Browse.ashx' -or
+                    $url.Query -cne "?id=$id" -or $url.Fragment) { throw "Noncanonical location link $id $url" }
+            }
+            if ($items.Contains($id)) { continue }
             $level = $entry.Level + 1
             $parent = if ($entry.Id -eq 'r0') { 'Locations' } else { $items[$entry.Id].Name }
             $country = if ($level -eq 2) { $name } else { $entry.Country }
-            $items[$id] = @{ Id=$id; Name=$name; Parent=$parent; Level=$level; Country=$country }
-            if ($level -lt $LocationDepth) { $queue.Enqueue(@{ Id=$id; Level=$level; Parent=$parent; Country=$country }) }
+            $items[$id] = @{ Id=$id; Name=$name; Parent=$parent; ParentId=$entry.Id; Level=$level; Country=$country }
+            if ($AllLocations -or $level -lt $LocationDepth) { $queue.Enqueue(@{ Id=$id; Level=$level; Parent=$parent; Country=$country }) }
         }
     }
     return ,$items
@@ -184,22 +212,53 @@ function Get-MapRings($geometry) {
     return ,$result.ToArray()
 }
 
+function Get-MapPoint($geometry, [double]$lon, [double]$lat) {
+    $polygons = if ($geometry.type -eq 'Polygon') { ,$geometry.coordinates } else { $geometry.coordinates }
+    $xs = @(); $ys = @()
+    foreach ($polygon in $polygons) {
+        foreach ($point in $polygon[0]) { $xs += [double]$point[0]; $ys += [double]$point[1] }
+    }
+    $xmin = ($xs | Measure-Object -Minimum).Minimum; $xmax = ($xs | Measure-Object -Maximum).Maximum
+    $ymin = ($ys | Measure-Object -Minimum).Minimum; $ymax = ($ys | Measure-Object -Maximum).Maximum
+    if ($lon -lt $xmin -or $lon -gt $xmax -or $lat -lt $ymin -or $lat -gt $ymax) { throw 'Map marker falls outside its verified map bounds.' }
+    $scale = [Math]::Min(420 / ($xmax - $xmin), 420 / ($ymax - $ymin))
+    return ,@([float](($lon - ($xmin + $xmax) / 2) * $scale), [float]((($ymin + $ymax) / 2 - $lat) * $scale))
+}
+
 function Set-LocationArt($items) {
     $data = Get-Content (Join-Path $PSScriptRoot 'data\natural-earth.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+    $detailedCountries = Get-Content (Join-Path $PSScriptRoot 'data\natural-earth-countries-50m.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+    $washington = Get-Content (Join-Path $PSScriptRoot 'data\washington-50m.json') -Raw -Encoding UTF8 | ConvertFrom-Json
     $aliases = @{ 'United States'='United States of America' }
     foreach ($info in $items.Values) {
-        if ($Only -and -not ($Only | Where-Object { $info.Id -eq $_ -or $info.Name -like $_ })) { continue }
         $info.Style = 'Electronic'; $info.Sub = $false; $info.NativeFont = 'Segoe UI'
         $info.Motif = 'neutral'; $info.Label = 'Generic location'
         $country = if ($info.Country -and $aliases.ContainsKey($info.Country)) { $aliases[$info.Country] } else { $info.Country }
         $features = @(if ($info.Level -eq 2) {
-            $data.countries | Where-Object { $_.name -eq $country }
+            $detailed = @($detailedCountries | Where-Object { $_.name -eq $country })
+            if ($detailed.Count) { $detailed } else { $data.countries | Where-Object { $_.name -eq $country } }
         } elseif ($info.Level -eq 3 -and $country -and $KnownRegions[$info.Id] -eq "$($info.Country)|$($info.Name)") {
-            $data.regions | Where-Object { $_.country -eq $country -and $_.name -eq $info.Name }
+            if ($info.Id -eq 'r100516') { $washington }
+            else { $data.regions | Where-Object { $_.country -eq $country -and $_.name -eq $info.Name } }
         })
         if ($features.Count -eq 1) {
             $rings = Get-MapRings $features[0].geometry
-            if ($rings) { $info.MapRings = $rings; $info.Motif = 'map'; $info.Label = 'Map' }
+            if ($rings) { $info.MapRings = $rings; $info.MapGeometry = $features[0].geometry; $info.Motif = 'map'; $info.Label = 'Map' }
+        }
+    }
+    foreach ($info in $items.Values) {
+        if ($info.Motif -ne 'neutral') { continue }
+        $parentId = $info.ParentId; $seen = @{}
+        while ($parentId -and $items.Contains($parentId) -and -not $seen.ContainsKey($parentId)) {
+            $seen[$parentId] = $true; $parent = $items[$parentId]
+            if ($parent.Motif -eq 'map' -and $parent.Label -eq 'Map') {
+                $info.Motif = 'map'; $info.MapRings = $parent.MapRings; $info.Label = 'Regional map'
+                if ($info.Id -eq 'r100014' -and $info.Name -eq 'Seattle-Tacoma' -and $parent.Id -eq 'r100516') {
+                    $info.MapPoint = Get-MapPoint $parent.MapGeometry -122.3321 47.6062
+                }
+                break
+            }
+            $parentId = $parent.ParentId
         }
     }
 }

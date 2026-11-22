@@ -9,8 +9,8 @@ inherit typography, palette and line art from their parent genre; language and l
 The cards contain no TuneIn logos or station images.
 
 The plugin ships with default category icons. Packs are optional and replace icons for matching guide IDs in
-Music, Languages or Locations. Existing ready-made genre packs are on the
-[Releases](https://github.com/oconnoradv/EmbyTuneInArt/releases) page; build scoped packs with this tool.
+Music, Languages or Locations. Find ready-made packs on the
+[Releases](https://github.com/oconnoradv/EmbyTuneInArt/releases) page, or build packs with this tool.
 
 ## Themes
 
@@ -46,39 +46,30 @@ Spotlight includes Punk and Grunge. These selected cards are supplied as fixed A
 For language and location packs, Spotlight variants render the corresponding base theme; the fixed genre
 illustrations are never used.
 
-## Language pack samples
+## Language and location pack samples
 
-These are generated cards, reduced for display. In each sheet, Japanese (`l178`) has a representative flag;
-Arabic (`l122`), Hindi (`l175`) and French (`l98`) use neutral globes. Titles appear in their native scripts.
-
-**Cartoon**
-
-![Cartoon language cards: Japanese with a representative flag, Arabic, Hindi and French with neutral globes](docs/samples/languages-cartoon.jpg)
-
-**Futuristic**
-
-![Futuristic language cards: Japanese with a representative flag, Arabic, Hindi and French with neutral globes](docs/samples/languages-futuristic.jpg)
-
-**Classic**
-
-![Classic language cards: Japanese with a representative flag, Arabic, Hindi and French with neutral globes](docs/samples/languages-classic.jpg)
-
-## Location pack samples
-
-Each generated sheet shows Canada (`r101227`) and Alberta (`r100447`) with verified map outlines, followed by
-Calgary (`r100598`) with the explicitly labeled generic location fallback. These are previews, not complete packs.
+These are generated cards, reduced for display. Each row pairs a location with a language:
+Japan (`r101255`) and Japanese (`l178`), Ireland (`r101252`) and Irish (`l176`), then Seattle-Tacoma
+(`r100014`) and Korean (`l180`). The Seattle card uses a labeled Washington state outline and an approximate
+Seattle marker, not metro boundaries. Language flags are representative rather than exclusive.
+The scenic backgrounds are fictional.
 
 **Cartoon**
 
-![Cartoon location cards: Canada and Alberta maps, and Calgary's generic location globe](docs/samples/locations-cartoon.jpg)
+![Cartoon location and language cards: Japan and Japanese, Ireland and Irish, Seattle regional map and Korean](docs/samples/scoped-cartoon.jpg)
 
 **Futuristic**
 
-![Futuristic location cards: Canada and Alberta maps, and Calgary's generic location globe](docs/samples/locations-futuristic.jpg)
+![Futuristic location and language cards: Japan and Japanese, Ireland and Irish, Seattle regional map and Korean](docs/samples/scoped-futuristic.jpg)
 
 **Classic**
 
-![Classic location cards: Canada and Alberta maps, and Calgary's generic location globe](docs/samples/locations-classic.jpg)
+![Classic location and language cards: Japan and Japanese, Ireland and Irish, Seattle regional map and Korean](docs/samples/scoped-classic.jpg)
+
+When no verified location or ancestor map is available, a labeled generic globe is used. Languages without a
+representative flag use a neutral globe. This isolated Seattle root and Arabic (`l122`) show the fallbacks:
+
+![Futuristic generic location and neutral Arabic language examples](docs/samples/scoped-fallbacks.jpg)
 
 ## Install a ready-made pack
 
@@ -169,17 +160,25 @@ Requirements:
    exceeding `-MaxLocationRequests` fails the build rather than silently publishing an incomplete pack. A full
    locations build may hit that limit; increase it explicitly (maximum 10,000) or restrict the root/depth.
    Only location links are followed; station and other pivot items are ignored.
+   `-AllLocations` instead browses every reachable canonical location link, including nested and deeper folders,
+   with 250 ms between requests; the same request limit still applies. Station-only pagination is ignored;
+   unsupported location pagination fails rather than silently truncating discovery. `-CatalogSnapshot <directory>` replays
+   saved OPML responses named `languages.xml` and `r<ID>.xml` instead of requesting the network. Missing
+   responses or unsuccessful provider statuses fail the build.
 
    Language titles use a curated mapping to Windows neutral-culture native names. Unknown or ambiguous categories
-   retain the TuneIn label with a warning. Japanese and Icelandic use labeled representative flags by default;
-   `-NeutralLanguages` replaces those with a neutral globe. Other languages use a neutral globe rather than assigning
-   a country to a language.
+   retain the TuneIn label with a warning. Japanese and Icelandic use representative flags by default;
+   the Cartoon, Futuristic and Classic language styles also use representative Irish and South Korean flags.
+   `-NeutralLanguages` replaces those with a neutral globe. Other languages use a neutral globe rather than
+   assigning a country to a language.
 
    Country outlines and curated US/Canadian region outlines use the bundled public-domain Natural Earth
-   110m countries and 50m admin-1 data, matched by name and country. Region IDs are explicitly verified because
-   the provider does not label regions versus cities. Map coverage is limited; cities, unmatched
+   110m countries, 50m Japan and Ireland, and 50m admin-1 data, matched by name and country. Region IDs are explicitly verified because
+   the provider does not label regions versus cities. Map coverage is limited; cities can use the nearest verified
+   ancestor outline labeled `Regional map`; unmatched
    regions, ambiguous/unsupported geometry and antimeridian-spanning shapes use a globe explicitly labeled
-   **Generic location**. A map is a stylized outline, not a navigation map.
+   **Generic location**. A map is a stylized outline, not a navigation map. The Seattle-Tacoma card marks
+   approximate Seattle coordinates on the Washington state outline; it does not depict metro boundaries.
 
 6. **Share it (optional).** Publish the ZIP as a release, for example with
    `gh release create artpack-<name>-v1 .\output\<name>.zip`.
@@ -266,6 +265,14 @@ The bundled `data\natural-earth.json` is derived from Natural Earth v5.1.2
 and [`ne_50m_admin_1_states_provinces`](https://github.com/nvkelso/natural-earth-vector/blob/v5.1.2/geojson/ne_50m_admin_1_states_provinces.geojson):
 only names, country names and geometry were retained. Natural Earth data is
 [public domain](https://www.naturalearthdata.com/about/terms-of-use/). The flag motifs are original geometric drawings.
+Japan and Ireland outlines additionally use Natural Earth
+[`ne_50m_admin_0_countries`](https://github.com/nvkelso/natural-earth-vector/blob/v5.1.2/geojson/ne_50m_admin_0_countries.geojson).
+The three reusable scoped backgrounds in `data\scenes` were AI-generated for this project; they depict fictional
+scenery, not the actual locations. They and the produced artwork are distributed under GPL-3.0.
+The Korean flag construction follows the
+[Republic of Korea Ministry of the Interior and Safety](https://www.mois.go.kr/eng/sub/a03/nationalSymbol/screen.do).
+The approximate [Seattle coordinates](https://www.geodatos.net/en/coordinates/united-states/seattle) are used
+only for the Seattle-Tacoma regional marker.
 `data\NotoSansKhmer-Regular.ttf` is from
 [Noto Fonts](https://github.com/notofonts/noto-fonts/tree/ffebf8c1ee449e544955a7e813c54f9b73848eac/hinted/ttf/NotoSansKhmer)
 and is distributed under the [SIL Open Font License 1.1](data/Noto-OFL.txt).

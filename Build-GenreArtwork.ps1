@@ -18,6 +18,8 @@ param(
     [int]$LocationDepth = 4,
     [ValidateRange(1, 10000)]
     [int]$MaxLocationRequests = 1000,
+    [switch]$AllLocations,
+    [string]$CatalogSnapshot,
     [switch]$NeutralLanguages,
     [ValidateSet('Neon', 'Retro', 'Futuristic', 'Cartoon', 'Cat', 'Dog', 'Nature', 'Blocky', 'Rebel', 'Imperial', 'Elegant', 'Tile', 'Classic', 'FuturisticSpotlight', 'CartoonSpotlight', 'ClassicSpotlight')]
     [string]$Theme = 'Futuristic',
@@ -1382,7 +1384,17 @@ foreach ($d in @(@('Color', { param($p) Rgb $p[0] $p[1] $p[2] }), @('OX', 1000),
 $__cm = New-Object Drawing.Imaging.ColorMatrix; $__cm.Matrix33 = if ($script:T.Art.Glow) { $script:T.Art.Glow } else { 0.65 }; $script:GlowAttr.SetColorMatrix($__cm)
 
 function Get-Opml([string]$url) {
-    [xml]$doc = [Text.Encoding]::UTF8.GetString((Invoke-WebRequest -UseBasicParsing $url).RawContentStream.ToArray())
+    if ($CatalogSnapshot) {
+        $key = if ($url -ceq 'https://opml.radiotime.com/Browse.ashx?c=lang') { 'languages' }
+        elseif ($url -cmatch '^https://opml\.radiotime\.com/Browse\.ashx\?id=(r(?:0|[1-9][0-9]{0,9}))$') { $Matches[1] }
+        else { throw "Unsupported snapshot URL: $url" }
+        $path = Join-Path $CatalogSnapshot "$key.xml"
+        if (-not (Test-Path -LiteralPath $path -PathType Leaf)) { throw "Missing catalog snapshot response: $path" }
+        [xml]$doc = [Text.Encoding]::UTF8.GetString([IO.File]::ReadAllBytes($path))
+    } else {
+        if ($AllLocations -and $Scope -eq 'locations') { Start-Sleep -Milliseconds 250 }
+        [xml]$doc = [Text.Encoding]::UTF8.GetString((Invoke-WebRequest -UseBasicParsing $url -TimeoutSec 30).RawContentStream.ToArray())
+    }
     if ($doc.opml.head.status -ne '200') { throw "TuneIn browse failed for $url (status $($doc.opml.head.status))." }
     $doc
 }
@@ -1399,6 +1411,7 @@ if ($Scope -eq 'genres') {
     }
 } else {
     . (Join-Path $PSScriptRoot 'Scoped-Artwork.ps1')
+    . (Join-Path $PSScriptRoot 'Scoped-Artwork-Styles.ps1')
     if ($Scope -eq 'languages') { $genres = Get-Languages }
     else { $genres = Get-Locations; Set-LocationArt $genres }
 }
@@ -1422,6 +1435,8 @@ foreach ($info in $genres.Values) {
             throw "Missing Spotlight artwork: $spotlight"
         }
         Copy-Item -LiteralPath $spotlight -Destination $target -Force
+    } elseif ($Scope -ne 'genres' -and $baseTheme -in 'Cartoon','Futuristic','Classic') {
+        New-ScopedCard $info $target $baseTheme
     } else {
         New-Card $info $target
     }
@@ -1433,7 +1448,7 @@ if ($Only -and -not $rendered.Count) { throw 'No artwork matched -Only.' }
 # tunein-artwork.json identifies the installed pack to the TuneIn plugin. The SHA-256 hashes let it tell
 # pack images from ones a user has replaced.
 if (-not $PackName) { $PackName = 'artpack-' + $Theme.ToLowerInvariant(); if ($Scope -ne 'genres') { $PackName += "-$Scope" } }
-$commit = try { (& git -C $PSScriptRoot rev-parse --short HEAD 2>$null) } catch { $null }
+$commit = try { (& git -C $PSScriptRoot rev-parse HEAD 2>$null) } catch { $null }
 $images = @($rendered | Sort-Object | ForEach-Object {
     $file = Get-Item (Join-Path $Output "$_.jpg")
     $info = $genres[$file.BaseName]
@@ -1457,10 +1472,19 @@ $PackName - $Scope artwork for the Emby TuneIn plugin ($Theme theme)
 Built by Build-GenreArtwork.ps1 from https://github.com/oconnoradv/EmbyTuneInArt (GPL-3.0).
 
 1. Extract the .jpg files and tunein-artwork.json into <Emby data>\plugins\configurations\TuneInArtwork\$Scope
-   (the TuneIn settings page shows the exact folder).
-2. Refresh the corresponding TuneIn catalog in plugin settings.
-Delete the files and refresh again to return to the default icons.
+   (Settings > Advanced Settings > Custom Artwork Packs > Details & installation shows the exact folder).
+2. Under Catalog Refresh > TuneIn Library Refresh, refresh the corresponding Music, By Language or By Location category.
+Delete the images and refresh again to return to the default icons. Also delete the manifest to clear the pack name.
 "@
+    if ($Scope -ne 'genres') { $note += @"
+
+Scoped packs require the TuneIn 1.2.8.0 RC1 build with scoped artwork support; older builds with the same version number do not support scoped packs.
+Flags are representative, not exclusive to a language. Unknown language names retain the provider's label.
+City and unmatched locations may use a labeled regional ancestor map or generic fallback.
+Scenic backgrounds are fictional AI-generated decoration, not location-specific imagery.
+Natural Earth country and region geometry is public domain: https://www.naturalearthdata.com/about/terms-of-use/
+Noto Sans Khmer is distributed under the SIL Open Font License 1.1; see Noto-OFL.txt.
+"@ }
     if (Test-Path $zip) { Remove-Item $zip }
     $archive = [IO.Compression.ZipFile]::Open($zip, 'Create')
     try {
@@ -1468,6 +1492,8 @@ Delete the files and refresh again to return to the default icons.
             [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, (Join-Path $Output $image.file), $image.file, 'Optimal')
         }
         [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, (Join-Path $Output 'tunein-artwork.json'), 'tunein-artwork.json', 'Optimal')
+        [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, (Join-Path $PSScriptRoot 'LICENSE'), 'LICENSE.txt', 'Optimal')
+        [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, (Join-Path $PSScriptRoot 'data\Noto-OFL.txt'), 'Noto-OFL.txt', 'Optimal')
         $writer = New-Object IO.StreamWriter ($archive.CreateEntry('README.txt').Open())
         try { $writer.Write($note.Replace("`r`n", "`n").Replace("`n", "`r`n")) } finally { $writer.Dispose() }
     } finally { $archive.Dispose() }

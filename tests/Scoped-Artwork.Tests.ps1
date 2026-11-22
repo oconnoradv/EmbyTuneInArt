@@ -52,14 +52,54 @@ Assert ($locations.Count -eq 4 -and $script:requests -eq 4) 'Location depth, cyc
 Assert ($locations['r100598'].Parent -eq 'Alberta' -and $locations['r100598'].Country -eq 'Canada') 'Location ancestry failed.'
 Set-LocationArt $locations
 Assert ($locations['r101227'].Motif -eq 'map' -and $locations['r100447'].Motif -eq 'map') 'Country/region geometry failed.'
-Assert ($locations['r100598'].Motif -eq 'neutral' -and $locations['r100598'].Label -eq 'Generic location') 'City fallback was not explicit.'
+Assert ($locations['r100598'].Motif -eq 'map' -and $locations['r100598'].Label -eq 'Regional map') 'City must use the nearest verified ancestor map with an explicit label.'
 $unknown = [ordered]@{ r123=@{ Id='r123'; Name='Alberta'; Country='Canada'; Level=3; Parent='Canada' } }
 Set-LocationArt $unknown
 Assert ($unknown['r123'].Motif -eq 'neutral') 'Unverified region ID must not inherit a namesake map.'
+$countries = [ordered]@{
+    r1=@{ Id='r1'; Name='Japan'; Country='Japan'; Level=2; Parent='Asia' }
+    r2=@{ Id='r2'; Name='Ireland'; Country='Ireland'; Level=2; Parent='Europe' }
+}
+Set-LocationArt $countries
+Assert ($countries['r1'].MapRings.Count -gt 2 -and $countries['r2'].MapRings.Count -eq 2) 'Detailed country geometries must not be mixed.'
+$regional = [ordered]@{
+    r100516=@{ Id='r100516'; Name='Washington'; Country='United States'; Level=3; Parent='United States' }
+    r100014=@{ Id='r100014'; Name='Seattle-Tacoma'; Country='United States'; Level=4; Parent='Washington'; ParentId='r100516' }
+}
+Set-LocationArt $regional
+Assert ($regional['r100516'].Motif -eq 'map' -and $regional['r100014'].Label -eq 'Regional map' -and $regional['r100014'].MapPoint.Count -eq 2) 'Seattle must use the verified Washington state outline and marker.'
 $MaxLocationRequests = 2; $script:requests = 0
 $failed = $false
 try { $null = Get-Locations } catch { $failed = $_.Exception.Message -like '*exceeded*' }
 Assert ($failed -and $script:requests -eq 2) 'Discovery request limit failed.'
+
+$AllLocations = $true; $MaxLocationRequests = 10; $script:requests = 0
+function Get-Opml([string]$url) {
+    $script:requests++
+    switch -Regex ($url) {
+        'id=r0$' { return [xml]'<opml><body><outline type="link" text="Continent" guide_id="r1" URL="http://opml.radiotime.com/Browse.ashx?id=r1"/></body></opml>' }
+        'id=r1$' { return [xml]'<opml><body><outline text="Group"><outline type="link" text="Country" guide_id="r2" URL="http://opml.radiotime.com/Browse.ashx?id=r2"/></outline></body></opml>' }
+        'id=r2$' { return [xml]'<opml><body><outline type="link" text="Region" guide_id="r3" URL="http://opml.radiotime.com/Browse.ashx?id=r3"/></body></opml>' }
+        'id=r3$' { return [xml]'<opml><body><outline type="link" text="City" guide_id="r4" URL="http://opml.radiotime.com/Browse.ashx?id=r4"/></body></opml>' }
+        'id=r4$' { return [xml]'<opml><body><outline type="link" text="District" guide_id="r5" URL="http://opml.radiotime.com/Browse.ashx?id=r5"/><outline type="link" text="Cycle" guide_id="r1" URL="http://opml.radiotime.com/Browse.ashx?id=r1"/></body></opml>' }
+        'id=r5$' { return [xml]'<opml><body><outline type="audio" text="Station" guide_id="s1"/></body></opml>' }
+        default { throw "Unexpected request $url" }
+    }
+}
+$all = Get-Locations
+Assert ($all.Count -eq 5 -and $script:requests -eq 6 -and $all['r5'].Level -eq 5) 'Complete traversal must include nested and deeper links, deduplicate cycles, and browse leaves.'
+function Get-Opml([string]$url) {
+    return [xml]'<opml><body><outline type="link" text="Unsafe" guide_id="r1" URL="http://example.com/Browse.ashx?id=r1"/></body></opml>'
+}
+$failed = $false
+try { $null = Get-Locations } catch { $failed = $_.Exception.Message -like '*Noncanonical*' }
+Assert $failed 'Complete traversal must reject mismatched provider links.'
+function Get-Opml([string]$url) {
+    return [xml]'<opml><body><outline type="link" text="More locations" URL="http://opml.radiotime.com/Browse.ashx?id=r0&amp;offset=10" key="nextLocations"/></body></opml>'
+}
+$failed = $false
+try { $null = Get-Locations } catch { $failed = $_.Exception.Message -like '*pagination*' }
+Assert $failed 'Complete traversal must fail on unsupported location pagination.'
 
 $polygon = [pscustomobject]@{ type='Polygon'; coordinates=@(, @(@(0,0), @(2,0), @(2,1), @(0,0))) }
 $rings = Get-MapRings $polygon
