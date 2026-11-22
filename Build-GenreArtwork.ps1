@@ -1,13 +1,23 @@
 ﻿<#
-Builds a 1280x720 JPEG music genre artwork pack for the Emby TuneIn plugin. Every card's typography, palette and line
-art depend on the TuneIn parent genre; -Theme picks the overall look (Neon, Retro, Futuristic, Cartoon, Cat, Dog,
+Builds 1280x720 JPEG genre, language or location artwork packs for the Emby TuneIn plugin. -Theme picks the overall look (Neon, Retro, Futuristic, Cartoon, Cat, Dog,
 Nature, Blocky, Rebel, Imperial, Elegant, Tile or Classic). Run on Windows PowerShell with the fonts that ship with Windows 11 (Bahnschrift,
 Segoe UI Variable, Segoe UI, Segoe UI Black, Cascadia, Impact, Georgia and Franklin Gothic). It also writes tunein-artwork.json, a manifest the TuneIn plugin uses to identify the pack.
--Pack also writes a ZIP that users extract into Emby's plugins\configurations\TuneInArtwork\genres folder.
+-Pack also writes a ZIP for the matching plugins\configurations\TuneInArtwork scope folder.
 #>
 param(
-    [string]$Output = (Join-Path $PSScriptRoot 'output\genres'),
+    [string]$Output,
     [string[]]$Only,
+    [ValidateSet('genres', 'languages', 'locations')]
+    [string]$Scope = 'genres',
+    [ValidatePattern('^r(?:0|[1-9][0-9]{0,9})$')]
+    [string]$LocationRoot = 'r0',
+    [ValidateRange(0, 3)]
+    [int]$LocationRootLevel = 0,
+    [ValidateRange(1, 4)]
+    [int]$LocationDepth = 4,
+    [ValidateRange(1, 10000)]
+    [int]$MaxLocationRequests = 1000,
+    [switch]$NeutralLanguages,
     [ValidateSet('Neon', 'Retro', 'Futuristic', 'Cartoon', 'Cat', 'Dog', 'Nature', 'Blocky', 'Rebel', 'Imperial', 'Elegant', 'Tile', 'Classic')]
     [string]$Theme = 'Futuristic',
     # Writes <Output>\..\<PackName>.zip containing the cards and an install note; defaults to artpack-<theme>.
@@ -17,6 +27,11 @@ param(
     [string]$PackVersion = '1'
 )
 $ErrorActionPreference = 'Stop'
+$Scope = $Scope.ToLowerInvariant()
+if ($LocationRoot -cnotmatch '^r(?:0|[1-9][0-9]{0,9})$') { throw 'LocationRoot must be a lowercase TuneIn location ID.' }
+if (-not $Output) { $Output = Join-Path $PSScriptRoot "output\$Scope" }
+if (($LocationRoot -eq 'r0') -ne ($LocationRootLevel -eq 0)) { throw 'LocationRoot r0 requires level 0; other roots require a level from 1 to 3.' }
+if ($LocationDepth -lt $LocationRootLevel) { throw 'LocationDepth cannot be less than LocationRootLevel.' }
 Add-Type -AssemblyName System.Drawing
 
 function Argb([int]$al, $col) { [Drawing.Color]::FromArgb($al, $col) }
@@ -843,10 +858,26 @@ $Places = @{
     Turkish = 39, 35; Vietnamese = 16, 107
 }
 
+function Get-TitleFamily([string]$name) {
+    if ($name -eq 'Noto Sans Khmer') {
+        if (-not $script:PrivateFonts) {
+            $script:PrivateFonts = New-Object Drawing.Text.PrivateFontCollection
+            $script:PrivateFonts.AddFontFile((Join-Path $PSScriptRoot 'data\NotoSansKhmer-Regular.ttf'))
+        }
+        $family = @($script:PrivateFonts.Families | Where-Object { $_.Name -eq $name })
+        if ($family.Count -ne 1) { throw "Bundled font '$name' could not be loaded." }
+        return $family[0]
+    }
+    $family = New-Object Drawing.FontFamily $name
+    if ($family.Name -ne $name) { throw "Required font '$name' is not installed." }
+    return $family
+}
+
 function Title-Path([string]$text, $st) {
     $text = switch ($st.Case) { 'Upper' { $text.ToUpperInvariant() } 'Lower' { $text.ToLowerInvariant() } default { $text } }
     $words = @([regex]::Matches($text, '[^ /]+/?') | ForEach-Object Value)
-    $family = New-Object Drawing.FontFamily $st.Font
+    if ($words.Count -eq 0 -or $words.Count -gt 12) { throw "Title has an unsupported number of words: $text" }
+    $family = Get-TitleFamily $st.Font
     $fs = if ($st.Bold) { [Drawing.FontStyle]::Bold } else { [Drawing.FontStyle]::Regular }
     $shear = New-Object Drawing.Drawing2D.Matrix 1, 0, $st.Shear, 1, 0, 0
     $best = $null; $bestSize = 0; $bestLines = 9
@@ -861,7 +892,9 @@ function Title-Path([string]$text, $st) {
         if ($lines.Count -gt 3) { continue }
         for ($size = $st.Max; $size -ge 40; $size -= 6) {
             $path = New-Object Drawing.Drawing2D.GraphicsPath; $path.FillMode = 'Winding'
-            for ($i = 0; $i -lt $lines.Count; $i++) { $path.AddString($lines[$i], $family, [int]$fs, $size, (P 0 ($i * $size * 1.02)), [Drawing.StringFormat]::GenericTypographic) }
+            $fmt = [Drawing.StringFormat]::GenericTypographic
+            if ($script:CurrentRTL) { $fmt.FormatFlags = $fmt.FormatFlags -bor [Drawing.StringFormatFlags]::DirectionRightToLeft }
+            for ($i = 0; $i -lt $lines.Count; $i++) { $path.AddString($lines[$i], $family, [int]$fs, $size, (P 0 ($i * $size * 1.02)), $fmt) }
             $path.Transform($shear); $b = $path.GetBounds()
             if ($b.Width -le 640 -and $b.Height -le 380) {
                 if ($size -gt $bestSize -or ($size -eq $bestSize -and $lines.Count -lt $bestLines)) { $best = $path; $bestSize = $size; $bestLines = $lines.Count }
@@ -869,6 +902,7 @@ function Title-Path([string]$text, $st) {
             }
         }
     }
+    if (-not $best) { throw "Title cannot fit: $text" }
     $b = $best.GetBounds(); $mx = New-Object Drawing.Drawing2D.Matrix
     $mx.Translate(95 - $b.X, 330 - $b.Height / 2 - $b.Y); $best.Transform($mx); $best
 }
@@ -968,10 +1002,11 @@ $Ink = Rgb 62 36 22
 function Center-Title($gr, [string]$text, [string]$font, $bold, [string]$case, [float]$shear, [float]$cy, [float]$maxW, [float]$maxH, [int]$size) {
     $text = switch ($case) { 'Upper' { $text.ToUpperInvariant() } 'Lower' { $text.ToLowerInvariant() } default { $text } }
     $fmt = New-Object Drawing.StringFormat; $fmt.Alignment = 'Center'; $fmt.LineAlignment = 'Center'
+    if ($script:CurrentRTL) { $fmt.FormatFlags = $fmt.FormatFlags -bor [Drawing.StringFormatFlags]::DirectionRightToLeft }
     $fs = if ($bold) { [int][Drawing.FontStyle]::Bold } else { 0 }
     do {
         $tp = New-Object Drawing.Drawing2D.GraphicsPath
-        $tp.AddString($text, (New-Object Drawing.FontFamily $font), $fs, $size, (New-Object Drawing.RectangleF 40, ($cy - 300), 1200, 600), $fmt)
+        $tp.AddString($text, (Get-TitleFamily $font), $fs, $size, (New-Object Drawing.RectangleF 40, ($cy - 300), 1200, 600), $fmt)
         if ($shear) { $tp.Transform((New-Object Drawing.Drawing2D.Matrix 1, 0, $shear, 1, (-$shear * $cy), 0)) }
         $b = $tp.GetBounds(); $size -= 4
     } while (($b.Width -gt $maxW -or $b.Height -gt $maxH) -and $size -gt 30)
@@ -1238,9 +1273,10 @@ $Themes = @{    Neon       = @{
         Clip = { Rounded 503 113 274 274 30 }
         NoSub = $true
         Title = { param($gr, $title, $cl, $pal, $st, $info)
-            $tp = Center-Title $gr $info.Name 'Segoe UI Semibold' $false 'Title' 0 520 1000 90 72
+            $font = if ($info.NativeFont) { $info.NativeFont } else { 'Segoe UI Semibold' }
+            $tp = Center-Title $gr $info.Name $font $false 'Title' 0 520 1000 90 72
             $gr.FillPath((Br (Rgb 255 255 255)), $tp)
-            Centered-Sub $gr $(if ($info.Sub) { $info.Parent.ToUpperInvariant() } else { 'TUNEIN RADIO' }) 'Segoe UI' 22 (Argb 190 (Rgb 220 214 240)) 580
+            Centered-Sub $gr $(if ($info.Label) { $info.Label.ToUpperInvariant() } elseif ($info.Sub) { $info.Parent.ToUpperInvariant() } else { 'TUNEIN RADIO' }) 'Segoe UI' 22 (Argb 190 (Rgb 220 214 240)) 580
         }
     }
     Classic    = @{
@@ -1261,7 +1297,7 @@ $Themes = @{    Neon       = @{
             $gr.FillRectangle((New-Object Drawing.Drawing2D.LinearGradientBrush (P 0 0), (P 1280 720), $c1, $c2), 0, 0, 1280, 690)
             $tp = Center-Title $gr $info.Name $st.Font $st.Bold $st.Case $st.Shear 330 1100 300 200
             $gr.FillPath((Br (Argb 150 (Rgb 0 0 0))), (Shifted $tp 5 6)); $gr.FillPath((Br (Rgb 252 248 240)), $tp)
-            $b = $tp.GetBounds(); $label = if ($info.Sub) { $info.Parent } else { 'Music' }
+            $b = $tp.GetBounds(); $label = if ($info.Label) { $info.Label } elseif ($info.Sub) { $info.Parent } else { 'Music' }
             Centered-Sub $gr $label 'Segoe UI' 34 (Argb 220 (Rgb 245 240 230)) ($b.Bottom + 44)
         }
     }
@@ -1297,6 +1333,11 @@ function New-Card($info, [string]$file) {
     if ($T.Font) { $st.Font = Pick $T.Font $info.Style }
     foreach ($key in 'Bold', 'Case', 'Shear') { if ($T.ContainsKey($key)) { $st[$key] = $T[$key] } }
     if ($T.Max) { $st.Max = [Math]::Min($st.Max, $T.Max) }
+    $script:CurrentRTL = [bool]$info.RTL
+    if ($info.NativeFont) {
+        $null = Get-TitleFamily $info.NativeFont
+        $st.Font = $info.NativeFont; $st.Bold = $false; $st.Case = 'Title'; $st.Shear = 0
+    }
     $pal = foreach ($p in $st.Pal) { & $T.Color $p }
     $cl = @($pal[2], $pal[3], $pal[4])
     if ($info.Sub) { $r = $info.Seed % 3; $cl = @($cl[$r], $cl[($r + 1) % 3], $cl[($r + 2) % 3]) }
@@ -1315,7 +1356,7 @@ function New-Card($info, [string]$file) {
     $title = Title-Path $info.Name $st
     & $T.Title $g0 $title $cl $pal $st $info
     if (-not $T.NoSub) {
-    $label = if ($info.Sub) { $info.Parent } else { 'Music' }
+    $label = if ($info.Label) { $info.Label } elseif ($info.Sub) { $info.Parent } else { 'Music' }
     $fs = if ($T.SubBold) { [Drawing.FontStyle]::Bold } else { [Drawing.FontStyle]::Regular }
     $font = New-Object Drawing.Font (Pick $T.SubFont $info.Style), 28, $fs, ([Drawing.GraphicsUnit]::Pixel)
     $text = $T.SubPrefix + (Spaced $label)
@@ -1334,67 +1375,81 @@ foreach ($d in @(@('Color', { param($p) Rgb $p[0] $p[1] $p[2] }), @('OX', 1000),
 $__cm = New-Object Drawing.Imaging.ColorMatrix; $__cm.Matrix33 = if ($script:T.Art.Glow) { $script:T.Art.Glow } else { 0.65 }; $script:GlowAttr.SetColorMatrix($__cm)
 
 function Get-Opml([string]$url) {
-    [xml][Text.Encoding]::UTF8.GetString((Invoke-WebRequest -UseBasicParsing $url).RawContentStream.ToArray())
+    [xml]$doc = [Text.Encoding]::UTF8.GetString((Invoke-WebRequest -UseBasicParsing $url).RawContentStream.ToArray())
+    if ($doc.opml.head.status -ne '200') { throw "TuneIn browse failed for $url (status $($doc.opml.head.status))." }
+    $doc
 }
 
 $genres = [ordered]@{}
-foreach ($top in (Get-Opml 'http://opml.radiotime.com/Browse.ashx?c=music').opml.body.outline | Where-Object { $_.type -eq 'link' -and $_.guide_id -match '^[cg]\d+$' }) {
-    $parent = $top.text
-    if (-not $Parents.ContainsKey($parent)) { Write-Warning "Unknown parent genre '$parent'; using the Pop style."; $Parents[$parent] = 'Pop', 'notes' }
-    $genres[$top.guide_id] = @{ Id = $top.guide_id; Name = $parent; Parent = $parent; Sub = $false }
-    foreach ($o in (Get-Opml "http://opml.radiotime.com/Browse.ashx?id=$($top.guide_id)").SelectNodes('//outline[@guide_id]')) {
-        if ($o.guide_id -match '^g\d+$' -and -not $genres.Contains($o.guide_id)) { $genres[$o.guide_id] = @{ Id = $o.guide_id; Name = $o.text; Parent = $parent; Sub = $true } }
+if ($Scope -eq 'genres') {
+    foreach ($top in (Get-Opml 'https://opml.radiotime.com/Browse.ashx?c=music').opml.body.outline | Where-Object { $_.type -eq 'link' -and $_.guide_id -cmatch '^[cg][1-9][0-9]{0,9}$' }) {
+        $parent = $top.text
+        if (-not $Parents.ContainsKey($parent)) { Write-Warning "Unknown parent genre '$parent'; using the Pop style."; $Parents[$parent] = 'Pop', 'notes' }
+        $genres[$top.guide_id] = @{ Id = $top.guide_id; Name = $parent; Parent = $parent; Sub = $false }
+        foreach ($o in (Get-Opml "https://opml.radiotime.com/Browse.ashx?id=$($top.guide_id)").SelectNodes('//outline[@guide_id]')) {
+            if ($o.guide_id -cmatch '^g[1-9][0-9]{0,9}$' -and -not $genres.Contains($o.guide_id)) { $genres[$o.guide_id] = @{ Id = $o.guide_id; Name = $o.text; Parent = $parent; Sub = $true } }
+        }
     }
+} else {
+    . (Join-Path $PSScriptRoot 'Scoped-Artwork.ps1')
+    if ($Scope -eq 'languages') { $genres = Get-Languages }
+    else { $genres = Get-Locations; Set-LocationArt $genres }
 }
 
 New-Item -ItemType Directory -Force $Output | Out-Null
+$rendered = New-Object System.Collections.ArrayList
 foreach ($info in $genres.Values) {
-    if ($Only -and -not ($Only | Where-Object { $info.Id -eq $_ -or $info.Name -like $_ })) { continue }
+    if ($Only -and -not ($Only | Where-Object { $info.Id -eq $_ -or $info.Name -like $_ -or ($info.ProviderName -and $info.ProviderName -like $_) })) { continue }
     $seed = 0; foreach ($ch in $info.Id.ToCharArray()) { $seed = ($seed * 31 + [int]$ch) % 2147483647 }
     $info.Seed = [int]$seed
-    $info.Style = $Parents[$info.Parent][0]
-    $info.Motif = $Parents[$info.Parent][1]
-    if ($info.Sub) { foreach ($rx in $Overrides.Keys) { if ($info.Name -match $rx) { $info.Motif = $Overrides[$rx]; break } } }
-    if ($info.Style -eq 'World' -and $Places.ContainsKey(($place = $info.Name -replace ' Music$'))) { $info.Lat = $Places[$place][0]; $info.Lon = $Places[$place][1] }
+    if ($Scope -eq 'genres') {
+        $info.Style = $Parents[$info.Parent][0]
+        $info.Motif = $Parents[$info.Parent][1]
+        if ($info.Sub) { foreach ($rx in $Overrides.Keys) { if ($info.Name -match $rx) { $info.Motif = $Overrides[$rx]; break } } }
+        if ($info.Style -eq 'World' -and $Places.ContainsKey(($place = $info.Name -replace ' Music$'))) { $info.Lat = $Places[$place][0]; $info.Lon = $Places[$place][1] }
+    }
     New-Card $info (Join-Path $Output "$($info.Id).jpg")
+    [void]$rendered.Add($info.Id)
     Write-Host "$($info.Id)  $($info.Name)  [$($info.Style)/$($info.Motif)]"
 }
+if ($Only -and -not $rendered.Count) { throw 'No artwork matched -Only.' }
 
 # tunein-artwork.json identifies the installed pack to the TuneIn plugin. The SHA-256 hashes let it tell
 # pack images from ones a user has replaced.
-if (-not $PackName) { $PackName = 'artpack-' + $Theme.ToLowerInvariant() }
+if (-not $PackName) { $PackName = 'artpack-' + $Theme.ToLowerInvariant(); if ($Scope -ne 'genres') { $PackName += "-$Scope" } }
 $commit = try { (& git -C $PSScriptRoot rev-parse --short HEAD 2>$null) } catch { $null }
-$images = @(Get-ChildItem $Output -Filter *.jpg | Where-Object { $genres.Contains($_.BaseName) } | Sort-Object Name | ForEach-Object {
-    $info = $genres[$_.BaseName]
-    [ordered]@{ id = $info.Id; name = $info.Name; parent = $info.Parent; file = $_.Name; bytes = $_.Length
-        sha256 = (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant() }
+$images = @($rendered | Sort-Object | ForEach-Object {
+    $file = Get-Item (Join-Path $Output "$_.jpg")
+    $info = $genres[$file.BaseName]
+    [ordered]@{ id = $info.Id; name = $(if ($info.ProviderName) { $info.ProviderName } else { $info.Name }); parent = $info.Parent; file = $file.Name; bytes = $file.Length
+        sha256 = (Get-FileHash $file.FullName -Algorithm SHA256).Hash.ToLowerInvariant() }
 })
 $manifest = [ordered]@{
-    schemaVersion = 1; packId = $PackName; packName = $Theme; theme = $Theme; version = $PackVersion
+    schemaVersion = 1; scope = $Scope; packId = $PackName; packName = $Theme; theme = $Theme; version = $PackVersion
     description = $script:T.Description; minPluginVersion = '1.2.8.0'
-    sampleImageUrl = "https://raw.githubusercontent.com/oconnoradv/EmbyTuneInArt/main/docs/samples/$($Theme.ToLowerInvariant()).jpg"
     sourceUrl = 'https://github.com/oconnoradv/EmbyTuneInArt'; toolCommit = $commit; license = 'GPL-3.0'
     builtUtc = [DateTime]::UtcNow.ToString('yyyy-MM-ddTHH:mm:ssZ'); imageCount = $images.Count; images = $images
 }
+if ($Scope -eq 'genres') { $manifest.sampleImageUrl = "https://raw.githubusercontent.com/oconnoradv/EmbyTuneInArt/main/docs/samples/$($Theme.ToLowerInvariant()).jpg" }
 [IO.File]::WriteAllText((Join-Path $Output 'tunein-artwork.json'), ($manifest | ConvertTo-Json -Depth 4), (New-Object Text.UTF8Encoding $false))
 
 if ($Pack) {
     Add-Type -AssemblyName System.IO.Compression.FileSystem
     $zip = Join-Path (Split-Path ([IO.Path]::GetFullPath($Output)) -Parent) "$PackName.zip"
     $note = @"
-$PackName - genre artwork for the Emby TuneIn plugin ($Theme theme)
+$PackName - $Scope artwork for the Emby TuneIn plugin ($Theme theme)
 Built by Build-GenreArtwork.ps1 from https://github.com/oconnoradv/EmbyTuneInArt (GPL-3.0).
 
-1. Extract the .jpg files and tunein-artwork.json into <Emby data>\plugins\configurations\TuneInArtwork\genres
+1. Extract the .jpg files and tunein-artwork.json into <Emby data>\plugins\configurations\TuneInArtwork\$Scope
    (the TuneIn settings page shows the exact folder).
-2. In TuneIn settings, open Catalog Refresh and refresh Music.
-Delete the files and refresh Music again to return to the default icons.
+2. Refresh the corresponding TuneIn catalog in plugin settings.
+Delete the files and refresh again to return to the default icons.
 "@
     if (Test-Path $zip) { Remove-Item $zip }
     $archive = [IO.Compression.ZipFile]::Open($zip, 'Create')
     try {
-        Get-ChildItem $Output -Filter *.jpg | Where-Object { $_.BaseName -match '^[cg]\d+$' } | ForEach-Object {
-            [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, $_.FullName, $_.Name, 'Optimal')
+        foreach ($image in $images) {
+            [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, (Join-Path $Output $image.file), $image.file, 'Optimal')
         }
         [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, (Join-Path $Output 'tunein-artwork.json'), 'tunein-artwork.json', 'Optimal')
         $writer = New-Object IO.StreamWriter ($archive.CreateEntry('README.txt').Open())

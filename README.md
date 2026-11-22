@@ -1,11 +1,11 @@
-# EmbyTuneInArt — genre art-packs for the EmbyTuneIn plugin
+# EmbyTuneInArt — artwork packs for the EmbyTuneIn plugin
 
 ![EmbyTuneInArt genre artwork packs](docs/embytuneinart-banner.png)
 
-EmbyTuneInArt builds optional artwork packs for the music genre folders of the
+EmbyTuneInArt builds optional artwork packs for the music genre, language and location folders of the
 [Emby TuneIn plugin](https://github.com/oconnoradv/EmbyTuneIn). `Build-GenreArtwork.ps1` renders one original
 1280×720 card per TuneIn music genre and subgenre in one of thirteen [themes](#themes). Each parent genre gets its own
-typography, palette and line art. The cards contain no TuneIn logos or station images.
+typography, palette and line art. Language and location cards use the same themes. The cards contain no TuneIn logos or station images.
 
 The plugin ships with its default category icons. Packs are optional: install one and the Music genre folders in
 Emby show its cards instead. Ready-made packs are on the [Releases](https://github.com/oconnoradv/EmbyTuneInArt/releases)
@@ -41,12 +41,14 @@ using any franchise's names, logos, emblems or fonts.
    [Releases](https://github.com/oconnoradv/EmbyTuneInArt/releases).
 2. In Emby, open **Settings → TuneIn**. Under the animated TuneIn header, the page shows the artwork folder,
    for example `C:\ProgramData\Emby-Server\programdata\plugins\configurations\TuneInArtwork\genres`.
-3. Create that folder if it does not exist and extract the pack's `.jpg` files and `tunein-artwork.json` into it.
+3. Create the appropriate `genres`, `languages` or `locations` folder if it does not exist and extract that scope's
+   `.jpg` files and `tunein-artwork.json` into it. Keep one pack per scope. Do not mix manifests between folders.
 4. Reload the TuneIn settings page. It should report the number of installed genre images.
-5. Open **Catalog Refresh** and refresh **Music**. Genre folders now show the pack's cards.
+5. Open **Catalog Refresh** and refresh the corresponding TuneIn catalog.
 
-To go back to the default icons, delete the images and refresh Music again. Only files named after a TuneIn guide
-ID (`c57943.jpg`, `g79.png`) are used; genres without an image keep the Music icon.
+To go back to the default icons, delete the images and refresh the corresponding catalog again. Only files named
+after a TuneIn guide ID are used: `c` or `g` for genres, `l` for languages and `r` for locations, followed by
+1–10 digits with a nonzero first digit. Entries without an image keep their default icons.
 
 ## Build your own pack, step by step
 
@@ -55,7 +57,10 @@ Requirements:
 - Windows 11 with Windows PowerShell 5.1 (`System.Drawing`).
 - The Windows 11 fonts Bahnschrift, Segoe UI Variable, Segoe UI Black, Cascadia Mono, Impact, Georgia and
   Franklin Gothic Medium. Elsewhere GDI+ substitutes fonts and the cards look different.
-- Internet access to `opml.radiotime.com`, which supplies the current genre list.
+- Internet access to `opml.radiotime.com`, which supplies the current catalog.
+- For native scripts, Windows fonts including Meiryo, Microsoft YaHei, Malgun Gothic, Nirmala UI,
+  Leelawadee UI, Myanmar Text and MV Boli. The build fails if a selected font is unavailable.
+  Noto Sans Khmer is bundled for Khmer.
 
 1. **Clone the repository.**
 
@@ -89,29 +94,65 @@ Requirements:
    powershell -NoProfile -ExecutionPolicy Bypass -File Build-GenreArtwork.ps1 -Output 'C:\ProgramData\Emby-Server\programdata\plugins\configurations\TuneInArtwork\genres'
    ```
 
+   Build other scopes with the same themes:
+
+   ```powershell
+   powershell -NoProfile -ExecutionPolicy Bypass -File Build-GenreArtwork.ps1 -Scope languages -Theme Cartoon -Pack
+   powershell -NoProfile -ExecutionPolicy Bypass -File Build-GenreArtwork.ps1 -Scope locations -Theme Classic -Pack
+   ```
+
+   Outputs default to `output\languages` and `output\locations`, with scope-specific ZIP names. Scoped packs
+   require a TuneIn build with scoped artwork support; `minPluginVersion` alone cannot distinguish older 1.2.8 RCs.
+   To preview a bounded Canadian subtree through its cities:
+
+   ```powershell
+   powershell -NoProfile -ExecutionPolicy Bypass -Command "& .\Build-GenreArtwork.ps1 -Scope locations -LocationRoot r101227 -LocationRootLevel 2 -LocationDepth 4 -Only 'Canada','Alberta','Calgary' -Output .\preview"
+   ```
+
+   The default root is `r0` (level 0). Levels 1–4 correspond to continent, country, region and city where
+   TuneIn uses that hierarchy. Provider hierarchies vary; an explicitly supplied root must have its correct level.
+   The default depth is 4 and discovery stops before browsing city nodes. At most 1,000 browse requests are made;
+   exceeding `-MaxLocationRequests` fails the build rather than silently publishing an incomplete pack. Increase
+   it explicitly or restrict the root/depth. Only location links are followed; station and other pivot items are ignored.
+
+   Language titles use a curated mapping to Windows neutral-culture native names. Unknown or ambiguous categories
+   retain the TuneIn label with a warning. Japanese and Icelandic use labeled representative flags by default;
+   `-NeutralLanguages` replaces those with a neutral globe. Other languages use a neutral globe rather than assigning
+   a country to a language.
+
+   Country outlines and curated US/Canadian region outlines use the bundled public-domain Natural Earth
+   110m countries and 50m admin-1 data, matched by name and country. Region IDs are explicitly verified because
+   the provider does not label regions versus cities. Map coverage is limited; cities, unmatched
+   regions, ambiguous/unsupported geometry and antimeridian-spanning shapes use a globe explicitly labeled
+   **Generic location**. A map is a stylized outline, not a navigation map.
+
 6. **Share it (optional).** Publish the ZIP as a release, for example with
    `gh release create artpack-<name>-v1 .\output\<name>.zip`.
 
 Each card prints `id  name  [style/motif]` as it is drawn.
+Run the offline discovery and geometry checks with
+`powershell -NoProfile -ExecutionPolicy Bypass -File .\tests\Scoped-Artwork.Tests.ps1`.
 
 ## Pack manifest
 
 Every build writes `tunein-artwork.json` next to the cards, and `-Pack` includes it in the ZIP. It is installed
-in the `genres` folder with the images so the TuneIn plugin can identify the pack:
+in the scope folder with the images so the TuneIn plugin can identify the pack:
 
 | Field | Meaning |
 |---|---|
 | `schemaVersion` | Manifest format version, currently `1`. |
+| `scope` | `genres`, `languages` or `locations`; legacy manifests without this field are genres only. |
 | `packId`, `packName`, `theme`, `version` | Pack identity, for example `artpack-cartoon`, `Cartoon`, `Cartoon`, `1`. |
 | `description` | The theme's one-line description. |
-| `minPluginVersion` | Oldest TuneIn plugin version the pack supports (`1.2.8.0`). |
-| `sampleImageUrl`, `sourceUrl` | A sample image and the repository the pack was built from. |
+| `minPluginVersion` | Plugin assembly version (`1.2.8.0`); scoped support requires the newer scoped-artwork RC build. |
+| `sampleImageUrl`, `sourceUrl` | An optional genre sample image and the repository the pack was built from. |
 | `toolCommit`, `builtUtc`, `license` | The tool commit, build time and licence (`GPL-3.0`). |
 | `imageCount`, `images` | One entry per card: `id`, `name`, `parent`, `file`, `bytes` and lower-case `sha256`. |
 
 The plugin can count installed images and compare each file's SHA-256 with the manifest. A missing or
 different hash means the user added or replaced that image. The manifest lists only cards present in the output
-folder, so a `-Only` build describes just those cards.
+in the current build, so a `-Only` build describes just those cards. Use a clean output folder when switching
+packs: older files are not deleted and the plugin can report them as added images.
 
 ## Roadmap
 
@@ -158,3 +199,11 @@ Emby's cached folder images.
 ## License
 
 EmbyTuneInArt and the artwork it produces are licensed under the [GNU General Public License v3.0](LICENSE).
+The bundled `data\natural-earth.json` is derived from Natural Earth v5.1.2
+[`ne_110m_admin_0_countries`](https://github.com/nvkelso/natural-earth-vector/blob/v5.1.2/geojson/ne_110m_admin_0_countries.geojson)
+and [`ne_50m_admin_1_states_provinces`](https://github.com/nvkelso/natural-earth-vector/blob/v5.1.2/geojson/ne_50m_admin_1_states_provinces.geojson):
+only names, country names and geometry were retained. Natural Earth data is
+[public domain](https://www.naturalearthdata.com/about/terms-of-use/). The flag motifs are original geometric drawings.
+`data\NotoSansKhmer-Regular.ttf` is from
+[Noto Fonts](https://github.com/notofonts/noto-fonts/tree/ffebf8c1ee449e544955a7e813c54f9b73848eac/hinted/ttf/NotoSansKhmer)
+and is distributed under the [SIL Open Font License 1.1](data/Noto-OFL.txt).
