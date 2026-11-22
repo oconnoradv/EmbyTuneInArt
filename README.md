@@ -4,7 +4,7 @@
 
 EmbyTuneInArt builds optional artwork packs for the music genre folders of the
 [Emby TuneIn plugin](https://github.com/oconnoradv/EmbyTuneIn). `Build-GenreArtwork.ps1` renders one original
-1280×720 card per TuneIn music genre and subgenre in one of thirteen [themes](#themes). Each parent genre gets its own
+1280×720 card per TuneIn music genre and subgenre in one of sixteen [themes](#themes). Each parent genre gets its own
 typography, palette and line art. The cards contain no TuneIn logos or station images.
 
 The plugin ships with its default category icons. Packs are optional: install one and the Music genre folders in
@@ -13,14 +13,17 @@ page; build your own to change the look.
 
 ## Themes
 
-Pick a theme with `-Theme <name>` (default `Futuristic`). Each sample shows Punk, Smooth Jazz, Christmas Music and
-Classic Hip Hop.
+Pick a theme with `-Theme <name>` (default `Futuristic`). Original theme samples show Punk, Smooth Jazz, Christmas Music
+and Classic Hip Hop. Spotlight samples show Punk, Grunge, Hip Hop and Smooth Jazz.
 
 | Theme | Look | Sample |
 |---|---|---|
 | `Futuristic` | Holographic HUD rings, a perspective grid floor, scanlines and chromatic glow. | ![Futuristic sample](docs/samples/futuristic.jpg) |
 | `Classic` | Bold centred typography in each genre's font on a rich genre gradient, with faint line art and an accent band. | ![Classic sample](docs/samples/classic.jpg) |
 | `Tile` | The original plugin look: a dark-to-violet gradient, line art in a rounded tile and a centred caption. | ![Tile sample](docs/samples/tile.jpg) |
+| `FuturisticSpotlight` | Futuristic with illustrated performers and a punk mohawk for selected genres. | ![Futuristic Spotlight sample](docs/samples/futuristicspotlight.jpg) |
+| `ClassicSpotlight` | Classic with illustrated Punk and Grunge cards. | ![Classic Spotlight sample](docs/samples/classicspotlight.jpg) |
+| `CartoonSpotlight` | Cartoon with illustrated performers and a punk mohawk for selected genres. | ![Cartoon Spotlight sample](docs/samples/cartoonspotlight.jpg) |
 | `Neon` | Glowing neon line art on dark gradients (the original pack). | ![Neon sample](docs/samples/neon.jpg) |
 | `Retro` | Cream paper, sunburst, stripes and offset print shadows in a muted 1970s palette. | ![Retro sample](docs/samples/retro.jpg) |
 | `Cartoon` | Comic-panel border, burst rays and halftone dots with bold outlined line art. | ![Cartoon sample](docs/samples/cartoon.jpg) |
@@ -34,6 +37,11 @@ Classic Hip Hop.
 
 Themes are original designs. `Blocky`, `Rebel` and `Imperial` evoke familiar genres of game and film art without
 using any franchise's names, logos, emblems or fonts.
+
+The Spotlight themes retain their original base theme for genres without a Spotlight illustration. Futuristic Spotlight
+and Cartoon Spotlight include illustrated Punk, Grunge, Hip Hop, Classic Rock, Smooth Jazz and Metal cards; Classic
+Spotlight includes Punk and Grunge. These selected cards are supplied as fixed AI-generated illustrations in
+`spotlight/`; other cards are rendered by the tool. The original themes and packs remain unchanged.
 
 ## Install a ready-made pack
 
