@@ -1,5 +1,7 @@
 # EmbyTuneInArt — genre art-packs for the EmbyTuneIn plugin
 
+![EmbyTuneInArt genre artwork packs](docs/embytuneinart-banner.png)
+
 EmbyTuneInArt builds optional artwork packs for the music genre folders of the
 [Emby TuneIn plugin](https://github.com/oconnoradv/EmbyTuneIn). `Build-GenreArtwork.ps1` renders one original
 1280×720 card per TuneIn music genre and subgenre in one of thirteen [themes](#themes). Each parent genre gets its own
