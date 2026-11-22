@@ -1,14 +1,14 @@
 ﻿<#
 Builds a 1280x720 JPEG music genre artwork pack for the Emby TuneIn plugin. Every card's typography, palette and line
 art depend on the TuneIn parent genre; -Theme picks the overall look (Neon, Retro, Futuristic, Cartoon, Cat, Dog,
-Nature, Blocky, Rebel, Imperial or Elegant). Run on Windows PowerShell with the fonts that ship with Windows 11 (Bahnschrift,
+Nature, Blocky, Rebel, Imperial, Elegant, Tile or Classic). Run on Windows PowerShell with the fonts that ship with Windows 11 (Bahnschrift,
 Segoe UI Variable, Segoe UI, Segoe UI Black, Cascadia, Impact, Georgia and Franklin Gothic). -Pack also writes a ZIP that users
 extract into Emby's plugins\configurations\TuneInArtwork\genres folder.
 #>
 param(
     [string]$Output = (Join-Path $PSScriptRoot 'output\genres'),
     [string[]]$Only,
-    [ValidateSet('Neon', 'Retro', 'Futuristic', 'Cartoon', 'Cat', 'Dog', 'Nature', 'Blocky', 'Rebel', 'Imperial', 'Elegant')]
+    [ValidateSet('Neon', 'Retro', 'Futuristic', 'Cartoon', 'Cat', 'Dog', 'Nature', 'Blocky', 'Rebel', 'Imperial', 'Elegant', 'Tile', 'Classic')]
     [string]$Theme = 'Neon',
     # Writes <Output>\..\<PackName>.zip containing the cards and an install note; defaults to artpack-<theme>.
     [switch]$Pack,
@@ -963,8 +963,25 @@ function Draw-Dog($gr, $cl, $info) {
 }
 
 $Ink = Rgb 62 36 22
-$Themes = @{
-    Neon       = @{
+function Center-Title($gr, [string]$text, [string]$font, $bold, [string]$case, [float]$shear, [float]$cy, [float]$maxW, [float]$maxH, [int]$size) {
+    $text = switch ($case) { 'Upper' { $text.ToUpperInvariant() } 'Lower' { $text.ToLowerInvariant() } default { $text } }
+    $fmt = New-Object Drawing.StringFormat; $fmt.Alignment = 'Center'; $fmt.LineAlignment = 'Center'
+    $fs = if ($bold) { [int][Drawing.FontStyle]::Bold } else { 0 }
+    do {
+        $tp = New-Object Drawing.Drawing2D.GraphicsPath
+        $tp.AddString($text, (New-Object Drawing.FontFamily $font), $fs, $size, (New-Object Drawing.RectangleF 40, ($cy - 300), 1200, 600), $fmt)
+        if ($shear) { $tp.Transform((New-Object Drawing.Drawing2D.Matrix 1, 0, $shear, 1, (-$shear * $cy), 0)) }
+        $b = $tp.GetBounds(); $size -= 4
+    } while (($b.Width -gt $maxW -or $b.Height -gt $maxH) -and $size -gt 30)
+    $tp
+}
+
+function Centered-Sub($gr, [string]$text, [string]$font, [int]$size, $color, [float]$y) {
+    $f = New-Object Drawing.Font $font, $size, ([Drawing.FontStyle]::Regular), ([Drawing.GraphicsUnit]::Pixel)
+    $w = $gr.MeasureString($text, $f).Width; $gr.DrawString($text, $f, (Br $color), (640 - $w / 2), $y)
+}
+
+$Themes = @{    Neon       = @{
         Description = 'Glowing neon line art on dark gradients (the original pack).'
         Art = @{ Mode = 'Glow'; Glow = 0.65; Core = (Argb 150 (Rgb 255 255 255)) }
         Background = { param($gr, $cl, $pal, $info)
@@ -1206,6 +1223,46 @@ $Themes = @{
         Font = 'Bahnschrift SemiBold SemiConden'; Case = 'Upper'; Shear = 0; Max = 190
         SubFont = 'Bahnschrift'; Sub = { param($cl, $pal) Rgb 214 40 40 }
     }
+    Tile       = @{
+        Description = 'The original plugin look: a dark-to-violet gradient, line art in a rounded tile and a centred caption.'
+        Color = { param($p) RgbF (0.5 * $p[0] + 120) (0.5 * $p[1] + 120) (0.5 * $p[2] + 120) }
+        Art = @{ Mode = 'Flat'; K = 2.3 }
+        OX = 640; OY = 250; Scale = 0.34
+        Background = { param($gr, $cl, $pal, $info)
+            $gr.FillRectangle((New-Object Drawing.Drawing2D.LinearGradientBrush (P 0 0), (P 1280 720), (Rgb 20 27 43), (Rgb 112 66 180)), 0, 0, 1280, 720)
+            $gr.FillPath((Br (Argb 90 (Rgb 0 0 0))), (Rounded 497 117 290 290 36))
+            $gr.FillPath((Br (Rgb 46 46 74)), (Rounded 495 105 290 290 36))
+        }
+        Clip = { Rounded 503 113 274 274 30 }
+        NoSub = $true
+        Title = { param($gr, $title, $cl, $pal, $st, $info)
+            $tp = Center-Title $gr $info.Name 'Segoe UI Semibold' $false 'Title' 0 520 1000 90 72
+            $gr.FillPath((Br (Rgb 255 255 255)), $tp)
+            Centered-Sub $gr $(if ($info.Sub) { $info.Parent.ToUpperInvariant() } else { 'TUNEIN RADIO' }) 'Segoe UI' 22 (Argb 190 (Rgb 220 214 240)) 580
+        }
+    }
+    Classic    = @{
+        Description = 'Bold centred typography on a rich genre-coloured gradient, with faint line art and an accent band.'
+        Color = { param($p) RgbF (0.5 * $p[0] + 90) (0.5 * $p[1] + 90) (0.5 * $p[2] + 90) }
+        Art = @{ Mode = 'Flat'; K = 1.2 }
+        OX = 640; OY = 360; Scale = 1.2
+        Background = { param($gr, $cl, $pal, $info)
+            $c1 = Mix $pal[0] (Rgb 0 0 0) 0.2; $c2 = Mix $cl[0] $pal[1] 0.45
+            $gr.FillRectangle((New-Object Drawing.Drawing2D.LinearGradientBrush (P 0 0), (P 1280 720), $c1, $c2), 0, 0, 1280, 720)
+            $gr.FillRectangle((Br (Argb 70 (Rgb 0 0 0))), 0, 0, 1280, 720)
+            $gr.FillRectangle((Br $cl[1]), 0, 690, 1280, 30)
+        }
+        Clip = { $cp = New-Object Drawing.Drawing2D.GraphicsPath; $cp.AddRectangle((New-Object Drawing.Rectangle 0, 0, 1280, 690)); $cp }
+        NoSub = $true
+        Title = { param($gr, $title, $cl, $pal, $st, $info)
+            $c1 = Argb 215 (Mix (Mix $pal[0] (Rgb 0 0 0) 0.2) (Rgb 0 0 0) 0.27); $c2 = Argb 215 (Mix (Mix $cl[0] $pal[1] 0.45) (Rgb 0 0 0) 0.27)
+            $gr.FillRectangle((New-Object Drawing.Drawing2D.LinearGradientBrush (P 0 0), (P 1280 720), $c1, $c2), 0, 0, 1280, 690)
+            $tp = Center-Title $gr $info.Name $st.Font $st.Bold $st.Case $st.Shear 330 1100 300 200
+            $gr.FillPath((Br (Argb 150 (Rgb 0 0 0))), (Shifted $tp 5 6)); $gr.FillPath((Br (Rgb 252 248 240)), $tp)
+            $b = $tp.GetBounds(); $label = if ($info.Sub) { $info.Parent } else { 'Music' }
+            Centered-Sub $gr $label 'Segoe UI' 34 (Argb 220 (Rgb 245 240 230)) ($b.Bottom + 44)
+        }
+    }
     Elegant    = @{
         Description = 'Quiet charcoal, a warm vignette, champagne hairline art and serif titles.'
         Color = { param($p) $l = 0.3 * $p[0] + 0.59 * $p[1] + 0.11 * $p[2]; RgbF (0.1 * $p[0] + 0.35 * $l + 130) (0.1 * $p[1] + 0.3 * $l + 112) (0.1 * $p[2] + 0.22 * $l + 84) }
@@ -1254,13 +1311,15 @@ function New-Card($info, [string]$file) {
     if ($T.Character) { & $T.Character $g0 $cl $info }
 
     $title = Title-Path $info.Name $st
-    & $T.Title $g0 $title $cl $pal $st
+    & $T.Title $g0 $title $cl $pal $st $info
+    if (-not $T.NoSub) {
     $label = if ($info.Sub) { $info.Parent } else { 'Music' }
     $fs = if ($T.SubBold) { [Drawing.FontStyle]::Bold } else { [Drawing.FontStyle]::Regular }
     $font = New-Object Drawing.Font (Pick $T.SubFont $info.Style), 28, $fs, ([Drawing.GraphicsUnit]::Pixel)
     $text = $T.SubPrefix + (Spaced $label)
     if ($T.SubShadow) { $g0.DrawString($text, $font, (Br $T.SubShadow), 99, 563) }
     $g0.DrawString($text, $font, (Br (& $T.Sub $cl $pal)), 96, 560)
+    }
 
     $codec = [Drawing.Imaging.ImageCodecInfo]::GetImageEncoders() | Where-Object MimeType -eq 'image/jpeg'
     $ep = New-Object Drawing.Imaging.EncoderParameters 1
