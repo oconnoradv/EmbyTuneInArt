@@ -200,16 +200,6 @@ function Scoped-Motif($g, $info, $theme, $cx, $cy) {
             for ($y = -260; $y -le 260; $y += 9) { L $g $texture -260 $y 260 ($y + 100) }
             for ($x = -300; $x -le 300; $x += 12) { L $g $texture $x -260 ($x+150) 260 }
             $texture.Dispose()
-        } elseif ($info.ProviderName) {
-            $color = if ($theme -eq 'Futuristic') { Rgb 53 226 250 } else { Rgb 236 203 136 }
-            $pen = New-Object Drawing.Pen $color, 6
-            $bubble = New-Object Drawing.Drawing2D.GraphicsPath
-            try {
-                $bubble.AddPolygon((Pts @(-210,-100,170,-100,170,90,-70,90,-150,140,-125,90,-210,90)))
-                $g.FillPath((Br (Argb 180 (Rgb 8 36 48))), $bubble)
-                $g.DrawPath($pen, $bubble)
-                L $g $pen -155 -45 110 -45; L $g $pen -155 0 95 0; L $g $pen -155 45 25 45
-            } finally { $bubble.Dispose(); $pen.Dispose() }
         } else {
             $random = New-Object Random $info.Seed
             $gold = Br (Argb 105 (Rgb 255 231 150))
@@ -229,6 +219,16 @@ function Scoped-Motif($g, $info, $theme, $cx, $cy) {
             FE $g (Br (Rgb 208 32 45)) $px $py 9 9
             FE $g (Br (Rgb 255 255 255)) $px $py 3 3
         }
+    } elseif ($info.ProviderName) {
+        $color = if ($theme -eq 'Futuristic') { Rgb 53 226 250 } else { Rgb 236 203 136 }
+        $pen = New-Object Drawing.Pen $color, 6
+        $bubble = New-Object Drawing.Drawing2D.GraphicsPath
+        try {
+            $bubble.AddPolygon((Pts @(-210,-100,170,-100,170,90,-70,90,-150,140,-125,90,-210,90)))
+            $g.FillPath((Br (Argb 180 (Rgb 8 36 48))), $bubble)
+            $g.DrawPath($pen, $bubble)
+            L $g $pen -155 -45 110 -45; L $g $pen -155 0 95 0; L $g $pen -155 45 25 45
+        } finally { $bubble.Dispose(); $pen.Dispose() }
     } else {
         $color = if ($theme -eq 'Futuristic') { Rgb 53 226 250 } else { Rgb 236 203 136 }
         $pen = New-Object Drawing.Pen $color, 6
@@ -243,6 +243,15 @@ function Scoped-Motif($g, $info, $theme, $cx, $cy) {
         } finally { $pin.Dispose(); $pen.Dispose() }
     }
     $g.Restore($state)
+}
+
+function Fit-ScopedTitle([Drawing.Drawing2D.GraphicsPath]$title, [float]$width, [float]$height) {
+    $bounds=$title.GetBounds()
+    if ($bounds.Width -gt $width -or $bounds.Height -gt $height) {
+        $scale=[Math]::Min($width/$bounds.Width,$height/$bounds.Height)
+        $matrix=New-Object Drawing.Drawing2D.Matrix $scale,0,0,$scale,((1-$scale)*($bounds.X+$bounds.Width/2)),((1-$scale)*($bounds.Y+$bounds.Height/2))
+        try {$title.Transform($matrix)} finally {$matrix.Dispose()}
+    }
 }
 
 function New-ScopedCard($info, [string]$file, [string]$theme) {
@@ -278,6 +287,8 @@ function New-ScopedCard($info, [string]$file, [string]$theme) {
     $maxW = if ($theme -eq 'Classic' -or ($theme -eq 'Cartoon' -and $info.Motif -eq 'map')) { 560 } else { 1080 }
     $bold = $theme -in 'Cartoon','Futuristic' -and (Get-TitleFamily $font).IsStyleAvailable([Drawing.FontStyle]::Bold)
     $title = Center-Title $g $displayTitle $font $bold 'Title' 0 $cyTitle $maxW 150 160
+    $titleHeight = if ($theme -eq 'Cartoon') { 110 } elseif ($theme -eq 'Futuristic') { 130 } else { 150 }
+    Fit-ScopedTitle $title $maxW $titleHeight
     if ($theme -eq 'Classic') { $title.Transform((New-Object Drawing.Drawing2D.Matrix 1, 0, 0, 1, 280, 0)) }
     if ($theme -eq 'Cartoon' -and $info.Motif -eq 'map') { $title.Transform((New-Object Drawing.Drawing2D.Matrix 1, 0, 0, 1, 250, 0)) }
     $color = if ($theme -eq 'Futuristic') { Rgb 226 252 255 } else { Rgb 255 225 164 }

@@ -159,6 +159,26 @@ catch { $failed = $_.Exception.Message -like '*missing for 1 of 1*' -and $_.Exce
 Assert $failed 'A registry entry without its theme PNG must fail strict coverage.'
 $script:ScopedSubjects.Remove('l999')
 Add-Type -AssemblyName System.Drawing
+$title=New-Object Drawing.Drawing2D.GraphicsPath
+try {
+    $title.AddRectangle((New-Object Drawing.RectangleF 40,200,1000,300))
+    Fit-ScopedTitle $title 560 110
+    $bounds=$title.GetBounds()
+    Assert ($bounds.Width -le 560.01 -and $bounds.Height -le 110.01 -and [Math]::Abs($bounds.X+$bounds.Width/2-540) -lt .01) 'Oversized scoped titles must fit their band without moving the text center.'
+} finally {$title.Dispose()}
+# Load the real drawing helpers without running the catalog build.
+$tokens=$null;$parseErrors=$null
+$ast=[Management.Automation.Language.Parser]::ParseFile((Join-Path (Split-Path $PSScriptRoot -Parent) 'Build-GenreArtwork.ps1'),[ref]$tokens,[ref]$parseErrors)
+foreach($definition in $ast.FindAll({param($node) $node -is [Management.Automation.Language.FunctionDefinitionAst] -and $node.Name -in 'Rgb','Argb','Br','P','Pts','L','E'},$false)) {
+    Invoke-Expression $definition.Extent.Text
+}
+$motif=New-Object Drawing.Bitmap 720,500
+$paint=[Drawing.Graphics]::FromImage($motif)
+try {
+    Scoped-Motif $paint @{Motif='neutral';ProviderName='Arabic'} 'Classic' 360 245
+    $pixel=$motif.GetPixel(360,245)
+    Assert ($pixel.R -eq 236 -and $pixel.G -eq 203 -and $pixel.B -eq 136) 'Neutral languages must draw speech lines, not a location pin.'
+} finally {$paint.Dispose();$motif.Dispose()}
 $profiles = Get-ScopedProfiles
 foreach ($language in $profiles.languages.PSObject.Properties) {
     $scene = Get-ScopedScene 'Cartoon' @{Id='l998';Name=$language.Name;ProviderName=$language.Name}
