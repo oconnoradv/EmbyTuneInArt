@@ -1,10 +1,15 @@
-# EmbyTuneInArt — artwork packs for the EmbyTuneIn plugin
+# Emby TuneIn Art Packs & Generation Tool
 
 ![EmbyTuneInArt artwork packs](docs/embytuneinart-banner.png)
 
-EmbyTuneInArt builds optional artwork packs for the music genre, language and location folders of the
-[Emby TuneIn plugin](https://github.com/oconnoradv/EmbyTuneIn). `Build-GenreArtwork.ps1` produces original
-1280×720 JPEG cards for one scope at a time in any of sixteen [themes](#themes). Music genres and subgenres
+Download ready-made packs or create original 1280×720 artwork for the [Emby TuneIn plugin](https://github.com/oconnoradv/EmbyTuneIn).
+Choose a pack type:
+
+**[Music genre packs](https://github.com/oconnoradv/EmbyTuneInArt/releases) ·
+[Language packs](#complete-language-and-location-packs) ·
+[Location packs](#complete-language-and-location-packs)**
+
+`Build-GenreArtwork.ps1` builds one scope at a time in any of sixteen [themes](#themes). Music genres and subgenres
 inherit typography, palette and line art from their parent genre; language and location cards use the same themes.
 The cards contain no TuneIn logos or station images.
 
@@ -270,9 +275,6 @@ output folder when switching packs: older files are not deleted and the plugin c
   when a more specific motif fits.
 - **Language and location artwork:** edit the curated culture, flag and verified-region mappings in
   `Scoped-Artwork.ps1`; unverified categories deliberately keep their provider name or generic motif.
-
-After you replace installed images, refresh the corresponding catalog again. The plugin notices the changed files and replaces
-Emby's cached folder images.
 
 ## License
 
