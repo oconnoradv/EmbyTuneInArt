@@ -8,15 +8,10 @@ function Scoped-Scenery($g, $theme, $info) {
     }
     if (-not $path) {
         if ($theme -eq 'Classic') {
-            $palettes = @(@((Rgb 45 4 14), (Rgb 113 12 26)), @((Rgb 3 35 24), (Rgb 7 79 48)), @((Rgb 4 18 42), (Rgb 8 47 81)))
-            $p = $palettes[$info.Seed % 3]
-            $g.FillRectangle((New-Object Drawing.Drawing2D.LinearGradientBrush (P 0 0), (P 1280 720), $p[0], $p[1]), 0, 0, 1280, 720)
-            $ornament = New-Object Drawing.Pen (Argb 100 (Rgb 224 181 94)), 2
-            $g.DrawBezier($ornament, (P 0 650), (P 450 540), (P 800 775), (P 1280 625))
-            $g.DrawBezier($ornament, (P 0 670), (P 450 560), (P 800 795), (P 1280 645))
-            return
+            $path = Join-Path $PSScriptRoot 'data\scenes\classic.png'
+        } else {
+            $path = if ($theme -eq 'Futuristic') { Join-Path $folder 'l178.png' } else { Join-Path $PSScriptRoot 'data\scenes\cartoon.png' }
         }
-        $path = if ($theme -eq 'Futuristic') { Join-Path $folder 'l178.png' } else { Join-Path $PSScriptRoot 'data\scenes\cartoon.png' }
     }
     if (-not $script:ScopedScenes) { $script:ScopedScenes = @{} }
     if (-not $script:ScopedScenes.ContainsKey($path)) { $script:ScopedScenes[$path] = [Drawing.Image]::FromFile($path) }

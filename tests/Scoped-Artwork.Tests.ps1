@@ -112,4 +112,21 @@ Assert ([Math]::Abs($aspect - [Math]::Cos(55 * [Math]::PI / 180)) -lt 0.0001) 'P
 Assert ([Math]::Abs($marker[0] - $projected[0][6]) -lt 0.001 -and [Math]::Abs($marker[1] - $projected[0][7]) -lt 0.001) 'Markers must use the same projection as map rings.'
 $wrapped = [pscustomobject]@{ type='Polygon'; coordinates=@(, @(@(-179,0), @(179,0), @(179,1), @(-179,0))) }
 Assert (-not (Get-MapRings $wrapped)) 'Antimeridian-spanning geometry must use the generic fallback.'
+
+. (Join-Path (Split-Path $PSScriptRoot -Parent) 'Scoped-Artwork-Styles.ps1')
+Add-Type -AssemblyName System.Drawing
+$canvas = New-Object Drawing.Bitmap 1280, 720
+$graphics = [Drawing.Graphics]::FromImage($canvas)
+try {
+    Scoped-Scenery $graphics 'Classic' @{ Id='l1'; Name='English'; Seed=0 }
+    $classicScene = Join-Path (Split-Path $PSScriptRoot -Parent) 'data\scenes\classic.png'
+    Assert ($script:ScopedScenes.ContainsKey($classicScene)) 'Generic Classic scoped cards must use the scenic fallback background.'
+    Scoped-Scenery $graphics 'Classic' @{ Id='r101255'; Name='Japan'; Seed=0 }
+    $japanScene = Join-Path (Split-Path $PSScriptRoot -Parent) 'data\scoped-scenes\Classic\r101255.png'
+    Assert ($script:ScopedScenes.ContainsKey($japanScene)) 'Curated scoped scenery must override the generic background.'
+} finally {
+    $graphics.Dispose()
+    $canvas.Dispose()
+    foreach ($scene in $script:ScopedScenes.Values) { $scene.Dispose() }
+}
 Write-Host 'Scoped artwork tests passed.'
