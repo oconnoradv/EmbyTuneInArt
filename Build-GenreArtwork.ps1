@@ -1,5 +1,5 @@
 ﻿<#
-Builds 1280x720 JPEG genre, language or location artwork packs for the Emby TuneIn plugin. -Theme picks the overall look
+Builds 1280x720 JPEG genre, language, location or root category artwork packs for the Emby TuneIn plugin. -Theme picks the overall look
 (Neon, Retro, Futuristic, Cartoon, Cat, Dog, Nature, Blocky, Rebel, Imperial, Elegant, Tile, Classic, or a Spotlight
 variant). Run on Windows PowerShell with the fonts that ship with Windows 11 (Bahnschrift,
 Segoe UI Variable, Segoe UI, Segoe UI Black, Cascadia, Impact, Georgia and Franklin Gothic). It also writes tunein-artwork.json, a manifest the TuneIn plugin uses to identify the pack.
@@ -8,7 +8,7 @@ Segoe UI Variable, Segoe UI, Segoe UI Black, Cascadia, Impact, Georgia and Frank
 param(
     [string]$Output,
     [string[]]$Only,
-    [ValidateSet('genres', 'languages', 'locations')]
+    [ValidateSet('genres', 'languages', 'locations', 'categories')]
     [string]$Scope = 'genres',
     [ValidatePattern('^r(?:0|[1-9][0-9]{0,9})$')]
     [string]$LocationRoot = 'r0',
@@ -654,6 +654,33 @@ function Motif-globe($cl, $info) {
     }
     Neon $cl[2] { param($g, $c, $k)
         foreach ($m in $marks) { $q = & $proj $m[0] $m[1]; if ($q[2] -gt 0) { FE $g (Br $c) $q[0] $q[1] 12 12; E $g (Pn $c 3.5 $k) $q[0] $q[1] 30 30; E $g (Pn $c 2 $k) $q[0] $q[1] 50 50 } }
+    }
+}
+
+function Motif-sports($cl, $info) {
+    Neon $cl[0] { param($g, $c, $k)
+        $pen = Pn $c 6 $k
+        E $g $pen 0 0 190 190
+        L $g $pen -190 0 190 0; L $g $pen 0 -190 0 190
+        $g.DrawArc($pen, -250, -190, 300, 380, -65, 130)
+        $g.DrawArc($pen, -50, -190, 300, 380, 115, 130)
+    }
+}
+
+function Motif-speech($cl, $info) {
+    Neon $cl[0] { param($g, $c, $k)
+        $pen = Pn $c 6 $k
+        $bubble = Rounded -220 -150 340 220 35
+        try { $g.DrawPath($pen, $bubble) } finally { $bubble.Dispose() }
+        Poly $g $pen @(-140, 70, -155, 125, -90, 70) -Open
+        L $g $pen -165 -80 65 -80; L $g $pen -165 -25 20 -25
+    }
+    Neon $cl[1] { param($g, $c, $k)
+        $pen = Pn $c 6 $k
+        $bubble = Rounded -15 85 235 145 30
+        try { $g.DrawPath($pen, $bubble) } finally { $bubble.Dispose() }
+        Poly $g $pen @(145, 230, 160, 275, 105, 230) -Open
+        L $g $pen 25 135 180 135; L $g $pen 25 175 145 175
     }
 }
 
@@ -1377,7 +1404,7 @@ function New-Card($info, [string]$file) {
 }
 
 $baseTheme = $Theme -replace 'Spotlight$', ''
-if ($RequireScopedScenery -and ($Scope -eq 'genres' -or $baseTheme -notin 'Cartoon','Futuristic','Classic')) {
+if ($RequireScopedScenery -and ($Scope -notin 'languages','locations' -or $baseTheme -notin 'Cartoon','Futuristic','Classic')) {
     throw 'RequireScopedScenery applies only to Cartoon, Futuristic and Classic language/location packs.'
 }
 $script:T = $Themes[$baseTheme]
@@ -1415,6 +1442,19 @@ if ($Scope -eq 'genres') {
             if ($o.guide_id -cmatch '^g[1-9][0-9]{0,9}$' -and -not $genres.Contains($o.guide_id)) { $genres[$o.guide_id] = @{ Id = $o.guide_id; Name = $o.text; Parent = $parent; Sub = $true } }
         }
     }
+} elseif ($Scope -eq 'categories') {
+    foreach ($category in @(
+        @('local', 'Local Radio', 'Country', 'radio'),
+        @('music', 'Music', 'Children', 'notes'),
+        @('language', 'By Language', 'Folk', 'speech'),
+        @('location', 'By Location', 'Reggae', 'globe'),
+        @('talk', 'Talk', 'Decades', 'mic'),
+        @('sports', 'Sports', 'Rock', 'sports'),
+        @('podcast', 'Podcasts', 'Electronic', 'headphones'),
+        @('presets', 'My Favorites', 'Holiday', 'heart')
+    )) {
+        $genres[$category[0]] = @{ Id = $category[0]; Name = $category[1]; Style = $category[2]; Motif = $category[3]; Label = 'TuneIn Radio'; Sub = $false }
+    }
 } else {
     . (Join-Path $PSScriptRoot 'Scoped-Artwork.ps1')
     . (Join-Path $PSScriptRoot 'Scoped-Artwork-Styles.ps1')
@@ -1449,7 +1489,7 @@ foreach ($info in $selected) {
             throw "Missing Spotlight artwork: $spotlight"
         }
         Copy-Item -LiteralPath $spotlight -Destination $target -Force
-    } elseif ($Scope -ne 'genres' -and $baseTheme -in 'Cartoon','Futuristic','Classic') {
+    } elseif ($Scope -in 'languages','locations' -and $baseTheme -in 'Cartoon','Futuristic','Classic') {
         New-ScopedCard $info $target $baseTheme
     } else {
         New-Card $info $target
@@ -1468,7 +1508,7 @@ $images = @($rendered | Sort-Object | ForEach-Object {
     $info = $genres[$file.BaseName]
     $entry = [ordered]@{ id = $info.Id; name = $(if ($info.ProviderName) { $info.ProviderName } else { $info.Name }); parent = $info.Parent; file = $file.Name; bytes = $file.Length
         sha256 = (Get-FileHash $file.FullName -Algorithm SHA256).Hash.ToLowerInvariant() }
-    if ($Scope -ne 'genres' -and $baseTheme -in 'Cartoon','Futuristic','Classic') {
+    if ($Scope -in 'languages','locations' -and $baseTheme -in 'Cartoon','Futuristic','Classic') {
         $scene = Get-ScopedScene $baseTheme $info
         $entry.motif = $info.Motif; $entry.motifLabel = $info.Label
         $entry.scenerySource = if ($scene) { $scene.SourceId } else { 'legacy-generic' }
@@ -1484,6 +1524,12 @@ $manifest = [ordered]@{
     sourceUrl = 'https://github.com/oconnoradv/EmbyTuneInArt'; toolCommit = $commit; license = 'GPL-3.0'
     builtUtc = [DateTime]::UtcNow.ToString('yyyy-MM-ddTHH:mm:ssZ'); imageCount = $images.Count; images = $images
 }
+if ($Scope -eq 'categories') {
+    $manifest = [ordered]@{
+        schemaVersion = 1; scope = $Scope; packName = $Theme; imageCount = $images.Count
+        images = @($images | ForEach-Object { [ordered]@{ id = $_.id; file = $_.file; sha256 = $_.sha256 } })
+    }
+}
 if ($Scope -eq 'genres') { $manifest.sampleImageUrl = "https://raw.githubusercontent.com/oconnoradv/EmbyTuneInArt/main/docs/samples/$($Theme.ToLowerInvariant()).jpg" }
 [IO.File]::WriteAllText((Join-Path $Output 'tunein-artwork.json'), ($manifest | ConvertTo-Json -Depth 4), (New-Object Text.UTF8Encoding $false))
 
@@ -1496,10 +1542,10 @@ Built by Build-GenreArtwork.ps1 from https://github.com/oconnoradv/EmbyTuneInArt
 
 1. Extract the .jpg files and tunein-artwork.json into <Emby data>\plugins\configurations\TuneInArtwork\$Scope
    (Settings > Advanced Settings > Custom Artwork Packs > Details & installation shows the exact folder).
-2. Under Catalog Refresh > TuneIn Library Refresh, refresh the corresponding Music, By Language or By Location category.
+2. Under Catalog Refresh > TuneIn Library Refresh, refresh the corresponding category or all enabled categories.
 Delete the images and refresh again to return to the default icons. Also delete the manifest to clear the pack name.
 "@
-    if ($Scope -ne 'genres') { $note += @"
+    if ($Scope -in 'languages','locations') { $note += @"
 
 Scoped packs require the TuneIn 1.2.8.0 RC1 build with scoped artwork support; older builds with the same version number do not support scoped packs.
 Flags are representative, not exclusive to a language. Unknown language names retain the provider's label.
@@ -1517,14 +1563,16 @@ Noto Sans Khmer and Noto Serif KR are distributed under the SIL Open Font Licens
             [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, (Join-Path $Output $image.file), $image.file, 'Optimal')
         }
         [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, (Join-Path $Output 'tunein-artwork.json'), 'tunein-artwork.json', 'Optimal')
-        [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, (Join-Path $PSScriptRoot 'LICENSE'), 'LICENSE.txt', 'Optimal')
-        [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, (Join-Path $PSScriptRoot 'data\Noto-OFL.txt'), 'Noto-OFL.txt', 'Optimal')
-        if ($Scope -eq 'languages' -and $baseTheme -in 'Cartoon','Futuristic','Classic') {
-            [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, (Join-Path $PSScriptRoot 'data\flags\FLAGS-SOURCES.txt'), 'FLAGS-SOURCES.txt', 'Optimal')
-            [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, (Join-Path $PSScriptRoot 'data\flags\sources.json'), 'flag-sources.json', 'Optimal')
+        if ($Scope -ne 'categories') {
+            [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, (Join-Path $PSScriptRoot 'LICENSE'), 'LICENSE.txt', 'Optimal')
+            [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, (Join-Path $PSScriptRoot 'data\Noto-OFL.txt'), 'Noto-OFL.txt', 'Optimal')
+            if ($Scope -eq 'languages' -and $baseTheme -in 'Cartoon','Futuristic','Classic') {
+                [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, (Join-Path $PSScriptRoot 'data\flags\FLAGS-SOURCES.txt'), 'FLAGS-SOURCES.txt', 'Optimal')
+                [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, (Join-Path $PSScriptRoot 'data\flags\sources.json'), 'flag-sources.json', 'Optimal')
+            }
+            $writer = New-Object IO.StreamWriter ($archive.CreateEntry('README.txt').Open())
+            try { $writer.Write($note.Replace("`r`n", "`n").Replace("`n", "`r`n")) } finally { $writer.Dispose() }
         }
-        $writer = New-Object IO.StreamWriter ($archive.CreateEntry('README.txt').Open())
-        try { $writer.Write($note.Replace("`r`n", "`n").Replace("`n", "`r`n")) } finally { $writer.Dispose() }
     } finally { $archive.Dispose() }
     Write-Host "Pack: $zip"
 }
