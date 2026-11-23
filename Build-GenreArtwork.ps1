@@ -1466,8 +1466,17 @@ $commit = try { (& git -C $PSScriptRoot rev-parse HEAD 2>$null) } catch { $null 
 $images = @($rendered | Sort-Object | ForEach-Object {
     $file = Get-Item (Join-Path $Output "$_.jpg")
     $info = $genres[$file.BaseName]
-    [ordered]@{ id = $info.Id; name = $(if ($info.ProviderName) { $info.ProviderName } else { $info.Name }); parent = $info.Parent; file = $file.Name; bytes = $file.Length
+    $entry = [ordered]@{ id = $info.Id; name = $(if ($info.ProviderName) { $info.ProviderName } else { $info.Name }); parent = $info.Parent; file = $file.Name; bytes = $file.Length
         sha256 = (Get-FileHash $file.FullName -Algorithm SHA256).Hash.ToLowerInvariant() }
+    if ($Scope -ne 'genres' -and $baseTheme -in 'Cartoon','Futuristic','Classic') {
+        $scene = Get-ScopedScene $baseTheme $info
+        $entry.motif = $info.Motif; $entry.motifLabel = $info.Label
+        $entry.scenerySource = if ($scene) { $scene.SourceId } else { 'legacy-generic' }
+        $entry.sceneryShared = [bool]($scene -and $scene.Inherited)
+        if ($info.Flag) { $entry.representativeFlag = $info.Flag }
+        if ($info.FlagCode) { $entry.flagAsset = "$($info.FlagCode).png" }
+    }
+    $entry
 })
 $manifest = [ordered]@{
     schemaVersion = 1; scope = $Scope; packId = $PackName; packName = $Theme; theme = $Theme; version = $PackVersion
@@ -1494,8 +1503,10 @@ Delete the images and refresh again to return to the default icons. Also delete 
 
 Scoped packs require the TuneIn 1.2.8.0 RC1 build with scoped artwork support; older builds with the same version number do not support scoped packs.
 Flags are representative, not exclusive to a language. Unknown language names retain the provider's label.
-City and unmatched locations may use a labeled regional ancestor map or generic fallback.
+Cities may use a labeled regional ancestor map. Unmapped locations use a labeled generic location pin, not invented boundaries.
+Scenery is shared by explicitly mapped countries/regions; it is decorative, not a depiction of every individual city.
 Scenic backgrounds and map-fill textures are AI-generated illustrations, not geographic or terrain data.
+Neutral language categories use speech motifs rather than an assigned nationality. See FLAGS-SOURCES.txt for representative flag provenance.
 Natural Earth country and region geometry is public domain: https://www.naturalearthdata.com/about/terms-of-use/
 Noto Sans Khmer and Noto Serif KR are distributed under the SIL Open Font License 1.1; see Noto-OFL.txt.
 "@ }
@@ -1508,6 +1519,10 @@ Noto Sans Khmer and Noto Serif KR are distributed under the SIL Open Font Licens
         [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, (Join-Path $Output 'tunein-artwork.json'), 'tunein-artwork.json', 'Optimal')
         [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, (Join-Path $PSScriptRoot 'LICENSE'), 'LICENSE.txt', 'Optimal')
         [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, (Join-Path $PSScriptRoot 'data\Noto-OFL.txt'), 'Noto-OFL.txt', 'Optimal')
+        if ($Scope -eq 'languages' -and $baseTheme -in 'Cartoon','Futuristic','Classic') {
+            [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, (Join-Path $PSScriptRoot 'data\flags\FLAGS-SOURCES.txt'), 'FLAGS-SOURCES.txt', 'Optimal')
+            [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, (Join-Path $PSScriptRoot 'data\flags\sources.json'), 'flag-sources.json', 'Optimal')
+        }
         $writer = New-Object IO.StreamWriter ($archive.CreateEntry('README.txt').Open())
         try { $writer.Write($note.Replace("`r`n", "`n").Replace("`n", "`r`n")) } finally { $writer.Dispose() }
     } finally { $archive.Dispose() }

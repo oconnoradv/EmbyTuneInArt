@@ -124,13 +124,41 @@ function Get-Languages {
             ($name -in 'Irish','Korean' -and $baseTheme -in 'Cartoon','Futuristic','Classic'))) {
             @{ Dutch='Netherlands'; Japanese='Japan'; Icelandic='Iceland'; Irish='Ireland'; Korean='South Korea' }[$name]
         } else { $null }
+        $flagCode = $null
+        if ($baseTheme -in 'Cartoon','Futuristic','Classic') {
+            $profile = (Get-ScopedProfiles).languages.PSObject.Properties[$name]
+            if ($profile -and -not $NeutralLanguages) {
+                $flag = $profile.Value.flag
+                $flagCode = $profile.Value.code
+            }
+        }
         $items[$id] = @{
             Id=$id; Name=$title; ProviderName=$name; Parent='Languages'; Sub=$false; Style='Electronic'
-            Motif=$(if ($flag) { 'flag' } else { 'neutral' }); Flag=$flag
+            Motif=$(if ($flag) { 'flag' } else { 'neutral' }); Flag=$flag; FlagCode=$flagCode
             Label=$(if ($flag) { 'Representative flag' } else { 'Language' }); NativeFont=$font; RTL=$rtl
         }
     }
     return ,$items
+}
+
+function Get-ScopedProfiles {
+    if (-not $script:ScopedProfiles) {
+        $profiles = Get-Content (Join-Path $PSScriptRoot 'data\scoped-scenes\profiles.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+        foreach ($region in $profiles.regions.PSObject.Properties) {
+            if ($region.Name -cnotmatch '^[a-z]+(?:-[a-z]+)*$') { throw "Invalid scenery region: $($region.Name)" }
+        }
+        foreach ($entry in @($profiles.countries.PSObject.Properties) + @($profiles.continents.PSObject.Properties)) {
+            if (-not $profiles.regions.PSObject.Properties[[string]$entry.Value]) { throw "Unknown scenery region for $($entry.Name)" }
+        }
+        foreach ($entry in @($profiles.languages.PSObject.Properties) + @($profiles.states.PSObject.Properties)) {
+            if (-not $profiles.regions.PSObject.Properties[[string]$entry.Value.region]) { throw "Unknown scenery region for $($entry.Name)" }
+            if ($entry.Value.code -and ($entry.Value.code -cnotmatch '^[a-z]{2}(?:-[a-z]{2,3})?$' -or -not $entry.Value.flag)) {
+                throw "Invalid representative flag for $($entry.Name)"
+            }
+        }
+        $script:ScopedProfiles = $profiles
+    }
+    return $script:ScopedProfiles
 }
 
 function Get-Locations {
@@ -194,22 +222,28 @@ function Get-MapProjection($geometry) {
     if ($geometry.type -eq 'Polygon') { $polygons += ,$geometry.coordinates }
     elseif ($geometry.type -eq 'MultiPolygon') { foreach ($polygon in $geometry.coordinates) { $polygons += ,$polygon } }
     else { return }
-    $rings = @(); $xs = @(); $ys = @()
+    $rings = @(); $xs = New-Object 'System.Collections.Generic.List[double]'; $ys = New-Object 'System.Collections.Generic.List[double]'
     foreach ($polygon in $polygons) {
         if (-not $polygon.Count) { continue }
         $ring = $polygon[0]
         if ($ring.Count -lt 3) { continue }
         $rings += ,$ring
-        foreach ($point in $ring) { $xs += [double]$point[0]; $ys += [double]$point[1] }
+        foreach ($point in $ring) { $xs.Add([double]$point[0]); $ys.Add([double]$point[1]) }
     }
     if (-not $xs.Count) { return }
     $xmin = ($xs | Measure-Object -Minimum).Minimum; $xmax = ($xs | Measure-Object -Maximum).Maximum
     $ymin = ($ys | Measure-Object -Minimum).Minimum; $ymax = ($ys | Measure-Object -Maximum).Maximum
-    if (($xmax - $xmin) -gt 180 -or $xmax -eq $xmin -or $ymax -eq $ymin) { return }
+    $wrapped = $false
+    if (($xmax - $xmin) -gt 180) {
+        $shifted = @($xs | ForEach-Object { if ($_ -lt 0) { $_ + 360 } else { $_ } })
+        $min = ($shifted | Measure-Object -Minimum).Minimum; $max = ($shifted | Measure-Object -Maximum).Maximum
+        if (($max-$min) -lt ($xmax-$xmin)) { $xmin=$min; $xmax=$max; $wrapped=$true }
+    }
+    if ($xmax -eq $xmin -or $ymax -eq $ymin) { return }
     $lonFactor = [Math]::Cos((($ymin + $ymax) / 2) * [Math]::PI / 180)
     if ($lonFactor -le 0) { return }
     return @{ Rings = $rings; XMin = $xmin; XMax = $xmax; YMin = $ymin; YMax = $ymax
-        LonFactor = $lonFactor; Scale = [Math]::Min(420 / (($xmax - $xmin) * $lonFactor), 420 / ($ymax - $ymin)) }
+        Wrapped=$wrapped; LonFactor = $lonFactor; Scale = [Math]::Min(420 / (($xmax - $xmin) * $lonFactor), 420 / ($ymax - $ymin)) }
 }
 
 function Get-MapRings($geometry) {
@@ -218,7 +252,8 @@ function Get-MapRings($geometry) {
     $result = New-Object System.Collections.ArrayList
     foreach ($ring in $projection.Rings) {
         $values = foreach ($point in $ring) {
-            [float](($point[0] - ($projection.XMin + $projection.XMax) / 2) * $projection.LonFactor * $projection.Scale)
+            $lon = if ($projection.Wrapped -and $point[0] -lt 0) { $point[0]+360 } else { $point[0] }
+            [float](($lon - ($projection.XMin + $projection.XMax) / 2) * $projection.LonFactor * $projection.Scale)
             [float]((($projection.YMin + $projection.YMax) / 2 - $point[1]) * $projection.Scale)
         }
         [void]$result.Add([float[]]$values)
@@ -229,6 +264,7 @@ function Get-MapRings($geometry) {
 function Get-MapPoint($geometry, [double]$lon, [double]$lat) {
     $projection = Get-MapProjection $geometry
     if (-not $projection) { throw 'Cannot project marker on invalid map geometry.' }
+    if ($projection.Wrapped -and $lon -lt 0) { $lon += 360 }
     if ($lon -lt $projection.XMin -or $lon -gt $projection.XMax -or $lat -lt $projection.YMin -or $lat -gt $projection.YMax) { throw 'Map marker falls outside its verified map bounds.' }
     return ,@([float](($lon - ($projection.XMin + $projection.XMax) / 2) * $projection.LonFactor * $projection.Scale), [float]((($projection.YMin + $projection.YMax) / 2 - $lat) * $projection.Scale))
 }
@@ -237,14 +273,41 @@ function Set-LocationArt($items) {
     $data = Get-Content (Join-Path $PSScriptRoot 'data\natural-earth.json') -Raw -Encoding UTF8 | ConvertFrom-Json
     $detailedCountries = Get-Content (Join-Path $PSScriptRoot 'data\natural-earth-countries-50m.json') -Raw -Encoding UTF8 | ConvertFrom-Json
     $washington = Get-Content (Join-Path $PSScriptRoot 'data\washington-50m.json') -Raw -Encoding UTF8 | ConvertFrom-Json
-    $aliases = @{ 'United States'='United States of America' }
+    $aliases = @{
+        'United States'='United States of America'; 'Cape Verde'='Cabo Verde'; Congo='Republic of the Congo'
+        "Cote D'ivoire"='Ivory Coast'; 'DR Congo'='Democratic Republic of the Congo'
+        'Sao Tome-Principe'="S$([char]0xE3)o Tom$([char]0xE9) and Principe"; 'St. Helena'='Saint Helena'; Swaziland='eSwatini'
+        Tanzania='United Republic of Tanzania'; 'Brunei Darussalam'='Brunei'; 'Hong Kong'='Hong Kong S.A.R.'
+        'Myanmar (Burma)'='Myanmar'; 'Wallis-Futuna Islands'='Wallis and Futuna'; 'Czech Republic'='Czechia'
+        Macedonia='North Macedonia'; Serbia='Republic of Serbia'; 'Vatican City'='Vatican'
+        'St. Pierre-Miquelon'='Saint Pierre and Miquelon'; 'Antigua-Barbuda'='Antigua and Barbuda'
+        'Cayman Island'='Cayman Islands'; 'Saint Kitts-Nevis'='Saint Kitts and Nevis'
+        'Saint Vincent-The Grenadines'='Saint Vincent and the Grenadines'; 'St. Martin'='Saint Martin'
+        'Trinidad-Tobago'='Trinidad and Tobago'; 'Turks-Caicos Islands'='Turks and Caicos Islands'
+        'Virgin Islands (British)'='British Virgin Islands'; 'Virgin Islands (U.S.)'='United States Virgin Islands'
+        Bahamas='The Bahamas'
+        "Saint Barth$([char]0xE9)lemy"='Saint Barthelemy'; "Cura$([char]0xE7)ao"="Cura$([char]0xE7)ao"
+    }
+    $profiles = if ($baseTheme -in 'Cartoon','Futuristic','Classic') { Get-ScopedProfiles }
     foreach ($info in $items.Values) {
         $info.Style = 'Electronic'; $info.Sub = $false; $info.NativeFont = 'Segoe UI'
         $info.Motif = 'neutral'; $info.Label = 'Generic location'
+        if ($profiles) {
+            $profile = if ($info.Country) { $profiles.countries.PSObject.Properties[$info.Country] }
+                elseif ($info.Level -eq 1) { $profiles.continents.PSObject.Properties[$info.Name] }
+            if ($profile) { $info.SceneryRegion = $profile.Value }
+            $state = $profiles.states.PSObject.Properties[$info.Id]
+            if ($state -and $state.Value.subject -ceq $info.Name -and $state.Value.country -ceq $info.Country) {
+                $info.SceneryRegion = $state.Value.region; $info.StateScenery = $true
+            }
+        }
         $country = if ($info.Country -and $aliases.ContainsKey($info.Country)) { $aliases[$info.Country] } else { $info.Country }
         $features = @(if ($info.Level -eq 2) {
             $detailed = @($detailedCountries | Where-Object { $_.name -eq $country })
             if ($detailed.Count) { $detailed } else { $data.countries | Where-Object { $_.name -eq $country } }
+        } elseif ($info.Country -eq 'Caribbean Islands') {
+            $name = if ($aliases.ContainsKey($info.Name)) { $aliases[$info.Name] } else { $info.Name }
+            $detailedCountries | Where-Object { $_.name -eq $name }
         } elseif ($info.Level -eq 3 -and $country -and $KnownRegions[$info.Id] -eq "$($info.Country)|$($info.Name)") {
             if ($info.Id -eq 'r100516') { $washington }
             else { $data.regions | Where-Object { $_.country -eq $country -and $_.name -eq $info.Name } }
@@ -255,6 +318,14 @@ function Set-LocationArt($items) {
         }
     }
     foreach ($info in $items.Values) {
+        if ($profiles) {
+            $parentId = $info.ParentId; $seen = @{}
+            while ($parentId -and $items.Contains($parentId) -and -not $seen.ContainsKey($parentId)) {
+                $seen[$parentId]=$true; $parent=$items[$parentId]
+                if ($parent.StateScenery) { $info.SceneryRegion=$parent.SceneryRegion; break }
+                $parentId=$parent.ParentId
+            }
+        }
         if ($info.Motif -ne 'neutral') { continue }
         $parentId = $info.ParentId; $seen = @{}
         while ($parentId -and $items.Contains($parentId) -and -not $seen.ContainsKey($parentId)) {

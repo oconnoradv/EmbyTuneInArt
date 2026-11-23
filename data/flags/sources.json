@@ -1,0 +1,879 @@
+﻿{
+    "source":  "Flagpedia w640 PNG CDN",
+    "source_page":  "https://flagpedia.net/download/api",
+    "asset_pattern":  "https://flagcdn.com/w640/{code}.png",
+    "license_note":  "Flagpedia derives flag images from Wikimedia Commons. Individual source files may have differing source-specific licenses; consult the listed per-asset source page before redistribution.",
+    "assets":  [
+                   {
+                       "code":  "ad",
+                       "url":  "https://flagcdn.com/w640/ad.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "ba0ee5b002e946f629e985f8e7040f78bf5388162122d927514b3fc2610be208",
+                       "width":  640,
+                       "height":  448,
+                       "file":  "data/flags/ad.png",
+                       "country_labels":  [
+                                              "Andorra"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "af",
+                       "url":  "https://flagcdn.com/w640/af.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "beecb80a4b5e44021a234e24d06c50d8a6a8389226b8e4b288bdb9a96752a9be",
+                       "width":  640,
+                       "height":  427,
+                       "file":  "data/flags/af.png",
+                       "country_labels":  [
+                                              "Afghanistan"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "al",
+                       "url":  "https://flagcdn.com/w640/al.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "d5cdf168fba987a64838ad80bf671759a4ff00ae8ad828d65ad41f31238ad1a4",
+                       "width":  640,
+                       "height":  457,
+                       "file":  "data/flags/al.png",
+                       "country_labels":  [
+                                              "Albania"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "am",
+                       "url":  "https://flagcdn.com/w640/am.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "f4c2cb1caf700aeae1245a4243401c327dda5da1b51b2e03ddeaf8203345d7dd",
+                       "width":  640,
+                       "height":  320,
+                       "file":  "data/flags/am.png",
+                       "country_labels":  [
+                                              "Armenia"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "az",
+                       "url":  "https://flagcdn.com/w640/az.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "8ee13968fe47158a4f76ce79ab21acce644355ec7f36dc296dfeba5c8d04ab5b",
+                       "width":  640,
+                       "height":  320,
+                       "file":  "data/flags/az.png",
+                       "country_labels":  [
+                                              "Azerbaijan"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "ba",
+                       "url":  "https://flagcdn.com/w640/ba.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "6437bf761c480f3421c3a3f8f6a37fb23903b8278e2a57bd286a5c98362c4868",
+                       "width":  640,
+                       "height":  320,
+                       "file":  "data/flags/ba.png",
+                       "country_labels":  [
+                                              "Bosnia and Herzegovina"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "bd",
+                       "url":  "https://flagcdn.com/w640/bd.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "bd0466a4b3a0494b96c8fbcf63d2bd58eba34736ba2457b94c3aa4a411f1a0e1",
+                       "width":  640,
+                       "height":  384,
+                       "file":  "data/flags/bd.png",
+                       "country_labels":  [
+                                              "Bangladesh"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "be",
+                       "url":  "https://flagcdn.com/w640/be.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "baa317ea8afc1cfe5e3a0bc52e0a08a1823cacbc4746ef1ebc11a6ee8c088ce4",
+                       "width":  640,
+                       "height":  555,
+                       "file":  "data/flags/be.png",
+                       "country_labels":  [
+                                              "Belgium"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "bg",
+                       "url":  "https://flagcdn.com/w640/bg.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "50c32d813f779dc8194ea23c104ff39c4b0cc0e495745cd8121b8295cfe6db78",
+                       "width":  640,
+                       "height":  384,
+                       "file":  "data/flags/bg.png",
+                       "country_labels":  [
+                                              "Bulgaria"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "ch",
+                       "url":  "https://flagcdn.com/w640/ch.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "c8bf94ba6993bd61142e3a78980acf81d1b40bfbf1398bec129e5e8a0597640c",
+                       "width":  640,
+                       "height":  640,
+                       "file":  "data/flags/ch.png",
+                       "country_labels":  [
+                                              "Switzerland"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "cn",
+                       "url":  "https://flagcdn.com/w640/cn.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "18e523951fcf2a67935b20529faa1a418d2f3fb228738d2204aaa31fa994d9c6",
+                       "width":  640,
+                       "height":  427,
+                       "file":  "data/flags/cn.png",
+                       "country_labels":  [
+                                              "China"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "cw",
+                       "url":  "https://flagcdn.com/w640/cw.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "998d9ca4bbe17cb769856b8db6b1694364974e5ca42c1c5e3306d77335ab2456",
+                       "width":  640,
+                       "height":  427,
+                       "file":  "data/flags/cw.png",
+                       "country_labels":  [
+                                              "Curaçao"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "cz",
+                       "url":  "https://flagcdn.com/w640/cz.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "579542cbff1bcd3e418d283a1349548be07960e2e2fcb0657d1ee27ca9ef7906",
+                       "width":  640,
+                       "height":  427,
+                       "file":  "data/flags/cz.png",
+                       "country_labels":  [
+                                              "Czech Republic"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "de",
+                       "url":  "https://flagcdn.com/w640/de.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "6a358426339a29a7734b7dea9602cd9e73ef24cfc8f4beb904ace4d62ea41a81",
+                       "width":  640,
+                       "height":  384,
+                       "file":  "data/flags/de.png",
+                       "country_labels":  [
+                                              "Germany"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "dk",
+                       "url":  "https://flagcdn.com/w640/dk.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "1ad4c31eb27b1d9f0faf4100a3a420373b5294725f8b4bc7755fa9739fb0f8ae",
+                       "width":  640,
+                       "height":  484,
+                       "file":  "data/flags/dk.png",
+                       "country_labels":  [
+                                              "Denmark"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "ee",
+                       "url":  "https://flagcdn.com/w640/ee.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "f00479df53f826b1c82e7563dea88117a104e9d7c730c1c16c011d64555c64c5",
+                       "width":  640,
+                       "height":  407,
+                       "file":  "data/flags/ee.png",
+                       "country_labels":  [
+                                              "Estonia"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "es",
+                       "url":  "https://flagcdn.com/w640/es.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "f75e4faf7035a63db3672f40378896d386c83fe6d0d8eaa9dcf5a3be7985bb41",
+                       "width":  640,
+                       "height":  427,
+                       "file":  "data/flags/es.png",
+                       "country_labels":  [
+                                              "Spain"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "fi",
+                       "url":  "https://flagcdn.com/w640/fi.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "9f822385b6ab91218035e083b5b7189ebbd5688775d616102cc462e10c5b1074",
+                       "width":  640,
+                       "height":  391,
+                       "file":  "data/flags/fi.png",
+                       "country_labels":  [
+                                              "Finland"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "fj",
+                       "url":  "https://flagcdn.com/w640/fj.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "23f3e8e4e432077c2e3dd78c3b3e55a27aa3a5342bddc5a91596144627db7dcc",
+                       "width":  640,
+                       "height":  320,
+                       "file":  "data/flags/fj.png",
+                       "country_labels":  [
+                                              "Fiji"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "fo",
+                       "url":  "https://flagcdn.com/w640/fo.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "7c8ca44d7410cba754207103f93208f301581582ed43a42535328ba812916153",
+                       "width":  640,
+                       "height":  465,
+                       "file":  "data/flags/fo.png",
+                       "country_labels":  [
+                                              "Faroe Islands"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "fr",
+                       "url":  "https://flagcdn.com/w640/fr.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "ba394b1cab8dc9fccb2fc43cac1ab1bba9eff559038c983bea41e281a366df6b",
+                       "width":  640,
+                       "height":  427,
+                       "file":  "data/flags/fr.png",
+                       "country_labels":  [
+                                              "France"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "gb",
+                       "url":  "https://flagcdn.com/w640/gb.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "40f489612f69fbc813eeed23ac802f7d0c2fea379b8fc04d311237ed41a1756a",
+                       "width":  640,
+                       "height":  320,
+                       "file":  "data/flags/gb.png",
+                       "country_labels":  [
+                                              "United Kingdom"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "gb-wls",
+                       "url":  "https://flagcdn.com/w640/gb-wls.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "71eed0d447c88e46db4fb1bbe1875fc5d50e72f8a51a5c7353d344355a9758a4",
+                       "width":  640,
+                       "height":  384,
+                       "file":  "data/flags/gb-wls.png",
+                       "country_labels":  [
+                                              "Wales"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "gh",
+                       "url":  "https://flagcdn.com/w640/gh.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "b625006f315884c794dd6c18ca14cdc2e73d6fa972ace67080c2e51d938832ed",
+                       "width":  640,
+                       "height":  427,
+                       "file":  "data/flags/gh.png",
+                       "country_labels":  [
+                                              "Ghana"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "gr",
+                       "url":  "https://flagcdn.com/w640/gr.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "0011af080b1f2680127d3bf755452254cbc99b23982bd090210e3a166deabf98",
+                       "width":  640,
+                       "height":  427,
+                       "file":  "data/flags/gr.png",
+                       "country_labels":  [
+                                              "Greece"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "hk",
+                       "url":  "https://flagcdn.com/w640/hk.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "ae93a1ad7befb3152faff92f7ef4ea43e051016d7434222860d93f90c6fd23bf",
+                       "width":  640,
+                       "height":  427,
+                       "file":  "data/flags/hk.png",
+                       "country_labels":  [
+                                              "Hong Kong"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "hr",
+                       "url":  "https://flagcdn.com/w640/hr.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "a021ab65cb260bbd943150fb23e36a2f71dfcf48a898353d2b82345bd7402ac6",
+                       "width":  640,
+                       "height":  320,
+                       "file":  "data/flags/hr.png",
+                       "country_labels":  [
+                                              "Croatia"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "ht",
+                       "url":  "https://flagcdn.com/w640/ht.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "93ac7baaa2f3dff19f195bba0031909b230cf7e93c1cd7a694d70d54be37d876",
+                       "width":  640,
+                       "height":  384,
+                       "file":  "data/flags/ht.png",
+                       "country_labels":  [
+                                              "Haiti"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "hu",
+                       "url":  "https://flagcdn.com/w640/hu.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "b521d009f43550b65a514f060f5a6e676c089e54560201d5c491a41aa6a3cfa7",
+                       "width":  640,
+                       "height":  320,
+                       "file":  "data/flags/hu.png",
+                       "country_labels":  [
+                                              "Hungary"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "id",
+                       "url":  "https://flagcdn.com/w640/id.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "f9efa33f78159df2e260bcb99517654332ee74f0ef64f42f22885115bda85a21",
+                       "width":  640,
+                       "height":  427,
+                       "file":  "data/flags/id.png",
+                       "country_labels":  [
+                                              "Indonesia"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "il",
+                       "url":  "https://flagcdn.com/w640/il.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "d96c4685e8c1bd0932914acfc5343ab007fd03ffb6120652b25c609d473843d3",
+                       "width":  640,
+                       "height":  465,
+                       "file":  "data/flags/il.png",
+                       "country_labels":  [
+                                              "Israel"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "in",
+                       "url":  "https://flagcdn.com/w640/in.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "cecf2ea0d1aa59f0d9532522961eae2ae13fc9d37a7e2879f75d668d4933907b",
+                       "width":  640,
+                       "height":  427,
+                       "file":  "data/flags/in.png",
+                       "country_labels":  [
+                                              "India"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "ir",
+                       "url":  "https://flagcdn.com/w640/ir.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "e3a8a436e0d0359fd5d93129e302999e80b4507aeb30c5f86d07fe7742c76b4b",
+                       "width":  640,
+                       "height":  366,
+                       "file":  "data/flags/ir.png",
+                       "country_labels":  [
+                                              "Iran"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "it",
+                       "url":  "https://flagcdn.com/w640/it.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "afcfbfc0bb6f3a11109034b7204ead5309b166031f6bb3aeaffa6b08d2b123a2",
+                       "width":  640,
+                       "height":  427,
+                       "file":  "data/flags/it.png",
+                       "country_labels":  [
+                                              "Italy"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "kh",
+                       "url":  "https://flagcdn.com/w640/kh.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "5c5ff5f00202dd9578659d856b3e0ce4b05c4dd79ba86694f8677f608709a4aa",
+                       "width":  640,
+                       "height":  410,
+                       "file":  "data/flags/kh.png",
+                       "country_labels":  [
+                                              "Cambodia"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "lk",
+                       "url":  "https://flagcdn.com/w640/lk.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "ecb38ca06a7e6d5af87bdf7e3d1e9afc60a66dfc548967fdace48b1ecd2c4624",
+                       "width":  640,
+                       "height":  320,
+                       "file":  "data/flags/lk.png",
+                       "country_labels":  [
+                                              "Sri Lanka"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "mm",
+                       "url":  "https://flagcdn.com/w640/mm.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "810b1c8c917ab6d122fdc3f4fb66b275bd6906d391d52be4e63fdf0d642b3143",
+                       "width":  640,
+                       "height":  427,
+                       "file":  "data/flags/mm.png",
+                       "country_labels":  [
+                                              "Myanmar"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "mt",
+                       "url":  "https://flagcdn.com/w640/mt.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "6eafd262330e6c1a83f77146d80fefe144ee4654e1341177bcf0a5d32e127e44",
+                       "width":  640,
+                       "height":  427,
+                       "file":  "data/flags/mt.png",
+                       "country_labels":  [
+                                              "Malta"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "mv",
+                       "url":  "https://flagcdn.com/w640/mv.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "d07594615a9f95d66ff79033c2864e4aecf479f64d018cb7485fbbada6c31bfc",
+                       "width":  640,
+                       "height":  427,
+                       "file":  "data/flags/mv.png",
+                       "country_labels":  [
+                                              "Maldives"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "my",
+                       "url":  "https://flagcdn.com/w640/my.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "339b29d1adc64432433eaed747977955724594df81299485ff73849ccfc72225",
+                       "width":  640,
+                       "height":  320,
+                       "file":  "data/flags/my.png",
+                       "country_labels":  [
+                                              "Malaysia"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "ng",
+                       "url":  "https://flagcdn.com/w640/ng.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "27b8d05799b0cead909a2983f71434d818530a5f78a29cc85e058113915c3766",
+                       "width":  640,
+                       "height":  320,
+                       "file":  "data/flags/ng.png",
+                       "country_labels":  [
+                                              "Nigeria"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "no",
+                       "url":  "https://flagcdn.com/w640/no.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "4d1744d711801362657546b3fdfe203d2247c070bfe402b2752b025784ace027",
+                       "width":  640,
+                       "height":  465,
+                       "file":  "data/flags/no.png",
+                       "country_labels":  [
+                                              "Norway"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "np",
+                       "url":  "https://flagcdn.com/w640/np.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "3e9378e42e400d63cf1312eedf5bdda253ea73d9d27bb147753b71b6df689f0a",
+                       "width":  640,
+                       "height":  780,
+                       "file":  "data/flags/np.png",
+                       "country_labels":  [
+                                              "Nepal"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "ph",
+                       "url":  "https://flagcdn.com/w640/ph.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "2d227fe57c16a676bc9043202e8179490fcad0f4bfc3d1fd606a22eb297c1bcb",
+                       "width":  640,
+                       "height":  320,
+                       "file":  "data/flags/ph.png",
+                       "country_labels":  [
+                                              "Philippines"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "pk",
+                       "url":  "https://flagcdn.com/w640/pk.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "974cd2015d2229af740940f8f062764b78b6f33481c7a844f06e32705f97c529",
+                       "width":  640,
+                       "height":  427,
+                       "file":  "data/flags/pk.png",
+                       "country_labels":  [
+                                              "Pakistan"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "pl",
+                       "url":  "https://flagcdn.com/w640/pl.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "96979699cdead530559aabf8b5d0ced0be0a610e61926914e2773a61629892e8",
+                       "width":  640,
+                       "height":  400,
+                       "file":  "data/flags/pl.png",
+                       "country_labels":  [
+                                              "Poland"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "pt",
+                       "url":  "https://flagcdn.com/w640/pt.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "e4b3446c813d08dbeb4fe98b3d37a2e6c250414d2c7577bf7a7fdad3de8aa53b",
+                       "width":  640,
+                       "height":  427,
+                       "file":  "data/flags/pt.png",
+                       "country_labels":  [
+                                              "Portugal"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "ro",
+                       "url":  "https://flagcdn.com/w640/ro.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "85fde345f2a3bddfaf2076c46ad9d558f224f6fdfe822d3a3fb10f5deec9ce8d",
+                       "width":  640,
+                       "height":  427,
+                       "file":  "data/flags/ro.png",
+                       "country_labels":  [
+                                              "Romania"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "rs",
+                       "url":  "https://flagcdn.com/w640/rs.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "fca041ec6c149456becf8669a01f69bf74e316392977e879297db9b172b62229",
+                       "width":  640,
+                       "height":  427,
+                       "file":  "data/flags/rs.png",
+                       "country_labels":  [
+                                              "Serbia"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "ru",
+                       "url":  "https://flagcdn.com/w640/ru.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "dea0a0050aed35f797b0873711cf81a3dacf017272fe4e0ba63aace919d6a599",
+                       "width":  640,
+                       "height":  427,
+                       "file":  "data/flags/ru.png",
+                       "country_labels":  [
+                                              "Russia"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "se",
+                       "url":  "https://flagcdn.com/w640/se.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "d076d8d8e60b2d54268796b5584a0ffcac50e0be024038be2cb9f65088356a2e",
+                       "width":  640,
+                       "height":  400,
+                       "file":  "data/flags/se.png",
+                       "country_labels":  [
+                                              "Sweden"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "si",
+                       "url":  "https://flagcdn.com/w640/si.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "f37d2556e34ac627990ae4d1cda8e360db66eb501032c705eb88cc3ea4915614",
+                       "width":  640,
+                       "height":  320,
+                       "file":  "data/flags/si.png",
+                       "country_labels":  [
+                                              "Slovenia"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "sk",
+                       "url":  "https://flagcdn.com/w640/sk.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "1c2612c28f0d466b1a97d925f615ce2518ec07ff6e057626ac9dfa3c1a47650d",
+                       "width":  640,
+                       "height":  427,
+                       "file":  "data/flags/sk.png",
+                       "country_labels":  [
+                                              "Slovakia"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "th",
+                       "url":  "https://flagcdn.com/w640/th.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "62da51788e0589dc396ac775d5cc931393d1cb101b8863ee6058f7e1c99c0aef",
+                       "width":  640,
+                       "height":  427,
+                       "file":  "data/flags/th.png",
+                       "country_labels":  [
+                                              "Thailand"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "tr",
+                       "url":  "https://flagcdn.com/w640/tr.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "242f15123160382e6b1ef0246615c465e990b85a82456e8b5a61d392a5c5e97a",
+                       "width":  640,
+                       "height":  427,
+                       "file":  "data/flags/tr.png",
+                       "country_labels":  [
+                                              "Turkey"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "tz",
+                       "url":  "https://flagcdn.com/w640/tz.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "6eddda6d4cb6b74ea867fc13223bcaaa4733d4bbc0b4cda7f653df95ce69f266",
+                       "width":  640,
+                       "height":  427,
+                       "file":  "data/flags/tz.png",
+                       "country_labels":  [
+                                              "Tanzania"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "ua",
+                       "url":  "https://flagcdn.com/w640/ua.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "27fc0d84915ed8d5f59f2f7422903f705441c4bcd3a1e2d7a6b9691b2c579b62",
+                       "width":  640,
+                       "height":  427,
+                       "file":  "data/flags/ua.png",
+                       "country_labels":  [
+                                              "Ukraine"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "us-hi",
+                       "url":  "https://flagcdn.com/w640/us-hi.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "cceed503caf44135078f99de78a10b6b334a0bffc90dd8268ecae750eac6e4f2",
+                       "width":  640,
+                       "height":  320,
+                       "file":  "data/flags/us-hi.png",
+                       "country_labels":  [
+                                              "Hawaii"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "uz",
+                       "url":  "https://flagcdn.com/w640/uz.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "387bb984573223dbd078d5476c79c54bcca4e4827b60e442a2d5d0fb47aee052",
+                       "width":  640,
+                       "height":  320,
+                       "file":  "data/flags/uz.png",
+                       "country_labels":  [
+                                              "Uzbekistan"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "vn",
+                       "url":  "https://flagcdn.com/w640/vn.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "23a9a6791c81d326d036675d4be393e925a03e6bfc6ed729cf675e0c595257b3",
+                       "width":  640,
+                       "height":  427,
+                       "file":  "data/flags/vn.png",
+                       "country_labels":  [
+                                              "Vietnam"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "za",
+                       "url":  "https://flagcdn.com/w640/za.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "a2de16b4c51577608d445d7cb88460dd6dff76c0064a0b005c3e9356c65fa92c",
+                       "width":  640,
+                       "height":  427,
+                       "file":  "data/flags/za.png",
+                       "country_labels":  [
+                                              "South Africa"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   },
+                   {
+                       "code":  "zw",
+                       "url":  "https://flagcdn.com/w640/zw.png",
+                       "source":  "Flagpedia flag CDN (Wikimedia Commons-derived flags)",
+                       "license":  "Flagpedia states its flag images are sourced from Wikimedia Commons; per-file provenance and licensing should be checked at the source.",
+                       "sha256":  "91789e2102e18bcde4034443155ce53d32c9b8df211eead27811910f8824a686",
+                       "width":  640,
+                       "height":  320,
+                       "file":  "data/flags/zw.png",
+                       "country_labels":  [
+                                              "Zimbabwe"
+                                          ],
+                       "source_page":  "https://flagpedia.net/download/api"
+                   }
+               ],
+    "failures":  [
+
+                 ]
+}

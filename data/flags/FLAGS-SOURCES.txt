@@ -1,0 +1,6 @@
+﻿Flag asset provenance
+
+Raster files are downloaded in native aspect ratio from Flagpedia’s w640 CDN, which is based on Wikimedia Commons flag depictions. CDN endpoint pattern: https://flagcdn.com/w640/{code}.png
+Source/API information: https://flagpedia.net/download/api
+
+Per-file URL, SHA-256, and decoded PNG dimensions are recorded in sources.json. Wikimedia Commons files can have differing source-specific licenses; consult the listed asset provenance before redistribution. Flags are representative associations for languages, never exclusive claims.

@@ -1,0 +1,1041 @@
+﻿{
+    "regions":  {
+                    "western-europe":  "Shared western and central European scenery: stone or gabled river towns, without a named monument.",
+                    "alpine-europe":  "Shared European alpine scenery: mountain valleys and lakes.",
+                    "boreal-lakes":  "Shared northern scenery: flat forests, broad lakes and cool skies.",
+                    "rugged-fjords":  "Shared rugged northern coast scenery: green mountains, fjords and small villages.",
+                    "atlantic-cliffs":  "Shared Atlantic scenery: green sea cliffs and stone cottages.",
+                    "southern-coast":  "Shared southern European scenery: warm harbors, olive groves and coastal light.",
+                    "caucasus":  "Shared Caucasus scenery: green rocky foothills and stone villages.",
+                    "central-steppe":  "Shared Central Asian scenery: grass or dry plains and brick market towns.",
+                    "desert-oasis":  "Shared North African scenery: sandstone towns and oasis palms.",
+                    "west-asia":  "Shared West Asian scenery: warm-stone historic waterfront towns.",
+                    "south-asian-plains":  "Shared South Asian scenery: tropical river and plains towns.",
+                    "himalaya":  "Shared Himalayan scenery: terraced mountain valleys.",
+                    "east-asia":  "Shared temperate East Asian scenery: tiled-roof towns beside lakes.",
+                    "southeast-asia":  "Shared Southeast Asian scenery: lush rivers and terraced landscapes.",
+                    "maritime-tropics":  "Shared tropical archipelago scenery: lush islands and waterfronts.",
+                    "tropical-islands":  "Shared low tropical-island scenery: palms and lagoons.",
+                    "african-savanna":  "Shared African scenery: wooded grassland and contemporary modest river towns.",
+                    "tropical-africa":  "Shared African rainforest scenery: rivers and contemporary modest towns.",
+                    "north-american-city":  "Shared North American urban waterfront scenery.",
+                    "latin-american-town":  "Shared Latin American scenery: colorful river and plaza towns.",
+                    "andes":  "Shared Andean scenery: high mountains and terraced villages.",
+                    "southern-plains":  "Shared southern South American scenery: open plains and river towns.",
+                    "australasia":  "Shared Australian and New Zealand scenery: coastal cities and eucalyptus landscapes.",
+                    "neutral":  "Abstract, non-geographic scenery."
+                },
+    "countries":  {
+                      "Afghanistan":  "central-steppe",
+                      "Åland Islands":  "boreal-lakes",
+                      "Albania":  "southern-coast",
+                      "Algeria":  "desert-oasis",
+                      "American Samoa":  "tropical-islands",
+                      "Andorra":  "western-europe",
+                      "Angola":  "african-savanna",
+                      "Anguilla":  "north-american-city",
+                      "Antarctica":  "neutral",
+                      "Antigua and Barbuda":  "north-american-city",
+                      "Argentina":  "southern-plains",
+                      "Armenia":  "caucasus",
+                      "Aruba":  "north-american-city",
+                      "Australia":  "australasia",
+                      "Austria":  "alpine-europe",
+                      "Azerbaijan":  "caucasus",
+                      "Bahamas":  "north-american-city",
+                      "Bahrain":  "west-asia",
+                      "Bangladesh":  "south-asian-plains",
+                      "Barbados":  "north-american-city",
+                      "Belarus":  "western-europe",
+                      "Belgium":  "western-europe",
+                      "Belize":  "latin-american-town",
+                      "Benin":  "tropical-africa",
+                      "Bermuda":  "north-american-city",
+                      "Bhutan":  "himalaya",
+                      "Bolivia":  "andes",
+                      "Bosnia and Herzegovina":  "western-europe",
+                      "Botswana":  "african-savanna",
+                      "Bouvet Island":  "neutral",
+                      "Brazil":  "latin-american-town",
+                      "British Virgin Islands":  "north-american-city",
+                      "Brunei":  "southeast-asia",
+                      "Brunei Darussalam":  "southeast-asia",
+                      "Bulgaria":  "western-europe",
+                      "Burkina Faso":  "tropical-africa",
+                      "Burundi":  "african-savanna",
+                      "Cabo Verde":  "tropical-africa",
+                      "Cambodia":  "southeast-asia",
+                      "Cameroon":  "tropical-africa",
+                      "Canada":  "north-american-city",
+                      "Cape Verde":  "tropical-africa",
+                      "Caribbean Islands":  "north-american-city",
+                      "Cayman Islands":  "north-american-city",
+                      "Central African Republic":  "african-savanna",
+                      "Chad":  "desert-oasis",
+                      "Chile":  "andes",
+                      "China":  "east-asia",
+                      "Christmas Island":  "tropical-islands",
+                      "Cocos (Keeling) Islands":  "tropical-islands",
+                      "Colombia":  "andes",
+                      "Comoros":  "tropical-africa",
+                      "Congo":  "tropical-africa",
+                      "Cook Islands":  "tropical-islands",
+                      "Costa Rica":  "latin-american-town",
+                      "Cote D\u0027ivoire":  "tropical-africa",
+                      "Croatia":  "southern-coast",
+                      "Cuba":  "north-american-city",
+                      "Curacao":  "latin-american-town",
+                      "Curaçao":  "latin-american-town",
+                      "Cyprus":  "southern-coast",
+                      "Czech Republic":  "western-europe",
+                      "Democratic Republic of the Congo":  "tropical-africa",
+                      "Denmark":  "western-europe",
+                      "Djibouti":  "tropical-africa",
+                      "Dominica":  "north-american-city",
+                      "Dominican Republic":  "north-american-city",
+                      "DR Congo":  "tropical-africa",
+                      "East Timor":  "maritime-tropics",
+                      "Ecuador":  "andes",
+                      "Egypt":  "desert-oasis",
+                      "El Salvador":  "latin-american-town",
+                      "Equatorial Guinea":  "tropical-africa",
+                      "Eritrea":  "tropical-africa",
+                      "Estonia":  "western-europe",
+                      "Eswatini":  "african-savanna",
+                      "Ethiopia":  "african-savanna",
+                      "Falkland Islands":  "southern-plains",
+                      "Faroe Islands":  "rugged-fjords",
+                      "Faroes":  "rugged-fjords",
+                      "Fiji":  "tropical-islands",
+                      "Finland":  "boreal-lakes",
+                      "France":  "western-europe",
+                      "French Guiana":  "latin-american-town",
+                      "French Polynesia":  "tropical-islands",
+                      "French Southern and Antarctic Lands":  "neutral",
+                      "Gabon":  "tropical-africa",
+                      "Gambia":  "african-savanna",
+                      "Georgia":  "caucasus",
+                      "Germany":  "western-europe",
+                      "Ghana":  "tropical-africa",
+                      "Greece":  "southern-coast",
+                      "Greenland":  "north-american-city",
+                      "Grenada":  "north-american-city",
+                      "Guam":  "tropical-islands",
+                      "Guatemala":  "latin-american-town",
+                      "Guinea":  "tropical-africa",
+                      "Guinea-Bissau":  "tropical-africa",
+                      "Guyana":  "latin-american-town",
+                      "Haiti":  "north-american-city",
+                      "Heard Island and McDonald Islands":  "neutral",
+                      "Honduras":  "latin-american-town",
+                      "Hong Kong":  "east-asia",
+                      "Hungary":  "western-europe",
+                      "Iceland":  "rugged-fjords",
+                      "India":  "himalaya",
+                      "Indonesia":  "maritime-tropics",
+                      "Iran":  "west-asia",
+                      "Iraq":  "west-asia",
+                      "Ireland":  "atlantic-cliffs",
+                      "Israel":  "west-asia",
+                      "Italy":  "southern-coast",
+                      "Ivory Coast":  "tropical-africa",
+                      "Jamaica":  "north-american-city",
+                      "Japan":  "east-asia",
+                      "Jordan":  "west-asia",
+                      "Kazakhstan":  "central-steppe",
+                      "Kenya":  "african-savanna",
+                      "Kiribati":  "tropical-islands",
+                      "Kosovo":  "western-europe",
+                      "Kuwait":  "west-asia",
+                      "Kyrgyzstan":  "central-steppe",
+                      "Laos":  "southeast-asia",
+                      "Latvia":  "western-europe",
+                      "Lebanon":  "west-asia",
+                      "Lesotho":  "african-savanna",
+                      "Liberia":  "tropical-africa",
+                      "Libya":  "desert-oasis",
+                      "Liechtenstein":  "alpine-europe",
+                      "Lithuania":  "western-europe",
+                      "Luxembourg":  "western-europe",
+                      "Macedonia":  "western-europe",
+                      "Madagascar":  "tropical-africa",
+                      "Malawi":  "african-savanna",
+                      "Malaysia":  "southeast-asia",
+                      "Maldives":  "south-asian-plains",
+                      "Mali":  "tropical-africa",
+                      "Malta":  "southern-coast",
+                      "Marshall Islands":  "tropical-islands",
+                      "Mauritania":  "desert-oasis",
+                      "Mauritius":  "tropical-africa",
+                      "Mayotte":  "tropical-africa",
+                      "Mexico":  "north-american-city",
+                      "Micronesia":  "tropical-islands",
+                      "Moldova":  "western-europe",
+                      "Monaco":  "southern-coast",
+                      "Mongolia":  "central-steppe",
+                      "Montenegro":  "western-europe",
+                      "Montserrat":  "north-american-city",
+                      "Morocco":  "desert-oasis",
+                      "Mozambique":  "african-savanna",
+                      "Myanmar":  "southeast-asia",
+                      "Myanmar (Burma)":  "southeast-asia",
+                      "Namibia":  "african-savanna",
+                      "Nauru":  "tropical-islands",
+                      "Nepal":  "himalaya",
+                      "Netherlands":  "western-europe",
+                      "New Caledonia":  "maritime-tropics",
+                      "New Zealand":  "australasia",
+                      "Nicaragua":  "latin-american-town",
+                      "Niger":  "desert-oasis",
+                      "Nigeria":  "tropical-africa",
+                      "Norfolk Island":  "australasia",
+                      "North Korea":  "east-asia",
+                      "North Macedonia":  "western-europe",
+                      "Northern Cyprus":  "west-asia",
+                      "Northern Mariana Islands":  "tropical-islands",
+                      "Norway":  "rugged-fjords",
+                      "Oman":  "west-asia",
+                      "Pakistan":  "himalaya",
+                      "Palau":  "tropical-islands",
+                      "Palestine":  "west-asia",
+                      "Panama":  "latin-american-town",
+                      "Papua New Guinea":  "australasia",
+                      "Paraguay":  "latin-american-town",
+                      "People\u0027s Republic of China":  "east-asia",
+                      "Peru":  "andes",
+                      "Philippines":  "maritime-tropics",
+                      "Pitcairn Islands":  "tropical-islands",
+                      "Poland":  "western-europe",
+                      "Portugal":  "southern-coast",
+                      "Puerto Rico":  "north-american-city",
+                      "Qatar":  "west-asia",
+                      "Republic of the Congo":  "tropical-africa",
+                      "Reunion":  "tropical-africa",
+                      "Réunion":  "tropical-africa",
+                      "Romania":  "western-europe",
+                      "Russia":  "boreal-lakes",
+                      "Rwanda":  "african-savanna",
+                      "Saint Kitts and Nevis":  "north-american-city",
+                      "Saint Lucia":  "north-american-city",
+                      "Saint Pierre and Miquelon":  "north-american-city",
+                      "Saint Vincent and the Grenadines":  "north-american-city",
+                      "Samoa":  "tropical-islands",
+                      "San Marino":  "western-europe",
+                      "São Tomé and Príncipe":  "tropical-africa",
+                      "Sao Tome-Principe":  "tropical-africa",
+                      "Saudi Arabia":  "west-asia",
+                      "Senegal":  "tropical-africa",
+                      "Serbia":  "western-europe",
+                      "Seychelles":  "tropical-africa",
+                      "Sierra Leone":  "tropical-africa",
+                      "Singapore":  "southeast-asia",
+                      "Slovakia":  "western-europe",
+                      "Slovenia":  "western-europe",
+                      "Solomon Islands":  "maritime-tropics",
+                      "Somalia":  "african-savanna",
+                      "Somaliland":  "african-savanna",
+                      "South Africa":  "african-savanna",
+                      "South Georgia and the South Sandwich Islands":  "neutral",
+                      "South Korea":  "east-asia",
+                      "South Sudan":  "african-savanna",
+                      "Spain":  "southern-coast",
+                      "Sri Lanka":  "south-asian-plains",
+                      "St. Helena":  "atlantic-cliffs",
+                      "St. Pierre-Miquelon":  "north-american-city",
+                      "Sudan":  "desert-oasis",
+                      "Suriname":  "latin-american-town",
+                      "Svalbard":  "boreal-lakes",
+                      "Swaziland":  "african-savanna",
+                      "Sweden":  "boreal-lakes",
+                      "Switzerland":  "alpine-europe",
+                      "Syria":  "west-asia",
+                      "Taiwan":  "east-asia",
+                      "Tajikistan":  "central-steppe",
+                      "Tanzania":  "african-savanna",
+                      "Thailand":  "southeast-asia",
+                      "The Bahamas":  "north-american-city",
+                      "The Gambia":  "african-savanna",
+                      "Timor-Leste":  "maritime-tropics",
+                      "Togo":  "tropical-africa",
+                      "Tokelau":  "tropical-islands",
+                      "Tonga":  "tropical-islands",
+                      "Trinidad and Tobago":  "north-american-city",
+                      "Tunisia":  "desert-oasis",
+                      "Turkey":  "west-asia",
+                      "Turkish Republic of Northern Cyprus":  "west-asia",
+                      "Turkmenistan":  "central-steppe",
+                      "Turks and Caicos Islands":  "north-american-city",
+                      "Tuvalu":  "tropical-islands",
+                      "U.S. Virgin Islands":  "north-american-city",
+                      "Uganda":  "african-savanna",
+                      "Ukraine":  "western-europe",
+                      "United Arab Emirates":  "west-asia",
+                      "United Kingdom":  "atlantic-cliffs",
+                      "United States":  "north-american-city",
+                      "United States of America":  "north-american-city",
+                      "Uruguay":  "southern-plains",
+                      "Uzbekistan":  "central-steppe",
+                      "Vanuatu":  "maritime-tropics",
+                      "Vatican City":  "western-europe",
+                      "Venezuela":  "latin-american-town",
+                      "Vietnam":  "southeast-asia",
+                      "Wallis and Futuna":  "tropical-islands",
+                      "Wallis-Futuna Islands":  "tropical-islands",
+                      "Western Sahara":  "desert-oasis",
+                      "Yemen":  "west-asia",
+                      "Zambia":  "african-savanna",
+                      "Zimbabwe":  "african-savanna"
+                  },
+    "continents":  {
+                       "Africa":  "african-savanna",
+                       "Asia":  "east-asia",
+                       "Australasia":  "australasia",
+                       "Central America":  "latin-american-town",
+                       "Europe":  "western-europe",
+                       "North America":  "north-american-city",
+                       "South America":  "latin-american-town"
+                   },
+    "states":  {
+                   "r100447":  {
+                                   "subject":  "Alberta",
+                                   "country":  "Canada",
+                                   "region":  "boreal-lakes"
+                               },
+                   "r100448":  {
+                                   "subject":  "Alaska",
+                                   "country":  "United States",
+                                   "region":  "boreal-lakes"
+                               },
+                   "r100449":  {
+                                   "subject":  "Alabama",
+                                   "country":  "United States",
+                                   "region":  "north-american-city"
+                               },
+                   "r100450":  {
+                                   "subject":  "Arkansas",
+                                   "country":  "United States",
+                                   "region":  "north-american-city"
+                               },
+                   "r100452":  {
+                                   "subject":  "Arizona",
+                                   "country":  "United States",
+                                   "region":  "north-american-city"
+                               },
+                   "r100453":  {
+                                   "subject":  "British Columbia",
+                                   "country":  "Canada",
+                                   "region":  "boreal-lakes"
+                               },
+                   "r100455":  {
+                                   "subject":  "California",
+                                   "country":  "United States",
+                                   "region":  "north-american-city"
+                               },
+                   "r100457":  {
+                                   "subject":  "Colorado",
+                                   "country":  "United States",
+                                   "region":  "alpine-europe"
+                               },
+                   "r100458":  {
+                                   "subject":  "Connecticut",
+                                   "country":  "United States",
+                                   "region":  "north-american-city"
+                               },
+                   "r100460":  {
+                                   "subject":  "Delaware",
+                                   "country":  "United States",
+                                   "region":  "north-american-city"
+                               },
+                   "r100462":  {
+                                   "subject":  "Florida",
+                                   "country":  "United States",
+                                   "region":  "north-american-city"
+                               },
+                   "r100464":  {
+                                   "subject":  "Georgia",
+                                   "country":  "United States",
+                                   "region":  "north-american-city"
+                               },
+                   "r100466":  {
+                                   "subject":  "Hawaii",
+                                   "country":  "United States",
+                                   "region":  "tropical-islands"
+                               },
+                   "r100467":  {
+                                   "subject":  "Iowa",
+                                   "country":  "United States",
+                                   "region":  "north-american-city"
+                               },
+                   "r100468":  {
+                                   "subject":  "Idaho",
+                                   "country":  "United States",
+                                   "region":  "alpine-europe"
+                               },
+                   "r100469":  {
+                                   "subject":  "Illinois",
+                                   "country":  "United States",
+                                   "region":  "north-american-city"
+                               },
+                   "r100470":  {
+                                   "subject":  "Indiana",
+                                   "country":  "United States",
+                                   "region":  "north-american-city"
+                               },
+                   "r100471":  {
+                                   "subject":  "Kansas",
+                                   "country":  "United States",
+                                   "region":  "north-american-city"
+                               },
+                   "r100472":  {
+                                   "subject":  "Kentucky",
+                                   "country":  "United States",
+                                   "region":  "north-american-city"
+                               },
+                   "r100473":  {
+                                   "subject":  "Louisiana",
+                                   "country":  "United States",
+                                   "region":  "north-american-city"
+                               },
+                   "r100474":  {
+                                   "subject":  "Massachusetts",
+                                   "country":  "United States",
+                                   "region":  "north-american-city"
+                               },
+                   "r100475":  {
+                                   "subject":  "Manitoba",
+                                   "country":  "Canada",
+                                   "region":  "boreal-lakes"
+                               },
+                   "r100476":  {
+                                   "subject":  "Maryland",
+                                   "country":  "United States",
+                                   "region":  "north-american-city"
+                               },
+                   "r100477":  {
+                                   "subject":  "Maine",
+                                   "country":  "United States",
+                                   "region":  "north-american-city"
+                               },
+                   "r100478":  {
+                                   "subject":  "Michigan",
+                                   "country":  "United States",
+                                   "region":  "boreal-lakes"
+                               },
+                   "r100479":  {
+                                   "subject":  "Minnesota",
+                                   "country":  "United States",
+                                   "region":  "boreal-lakes"
+                               },
+                   "r100480":  {
+                                   "subject":  "Missouri",
+                                   "country":  "United States",
+                                   "region":  "north-american-city"
+                               },
+                   "r100482":  {
+                                   "subject":  "Mississippi",
+                                   "country":  "United States",
+                                   "region":  "north-american-city"
+                               },
+                   "r100483":  {
+                                   "subject":  "Montana",
+                                   "country":  "United States",
+                                   "region":  "alpine-europe"
+                               },
+                   "r100484":  {
+                                   "subject":  "New Brunswick",
+                                   "country":  "Canada",
+                                   "region":  "north-american-city"
+                               },
+                   "r100485":  {
+                                   "subject":  "North Carolina",
+                                   "country":  "United States",
+                                   "region":  "north-american-city"
+                               },
+                   "r100486":  {
+                                   "subject":  "North Dakota",
+                                   "country":  "United States",
+                                   "region":  "boreal-lakes"
+                               },
+                   "r100487":  {
+                                   "subject":  "Nebraska",
+                                   "country":  "United States",
+                                   "region":  "north-american-city"
+                               },
+                   "r100488":  {
+                                   "subject":  "Newfoundland and Labrador",
+                                   "country":  "Canada",
+                                   "region":  "north-american-city"
+                               },
+                   "r100489":  {
+                                   "subject":  "New Hampshire",
+                                   "country":  "United States",
+                                   "region":  "north-american-city"
+                               },
+                   "r100490":  {
+                                   "subject":  "New Jersey",
+                                   "country":  "United States",
+                                   "region":  "north-american-city"
+                               },
+                   "r100491":  {
+                                   "subject":  "New Mexico",
+                                   "country":  "United States",
+                                   "region":  "north-american-city"
+                               },
+                   "r100492":  {
+                                   "subject":  "Nova Scotia",
+                                   "country":  "Canada",
+                                   "region":  "north-american-city"
+                               },
+                   "r100493":  {
+                                   "subject":  "Northwest Territories",
+                                   "country":  "Canada",
+                                   "region":  "boreal-lakes"
+                               },
+                   "r100494":  {
+                                   "subject":  "Nunavut",
+                                   "country":  "Canada",
+                                   "region":  "boreal-lakes"
+                               },
+                   "r100495":  {
+                                   "subject":  "Nevada",
+                                   "country":  "United States",
+                                   "region":  "north-american-city"
+                               },
+                   "r100496":  {
+                                   "subject":  "Ohio",
+                                   "country":  "United States",
+                                   "region":  "north-american-city"
+                               },
+                   "r100497":  {
+                                   "subject":  "Oklahoma",
+                                   "country":  "United States",
+                                   "region":  "north-american-city"
+                               },
+                   "r100498":  {
+                                   "subject":  "Ontario",
+                                   "country":  "Canada",
+                                   "region":  "north-american-city"
+                               },
+                   "r100499":  {
+                                   "subject":  "Oregon",
+                                   "country":  "United States",
+                                   "region":  "north-american-city"
+                               },
+                   "r100500":  {
+                                   "subject":  "Pennsylvania",
+                                   "country":  "United States",
+                                   "region":  "north-american-city"
+                               },
+                   "r100501":  {
+                                   "subject":  "Prince Edward Island",
+                                   "country":  "Canada",
+                                   "region":  "north-american-city"
+                               },
+                   "r100503":  {
+                                   "subject":  "Quebec",
+                                   "country":  "Canada",
+                                   "region":  "north-american-city"
+                               },
+                   "r100505":  {
+                                   "subject":  "Rhode Island",
+                                   "country":  "United States",
+                                   "region":  "north-american-city"
+                               },
+                   "r100506":  {
+                                   "subject":  "South Carolina",
+                                   "country":  "United States",
+                                   "region":  "north-american-city"
+                               },
+                   "r100507":  {
+                                   "subject":  "South Dakota",
+                                   "country":  "United States",
+                                   "region":  "boreal-lakes"
+                               },
+                   "r100508":  {
+                                   "subject":  "Saskatchewan",
+                                   "country":  "Canada",
+                                   "region":  "boreal-lakes"
+                               },
+                   "r100510":  {
+                                   "subject":  "Tennessee",
+                                   "country":  "United States",
+                                   "region":  "north-american-city"
+                               },
+                   "r100511":  {
+                                   "subject":  "Texas",
+                                   "country":  "United States",
+                                   "region":  "north-american-city"
+                               },
+                   "r100512":  {
+                                   "subject":  "Utah",
+                                   "country":  "United States",
+                                   "region":  "north-american-city"
+                               },
+                   "r100513":  {
+                                   "subject":  "Virginia",
+                                   "country":  "United States",
+                                   "region":  "north-american-city"
+                               },
+                   "r100515":  {
+                                   "subject":  "Vermont",
+                                   "country":  "United States",
+                                   "region":  "north-american-city"
+                               },
+                   "r100516":  {
+                                   "subject":  "Washington",
+                                   "country":  "United States",
+                                   "region":  "north-american-city"
+                               },
+                   "r100517":  {
+                                   "subject":  "Wisconsin",
+                                   "country":  "United States",
+                                   "region":  "boreal-lakes"
+                               },
+                   "r100518":  {
+                                   "subject":  "West Virginia",
+                                   "country":  "United States",
+                                   "region":  "north-american-city"
+                               },
+                   "r100519":  {
+                                   "subject":  "Wyoming",
+                                   "country":  "United States",
+                                   "region":  "alpine-europe"
+                               },
+                   "r100520":  {
+                                   "subject":  "Yukon",
+                                   "country":  "Canada",
+                                   "region":  "boreal-lakes"
+                               },
+                   "r101322":  {
+                                   "subject":  "New York",
+                                   "country":  "United States",
+                                   "region":  "north-american-city"
+                               }
+               },
+    "languages":  {
+                      "Aboriginal":  {
+                                         "region":  "neutral"
+                                     },
+                      "Afrikaans":  {
+                                        "region":  "african-savanna",
+                                        "flag":  "South Africa",
+                                        "code":  "za"
+                                    },
+                      "Akan":  {
+                                   "region":  "tropical-africa",
+                                   "flag":  "Ghana",
+                                   "code":  "gh"
+                               },
+                      "Albanian":  {
+                                       "region":  "southern-coast",
+                                       "flag":  "Albania",
+                                       "code":  "al"
+                                   },
+                      "Arabic":  {
+                                     "region":  "west-asia"
+                                 },
+                      "Armenian":  {
+                                       "region":  "caucasus",
+                                       "flag":  "Armenia",
+                                       "code":  "am"
+                                   },
+                      "Azerbaijani":  {
+                                          "region":  "caucasus",
+                                          "flag":  "Azerbaijan",
+                                          "code":  "az"
+                                      },
+                      "Bashkir":  {
+                                      "region":  "central-steppe"
+                                  },
+                      "Basque":  {
+                                     "region":  "western-europe"
+                                 },
+                      "Belarusian":  {
+                                         "region":  "western-europe"
+                                     },
+                      "Bengali":  {
+                                      "region":  "south-asian-plains",
+                                      "flag":  "Bangladesh",
+                                      "code":  "bd"
+                                  },
+                      "Bosnian":  {
+                                      "region":  "western-europe",
+                                      "flag":  "Bosnia and Herzegovina",
+                                      "code":  "ba"
+                                  },
+                      "Bulgarian":  {
+                                        "region":  "western-europe",
+                                        "flag":  "Bulgaria",
+                                        "code":  "bg"
+                                    },
+                      "Cantonese":  {
+                                        "region":  "east-asia",
+                                        "flag":  "Hong Kong",
+                                        "code":  "hk"
+                                    },
+                      "Catalan":  {
+                                      "region":  "southern-coast",
+                                      "flag":  "Andorra",
+                                      "code":  "ad"
+                                  },
+                      "Chinese":  {
+                                      "region":  "east-asia",
+                                      "flag":  "China",
+                                      "code":  "cn"
+                                  },
+                      "Croatian":  {
+                                       "region":  "western-europe",
+                                       "flag":  "Croatia",
+                                       "code":  "hr"
+                                   },
+                      "Czech":  {
+                                    "region":  "western-europe",
+                                    "flag":  "Czech Republic",
+                                    "code":  "cz"
+                                },
+                      "Danish":  {
+                                     "region":  "western-europe",
+                                     "flag":  "Denmark",
+                                     "code":  "dk"
+                                 },
+                      "Dari":  {
+                                   "region":  "west-asia",
+                                   "flag":  "Afghanistan",
+                                   "code":  "af"
+                               },
+                      "Dhivehi":  {
+                                      "region":  "tropical-islands",
+                                      "flag":  "Maldives",
+                                      "code":  "mv"
+                                  },
+                      "Dutch":  {
+                                    "region":  "western-europe",
+                                    "flag":  "Netherlands"
+                                },
+                      "English":  {
+                                      "region":  "western-europe",
+                                      "flag":  "United Kingdom",
+                                      "code":  "gb"
+                                  },
+                      "Estonian":  {
+                                       "region":  "boreal-lakes",
+                                       "flag":  "Estonia",
+                                       "code":  "ee"
+                                   },
+                      "Faroese":  {
+                                      "region":  "rugged-fjords",
+                                      "flag":  "Faroe Islands",
+                                      "code":  "fo"
+                                  },
+                      "Fijian":  {
+                                     "region":  "maritime-tropics",
+                                     "flag":  "Fiji",
+                                     "code":  "fj"
+                                 },
+                      "Flemish":  {
+                                      "region":  "western-europe",
+                                      "flag":  "Belgium",
+                                      "code":  "be"
+                                  },
+                      "French":  {
+                                     "region":  "western-europe",
+                                     "flag":  "France",
+                                     "code":  "fr"
+                                 },
+                      "Galician":  {
+                                       "region":  "atlantic-cliffs",
+                                       "flag":  "Spain",
+                                       "code":  "es"
+                                   },
+                      "German":  {
+                                     "region":  "western-europe",
+                                     "flag":  "Germany",
+                                     "code":  "de"
+                                 },
+                      "Greek":  {
+                                    "region":  "southern-coast",
+                                    "flag":  "Greece",
+                                    "code":  "gr"
+                                },
+                      "Gujarati":  {
+                                       "region":  "south-asian-plains",
+                                       "flag":  "India",
+                                       "code":  "in"
+                                   },
+                      "Haitian":  {
+                                      "region":  "latin-american-town",
+                                      "flag":  "Haiti",
+                                      "code":  "ht"
+                                  },
+                      "Hausa":  {
+                                    "region":  "african-savanna",
+                                    "flag":  "Nigeria",
+                                    "code":  "ng"
+                                },
+                      "Hawaiian":  {
+                                       "region":  "tropical-islands",
+                                       "flag":  "Hawaii",
+                                       "code":  "us-hi"
+                                   },
+                      "Hebrew":  {
+                                     "region":  "west-asia",
+                                     "flag":  "Israel",
+                                     "code":  "il"
+                                 },
+                      "Hindi":  {
+                                    "region":  "south-asian-plains",
+                                    "flag":  "India",
+                                    "code":  "in"
+                                },
+                      "Hungarian":  {
+                                        "region":  "western-europe",
+                                        "flag":  "Hungary",
+                                        "code":  "hu"
+                                    },
+                      "Icelandic":  {
+                                        "region":  "boreal-lakes",
+                                        "flag":  "Iceland"
+                                    },
+                      "Indonesian":  {
+                                         "region":  "maritime-tropics",
+                                         "flag":  "Indonesia",
+                                         "code":  "id"
+                                     },
+                      "Irish":  {
+                                    "region":  "atlantic-cliffs",
+                                    "flag":  "Ireland"
+                                },
+                      "Italian":  {
+                                      "region":  "southern-coast",
+                                      "flag":  "Italy",
+                                      "code":  "it"
+                                  },
+                      "Japanese":  {
+                                       "region":  "east-asia",
+                                       "flag":  "Japan"
+                                   },
+                      "Kannada":  {
+                                      "region":  "south-asian-plains",
+                                      "flag":  "India",
+                                      "code":  "in"
+                                  },
+                      "Kashmiri":  {
+                                       "region":  "south-asian-plains"
+                                   },
+                      "Khmer":  {
+                                    "region":  "southeast-asia",
+                                    "flag":  "Cambodia",
+                                    "code":  "kh"
+                                },
+                      "Korean":  {
+                                     "region":  "east-asia",
+                                     "flag":  "South Korea"
+                                 },
+                      "Kurdish":  {
+                                      "region":  "west-asia"
+                                  },
+                      "Latvian":  {
+                                      "region":  "western-europe"
+                                  },
+                      "Lithuanian":  {
+                                         "region":  "western-europe"
+                                     },
+                      "Macedonian":  {
+                                         "region":  "western-europe"
+                                     },
+                      "Malay":  {
+                                    "region":  "southeast-asia",
+                                    "flag":  "Malaysia",
+                                    "code":  "my"
+                                },
+                      "Malayalam":  {
+                                        "region":  "south-asian-plains",
+                                        "flag":  "India",
+                                        "code":  "in"
+                                    },
+                      "Maltese":  {
+                                      "region":  "southern-coast",
+                                      "flag":  "Malta",
+                                      "code":  "mt"
+                                  },
+                      "Multilingual":  {
+                                           "region":  "neutral"
+                                       },
+                      "Myanmar (Burmese)":  {
+                                                "region":  "southeast-asia",
+                                                "flag":  "Myanmar",
+                                                "code":  "mm"
+                                            },
+                      "Nepali":  {
+                                     "region":  "himalaya",
+                                     "flag":  "Nepal",
+                                     "code":  "np"
+                                 },
+                      "Norwegian":  {
+                                        "region":  "rugged-fjords",
+                                        "flag":  "Norway",
+                                        "code":  "no"
+                                    },
+                      "Norwegian Bokmal":  {
+                                               "region":  "rugged-fjords",
+                                               "flag":  "Norway",
+                                               "code":  "no"
+                                           },
+                      "Papiamentu":  {
+                                         "region":  "latin-american-town",
+                                         "flag":  "Curaçao",
+                                         "code":  "cw"
+                                     },
+                      "Pashto":  {
+                                     "region":  "west-asia",
+                                     "flag":  "Afghanistan",
+                                     "code":  "af"
+                                 },
+                      "Persian":  {
+                                      "region":  "west-asia",
+                                      "flag":  "Iran",
+                                      "code":  "ir"
+                                  },
+                      "Polish":  {
+                                     "region":  "western-europe",
+                                     "flag":  "Poland",
+                                     "code":  "pl"
+                                 },
+                      "Portuguese":  {
+                                         "region":  "southern-coast",
+                                         "flag":  "Portugal",
+                                         "code":  "pt"
+                                     },
+                      "Punjabi":  {
+                                      "region":  "south-asian-plains",
+                                      "flag":  "India",
+                                      "code":  "in"
+                                  },
+                      "Romanian":  {
+                                       "region":  "western-europe",
+                                       "flag":  "Romania",
+                                       "code":  "ro"
+                                   },
+                      "Romansch":  {
+                                       "region":  "western-europe",
+                                       "flag":  "Switzerland",
+                                       "code":  "ch"
+                                   },
+                      "Russian":  {
+                                      "region":  "boreal-lakes",
+                                      "flag":  "Russia",
+                                      "code":  "ru"
+                                  },
+                      "Sami":  {
+                                   "region":  "boreal-lakes"
+                               },
+                      "Serbian":  {
+                                      "region":  "western-europe",
+                                      "flag":  "Serbia",
+                                      "code":  "rs"
+                                  },
+                      "Shona":  {
+                                    "region":  "african-savanna",
+                                    "flag":  "Zimbabwe",
+                                    "code":  "zw"
+                                },
+                      "Sindhi":  {
+                                     "region":  "south-asian-plains",
+                                     "flag":  "Pakistan",
+                                     "code":  "pk"
+                                 },
+                      "Slovak":  {
+                                     "region":  "western-europe",
+                                     "flag":  "Slovakia",
+                                     "code":  "sk"
+                                 },
+                      "Slovenian":  {
+                                        "region":  "western-europe",
+                                        "flag":  "Slovenia",
+                                        "code":  "si"
+                                    },
+                      "Spanish":  {
+                                      "region":  "southern-coast",
+                                      "flag":  "Spain",
+                                      "code":  "es"
+                                  },
+                      "Swahili":  {
+                                      "region":  "african-savanna",
+                                      "flag":  "Tanzania",
+                                      "code":  "tz"
+                                  },
+                      "Swedish":  {
+                                      "region":  "western-europe",
+                                      "flag":  "Sweden",
+                                      "code":  "se"
+                                  },
+                      "Tagalog":  {
+                                      "region":  "maritime-tropics",
+                                      "flag":  "Philippines",
+                                      "code":  "ph"
+                                  },
+                      "Tamil":  {
+                                    "region":  "south-asian-plains",
+                                    "flag":  "India",
+                                    "code":  "in"
+                                },
+                      "Telugu":  {
+                                     "region":  "south-asian-plains",
+                                     "flag":  "India",
+                                     "code":  "in"
+                                 },
+                      "Thai":  {
+                                   "region":  "southeast-asia",
+                                   "flag":  "Thailand",
+                                   "code":  "th"
+                               },
+                      "Turkish":  {
+                                      "region":  "west-asia",
+                                      "flag":  "Turkey",
+                                      "code":  "tr"
+                                  },
+                      "Ukrainian":  {
+                                        "region":  "western-europe",
+                                        "flag":  "Ukraine",
+                                        "code":  "ua"
+                                    },
+                      "Urdu":  {
+                                   "region":  "south-asian-plains",
+                                   "flag":  "Pakistan",
+                                   "code":  "pk"
+                               },
+                      "Uyghur":  {
+                                     "region":  "central-steppe"
+                                 },
+                      "Uzbek":  {
+                                    "region":  "central-steppe",
+                                    "flag":  "Uzbekistan",
+                                    "code":  "uz"
+                                },
+                      "Vietnamese":  {
+                                         "region":  "southeast-asia",
+                                         "flag":  "Vietnam",
+                                         "code":  "vn"
+                                     },
+                      "Welsh":  {
+                                    "region":  "atlantic-cliffs",
+                                    "flag":  "Wales",
+                                    "code":  "gb-wls"
+                                },
+                      "Yoruba":  {
+                                     "region":  "african-savanna",
+                                     "flag":  "Nigeria",
+                                     "code":  "ng"
+                                 },
+                      "Sinhala":  {
+                                      "region":  "south-asian-plains",
+                                      "flag":  "Sri Lanka",
+                                      "code":  "lk"
+                                  },
+                      "Finnish":  {
+                                      "region":  "boreal-lakes",
+                                      "flag":  "Finland",
+                                      "code":  "fi"
+                                  }
+                  }
+}

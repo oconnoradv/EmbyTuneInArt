@@ -38,12 +38,13 @@ function Get-Opml([string]$url) {
     }
 }
 
-$NeutralLanguages = $false
+$baseTheme='Cartoon'; $NeutralLanguages = $false
 $languages = Get-Languages
 Assert ($languages.Count -eq 3) 'Language filter IDs or station exclusion failed.'
 Assert ($languages['l122'].RTL -and $languages['l122'].Name -eq [Globalization.CultureInfo]::GetCultureInfo('ar').NativeName) 'Arabic native title or RTL failed.'
 Assert ($languages['l178'].Flag -eq 'Japan') 'Representative flag mapping failed.'
 Assert ($languages['l101'].Flag -eq 'Netherlands' -and $languages['l101'].Motif -eq 'flag') 'Dutch must use the representative Netherlands flag.'
+Assert ($languages['l122'].Motif -eq 'neutral') 'Arabic must retain a neutral motif rather than an invented representative nationality.'
 $NeutralLanguages = $true
 Assert ((Get-Languages)['l178'].Motif -eq 'neutral') 'Neutral language option failed.'
 Assert ((Get-Languages)['l101'].Motif -eq 'neutral') 'Neutral language option must disable the Dutch flag.'
@@ -56,6 +57,7 @@ Assert ($locations['r100598'].Parent -eq 'Alberta' -and $locations['r100598'].Co
 Set-LocationArt $locations
 Assert ($locations['r101227'].Motif -eq 'map' -and $locations['r100447'].Motif -eq 'map') 'Country/region geometry failed.'
 Assert ($locations['r100598'].Motif -eq 'map' -and $locations['r100598'].Label -eq 'Regional map') 'City must use the nearest verified ancestor map with an explicit label.'
+Assert ($locations['r100598'].SceneryRegion -eq $locations['r100447'].SceneryRegion) 'City scenery must inherit the verified regional profile without changing its title.'
 $unknown = [ordered]@{ r123=@{ Id='r123'; Name='Alberta'; Country='Canada'; Level=3; Parent='Canada' } }
 Set-LocationArt $unknown
 Assert ($unknown['r123'].Motif -eq 'neutral') 'Unverified region ID must not inherit a namesake map.'
@@ -120,7 +122,11 @@ $aspect = [Math]::Abs(($projected[0][2] - $projected[0][0]) / ($projected[0][5] 
 Assert ([Math]::Abs($aspect - [Math]::Cos(55 * [Math]::PI / 180)) -lt 0.0001) 'Projection must correct longitude aspect at the map latitude.'
 Assert ([Math]::Abs($marker[0] - $projected[0][6]) -lt 0.001 -and [Math]::Abs($marker[1] - $projected[0][7]) -lt 0.001) 'Markers must use the same projection as map rings.'
 $wrapped = [pscustomobject]@{ type='Polygon'; coordinates=@(, @(@(-179,0), @(179,0), @(179,1), @(-179,0))) }
-Assert (-not (Get-MapRings $wrapped)) 'Antimeridian-spanning geometry must use the generic fallback.'
+$projection = Get-MapProjection $wrapped
+$wrappedRings = Get-MapRings $wrapped
+Assert ($projection.Wrapped -and ($projection.XMax-$projection.XMin) -eq 2 -and $wrappedRings.Count -eq 1) 'Antimeridian geometry must retain its verified shape in a continuous longitude interval.'
+$marker = Get-MapPoint $wrapped -179 0
+Assert ([Math]::Abs($marker[0]-$wrappedRings[0][0]) -lt .001) 'Wrapped map markers must use the same longitude interval as the map.'
 
 . (Join-Path (Split-Path $PSScriptRoot -Parent) 'Scoped-Artwork-Styles.ps1')
 foreach ($flag in 'Japan','Netherlands','Iceland','Ireland','South Korea') {
@@ -142,9 +148,9 @@ $failed = $false
 try {
     Assert-ScopedSceneCoverage @(
         @{ Id='l101'; Name='Nederlands'; ProviderName='Dutch' },
-        @{ Id='l1'; Name='English'; ProviderName='English' }
+        @{ Id='l1'; Name='Unmapped fixture'; ProviderName='Unmapped fixture' }
     ) 'Classic'
-} catch { $failed = $_.Exception.Message -like '*missing for 1 of 2*' -and $_.Exception.Message -like '*l1 (English)*' }
+} catch { $failed = $_.Exception.Message -like '*missing for 1 of 2*' -and $_.Exception.Message -like '*l1 (Unmapped fixture)*' }
 Assert $failed 'Strict scenery coverage must fail with missing IDs instead of approving a generic fallback.'
 $script:ScopedSubjects['l999'] = [pscustomobject]@{ subject='Missing asset' }
 $failed = $false
@@ -153,6 +159,23 @@ catch { $failed = $_.Exception.Message -like '*missing for 1 of 1*' -and $_.Exce
 Assert $failed 'A registry entry without its theme PNG must fail strict coverage.'
 $script:ScopedSubjects.Remove('l999')
 Add-Type -AssemblyName System.Drawing
+$profiles = Get-ScopedProfiles
+foreach ($language in $profiles.languages.PSObject.Properties) {
+    $scene = Get-ScopedScene 'Cartoon' @{Id='l998';Name=$language.Name;ProviderName=$language.Name}
+    Assert (Test-Path -LiteralPath $scene.Path) "Missing regional language scenery: $($language.Name)"
+    if ($language.Value.code) {
+        $image = Get-ScopedFlagImage $language.Value.code
+        foreach ($theme in 'Cartoon','Futuristic','Classic') {
+            $layout = Get-ScopedFlagLayout $language.Value.flag $theme $language.Value.code
+            Assert ([Math]::Abs($layout.Height/[double]$layout.Width - $image.Height/[double]$image.Width) -lt .01) "Flag proportions changed for $($language.Name)"
+            $bottom = if ($theme -eq 'Classic') { 690 } else { 510 }
+            $top = if ($theme -eq 'Futuristic') { 35 } else { 56 }
+            Assert ($layout.CenterY-$layout.Height/2-$top -gt 15 -and $layout.CenterY+$layout.Height/2+40 -lt $bottom) "Flag clips frame/title for $($language.Name) in $theme"
+        }
+    }
+}
+$sharedScene = Get-ScopedScene 'Futuristic' @{Id='r999';Name='Paris';Country='France'}
+Assert ($sharedScene.SourceId -eq $profiles.countries.France -and $sharedScene.Inherited -and -not $sharedScene.Title) 'Country profile scenery must preserve individual location titles.'
 $canvas = New-Object Drawing.Bitmap 1280, 720
 $graphics = [Drawing.Graphics]::FromImage($canvas)
 try {
@@ -166,5 +189,6 @@ try {
     $graphics.Dispose()
     $canvas.Dispose()
     foreach ($scene in $script:ScopedScenes.Values) { $scene.Dispose() }
+    foreach ($flag in $script:ScopedFlags.Values) { $flag.Dispose() }
 }
 Write-Host 'Scoped artwork tests passed.'
