@@ -23,6 +23,10 @@ function Scoped-Flag($g, $flag, $x, $y, $w, $h, $theme) {
     $state = $g.Save(); $g.TranslateTransform($x, $y); $g.ScaleTransform(($w / 420), ($h / 280))
     $g.FillRectangle((Br (Rgb 255 255 250)), 0, 0, 420, 280)
     if ($flag -eq 'Japan') { FE $g (Br (Rgb 188 0 45)) 210 140 84 84 }
+    elseif ($flag -eq 'Netherlands') {
+        $g.FillRectangle((Br (Rgb 174 28 40)), 0, 0, 420, 93)
+        $g.FillRectangle((Br (Rgb 33 70 139)), 0, 187, 420, 93)
+    }
     elseif ($flag -eq 'Iceland') {
         $g.FillRectangle((Br (Rgb 0 82 156)), 0, 0, 420, 280)
         $g.FillRectangle((Br (Rgb 255 255 255)), 117.6, 0, 67.2, 280); $g.FillRectangle((Br (Rgb 255 255 255)), 0, 108.89, 420, 62.22)

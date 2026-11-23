@@ -9,6 +9,7 @@ function Get-Opml([string]$url) {
     switch -Regex ($url) {
         'c=lang' { return [xml]'<opml><body>
           <outline type="link" text="Japanese" URL="http://opml.radiotime.com/Browse.ashx?c=lang&amp;filter=l178"/>
+          <outline type="link" text="Dutch" URL="http://opml.radiotime.com/Browse.ashx?c=lang&amp;filter=l101"/>
           <outline type="link" text="Arabic" URL="http://opml.radiotime.com/Browse.ashx?id=c424724&amp;filter=l122"/>
           <outline type="link" text="Bad" URL="http://opml.radiotime.com/Browse.ashx?filter=l0"/>
           <outline type="link" text="Bad" URL="http://opml.radiotime.com/Browse.ashx?filter=L12"/>
@@ -39,11 +40,13 @@ function Get-Opml([string]$url) {
 
 $NeutralLanguages = $false
 $languages = Get-Languages
-Assert ($languages.Count -eq 2) 'Language filter IDs or station exclusion failed.'
+Assert ($languages.Count -eq 3) 'Language filter IDs or station exclusion failed.'
 Assert ($languages['l122'].RTL -and $languages['l122'].Name -eq [Globalization.CultureInfo]::GetCultureInfo('ar').NativeName) 'Arabic native title or RTL failed.'
 Assert ($languages['l178'].Flag -eq 'Japan') 'Representative flag mapping failed.'
+Assert ($languages['l101'].Flag -eq 'Netherlands' -and $languages['l101'].Motif -eq 'flag') 'Dutch must use the representative Netherlands flag.'
 $NeutralLanguages = $true
 Assert ((Get-Languages)['l178'].Motif -eq 'neutral') 'Neutral language option failed.'
+Assert ((Get-Languages)['l101'].Motif -eq 'neutral') 'Neutral language option must disable the Dutch flag.'
 
 $LocationRoot = 'r0'; $LocationRootLevel = 0; $LocationDepth = 4
 $MaxLocationRequests = 10; $script:requests = 0; $Only = $null

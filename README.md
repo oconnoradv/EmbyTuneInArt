@@ -89,7 +89,7 @@ and 2,031 location cards, all 1280×720. The packs were generated from tool comm
 
 Complete coverage means one image for each discovered ID, not a detailed local map or a flag for every card.
 The locations comprise 142 verified country outlines, 63 verified region outlines, 1,615 regional-ancestor
-maps and 211 generic fallbacks. Languages use four representative flags and 87 neutral motifs; uncurated
+maps and 211 generic fallbacks. The v1 language packs use four representative flags and 87 neutral motifs; uncurated
 language names retain their TuneIn labels. Scenic art and map textures are decorative, not terrain data.
 
 ## Install a ready-made pack
@@ -188,7 +188,7 @@ Requirements:
    responses or unsuccessful provider statuses fail the build.
 
    Language titles use a curated mapping to Windows neutral-culture native names. Unknown or ambiguous categories
-   retain the TuneIn label with a warning. Japanese and Icelandic use representative flags by default;
+   retain the TuneIn label with a warning. Dutch, Japanese and Icelandic use representative flags by default;
    the Cartoon, Futuristic and Classic language styles also use representative Irish and South Korean flags.
    `-NeutralLanguages` replaces those with a neutral globe. Other languages use a neutral globe rather than
    assigning a country to a language.

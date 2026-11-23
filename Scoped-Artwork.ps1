@@ -15,6 +15,9 @@ function Motif-flag($cl, $info) {
             Rc $g $pen -200 -144 400 288
             L $g $pen -88 -144 -88 144; L $g $pen -24 -144 -24 144
             L $g $pen -200 -32 200 -32; L $g $pen -200 32 200 32
+        } elseif ($info.Flag -eq 'Netherlands') {
+            Rc $g $pen -210 -140 420 280
+            L $g $pen -210 -47 210 -47; L $g $pen -210 47 210 47
         }
     }
     $state = $script:G.Save(); Place $script:G $script:OX $script:OY
@@ -27,6 +30,9 @@ function Motif-flag($cl, $info) {
         $script:G.FillRectangle((Br (Rgb 255 255 255)), -200, -32, 400, 64)
         $script:G.FillRectangle((Br (Rgb 220 30 53)), -72, -144, 32, 288)
         $script:G.FillRectangle((Br (Rgb 220 30 53)), -200, -16, 400, 32)
+    } elseif ($info.Flag -eq 'Netherlands') {
+        $script:G.FillRectangle((Br (Rgb 174 28 40)), -210, -140, 420, 93)
+        $script:G.FillRectangle((Br (Rgb 33 70 139)), -210, 47, 420, 93)
     }
     $script:G.Restore($state)
 }
@@ -114,9 +120,9 @@ function Get-Languages {
             $title = $culture.NativeName; $font = Get-LanguageFont $code; $rtl = $culture.TextInfo.IsRightToLeft
             if ($title -like 'Unknown Language*') { throw "Windows has no native name for '$name' ($code)." }
         } else { Write-Warning "No curated native name for '$name'; using the TuneIn label." }
-        $flag = if (-not $NeutralLanguages -and ($name -in 'Japanese','Icelandic' -or
+        $flag = if (-not $NeutralLanguages -and ($name -in 'Dutch','Japanese','Icelandic' -or
             ($name -in 'Irish','Korean' -and $baseTheme -in 'Cartoon','Futuristic','Classic'))) {
-            @{ Japanese='Japan'; Icelandic='Iceland'; Irish='Ireland'; Korean='South Korea' }[$name]
+            @{ Dutch='Netherlands'; Japanese='Japan'; Icelandic='Iceland'; Irish='Ireland'; Korean='South Korea' }[$name]
         } else { $null }
         $items[$id] = @{
             Id=$id; Name=$title; ProviderName=$name; Parent='Languages'; Sub=$false; Style='Electronic'
