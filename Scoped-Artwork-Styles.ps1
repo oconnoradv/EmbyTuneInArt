@@ -101,9 +101,17 @@ function Scoped-Flag($g, $flag, $x, $y, $w, $h, $theme) {
     $g.Restore($state)
 }
 
+function Get-ScopedFlagLayout($flag, $theme) {
+    $ratio = if ($flag -eq 'Ireland') { 0.5 } elseif ($flag -eq 'Iceland') { 0.72 } else { 2.0/3 }
+    $width = if ($theme -eq 'Futuristic') { 560 } elseif ($theme -eq 'Cartoon') { [int][Math]::Min(620, 380 / $ratio) } else { 620 }
+    $height = [int]($width * $ratio)
+    $cy = if ($theme -eq 'Futuristic') { 240 } elseif ($theme -eq 'Cartoon') { [Math]::Max(245, $height / 2 + 76) } else { 300 }
+    return @{ Width=$width; Height=$height; CenterY=$cy }
+}
+
 function Scoped-FlagDisplay($g, $info, $theme) {
-    $width = if ($theme -eq 'Futuristic') { 560 } else { 620 }
-    $height = [int]($width * $(if ($info.Flag -eq 'Ireland') { 0.5 } elseif ($info.Flag -eq 'Iceland') { 0.72 } else { 2.0/3 }))
+    $layout = Get-ScopedFlagLayout $info.Flag $theme
+    $width = $layout.Width; $height = $layout.Height
     $flag = New-Object Drawing.Bitmap $width, $height
     $paint = [Drawing.Graphics]::FromImage($flag)
     $paint.SmoothingMode = 'AntiAlias'
@@ -136,7 +144,7 @@ function Scoped-Motif($g, $info, $theme, $cx, $cy) {
     if ($info.Motif -eq 'flag') {
         Scoped-FlagDisplay $g $info $theme
     } elseif ($info.Motif -eq 'map') {
-        if ($theme -eq 'Cartoon') { $g.ScaleTransform(1.4, 1.4) }
+        if ($theme -eq 'Cartoon') { $g.ScaleTransform(1.3, 1.3) }
         $fill = if ($theme -eq 'Futuristic') { Rgb 8 103 144 } else { Rgb 225 183 96 }
         $edge = if ($theme -eq 'Futuristic') { Rgb 48 235 255 } elseif ($theme -eq 'Cartoon') { Rgb 13 30 34 } else { Rgb 250 220 148 }
         $shape = New-Object Drawing.Drawing2D.GraphicsPath
@@ -187,6 +195,7 @@ function New-ScopedCard($info, [string]$file, [string]$theme) {
     Scoped-Scenery $g $theme $info
     $cx = if ($theme -eq 'Classic') { 320 } elseif ($theme -eq 'Cartoon') { 360 } else { 640 }
     $cy = if ($theme -eq 'Classic') { 300 } elseif ($theme -eq 'Futuristic') { 240 } elseif ($info.Motif -eq 'map') { 310 } else { 245 }
+    if ($info.Motif -eq 'flag') { $cy = (Get-ScopedFlagLayout $info.Flag $theme).CenterY }
     Scoped-Motif $g $info $theme $cx $cy
     $displayTitle = $info.Name
     $scene = Get-ScopedScene $theme $info

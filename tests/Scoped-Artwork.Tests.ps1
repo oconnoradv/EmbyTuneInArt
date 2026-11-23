@@ -123,6 +123,12 @@ $wrapped = [pscustomobject]@{ type='Polygon'; coordinates=@(, @(@(-179,0), @(179
 Assert (-not (Get-MapRings $wrapped)) 'Antimeridian-spanning geometry must use the generic fallback.'
 
 . (Join-Path (Split-Path $PSScriptRoot -Parent) 'Scoped-Artwork-Styles.ps1')
+foreach ($flag in 'Japan','Netherlands','Iceland','Ireland','South Korea') {
+    $layout = Get-ScopedFlagLayout $flag 'Cartoon'
+    $poleTop = $layout.CenterY - $layout.Height / 2 - 42 - 14
+    $flagBottom = $layout.CenterY + $layout.Height / 2 + 26
+    Assert ($poleTop -gt 15 -and $flagBottom -lt 500) "Cartoon $flag flag and pole must clear the inset frame and title area."
+}
 $dutchScene = Get-ScopedScene 'Classic' @{ Id='l101'; Name='Nederlands'; ProviderName='Dutch' }
 Assert ($dutchScene.SourceId -eq 'l101' -and -not $dutchScene.Inherited) 'Dutch must select its own language scenery.'
 $netherlandsScene = Get-ScopedScene 'Cartoon' @{ Id='r100385'; Name='Netherlands'; Country='Netherlands' }
