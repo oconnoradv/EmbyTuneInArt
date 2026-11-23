@@ -74,6 +74,32 @@ Scenic backgrounds and map-fill textures are decorative illustrations, not geogr
 When no verified location or ancestor map is available, a labeled generic globe is used. Languages without a
 representative flag use a neutral globe.
 
+### Subject-specific scenery and rebuilds
+
+Scoped cards are built by `Build-GenreArtwork.ps1`: it composites illustrated scenery with verified map geometry,
+representative flags, fitted native titles and captions. The tool does not create new scenic illustrations itself.
+`data/scoped-scenes/subjects.json` identifies each illustrated subject by its guide ID and exact provider name;
+add its background-only PNG to each `Cartoon`, `Futuristic` and `Classic` subfolder. A country entry may also supply
+contextual scenery to its descendants; this does not imply city-specific scenery or change the map's coverage label.
+Language scenery is selected separately, so a Classic language card can retain its restrained fabric background.
+
+The Netherlands (`r100385`) and Dutch (`l101`) now have dedicated canal, windmill and tulip scenery in all three
+styles. **The complete v1 release below has not been rebuilt with these additions.** Other subjects still need
+illustrated scenery before a complete refreshed release can match the previews.
+
+Use the strict coverage option for refreshed builds:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File Build-GenreArtwork.ps1 -Scope languages -Theme Cartoon -RequireScopedScenery -Pack
+powershell -NoProfile -ExecutionPolicy Bypass -File Build-GenreArtwork.ps1 -Scope locations -Theme Classic -AllLocations -MaxLocationRequests 10000 -RequireScopedScenery -Pack
+```
+
+`-RequireScopedScenery` checks every selected subject **before writing images, manifests or ZIPs** and stops with
+the missing count and example IDs if any card would use generic scenery. It supports these three scoped base themes
+and their Spotlight aliases only. With `-Only`, it checks the selected preview cards, not the complete catalog.
+Without this option, the legacy generic fallbacks remain available. Coverage checks establish asset availability,
+not visual quality; review the generated cards before publishing a release.
+
 ## Complete language and location packs
 
 The [complete scoped packs](https://github.com/oconnoradv/EmbyTuneInArt/releases/tag/scoped-language-location-v1)
@@ -194,7 +220,7 @@ Requirements:
    assigning a country to a language.
 
    Country outlines and curated US/Canadian region outlines use the bundled public-domain Natural Earth
-   110m countries, 50m Japan and Ireland, and 50m admin-1 data, matched by name and country. Region IDs are explicitly verified because
+   110m countries, 50m Japan, Ireland and the European Netherlands, and 50m admin-1 data, matched by name and country. Region IDs are explicitly verified because
    the provider does not label regions versus cities. Map coverage is limited; cities can use the nearest verified
    ancestor outline labeled `Regional map`; unmatched
    regions, ambiguous/unsupported geometry and antimeridian-spanning shapes use a globe explicitly labeled

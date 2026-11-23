@@ -21,6 +21,7 @@ param(
     [switch]$AllLocations,
     [string]$CatalogSnapshot,
     [switch]$NeutralLanguages,
+    [switch]$RequireScopedScenery,
     [ValidateSet('Neon', 'Retro', 'Futuristic', 'Cartoon', 'Cat', 'Dog', 'Nature', 'Blocky', 'Rebel', 'Imperial', 'Elegant', 'Tile', 'Classic', 'FuturisticSpotlight', 'CartoonSpotlight', 'ClassicSpotlight')]
     [string]$Theme = 'Futuristic',
     # Writes <Output>\..\<PackName>.zip containing the cards and an install note; defaults to artpack-<theme>.
@@ -1376,6 +1377,9 @@ function New-Card($info, [string]$file) {
 }
 
 $baseTheme = $Theme -replace 'Spotlight$', ''
+if ($RequireScopedScenery -and ($Scope -eq 'genres' -or $baseTheme -notin 'Cartoon','Futuristic','Classic')) {
+    throw 'RequireScopedScenery applies only to Cartoon, Futuristic and Classic language/location packs.'
+}
 $script:T = $Themes[$baseTheme]
 $spotlightIds = @{
     FuturisticSpotlight = @('g2698', 'g4149', 'c57942', 'g54', 'g71', 'g373')
@@ -1418,10 +1422,18 @@ if ($Scope -eq 'genres') {
     else { $genres = Get-Locations; Set-LocationArt $genres }
 }
 
+$selected = @($genres.Values)
+if ($Only) {
+    $selected = @($genres.Values | Where-Object {
+        $candidate = $_
+        $Only | Where-Object { $candidate.Id -eq $_ -or $candidate.Name -like $_ -or ($candidate.ProviderName -and $candidate.ProviderName -like $_) }
+    })
+}
+if (-not $selected.Count) { throw 'No artwork matched the selected catalog and -Only filters.' }
+if ($RequireScopedScenery) { Assert-ScopedSceneCoverage $selected $baseTheme }
 New-Item -ItemType Directory -Force $Output | Out-Null
 $rendered = New-Object System.Collections.ArrayList
-foreach ($info in $genres.Values) {
-    if ($Only -and -not ($Only | Where-Object { $info.Id -eq $_ -or $info.Name -like $_ -or ($info.ProviderName -and $info.ProviderName -like $_) })) { continue }
+foreach ($info in $selected) {
     $seed = 0; foreach ($ch in $info.Id.ToCharArray()) { $seed = ($seed * 31 + [int]$ch) % 2147483647 }
     $info.Seed = [int]$seed
     if ($Scope -eq 'genres') {

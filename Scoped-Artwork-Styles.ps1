@@ -1,16 +1,58 @@
-function Scoped-Scenery($g, $theme, $info) {
-    $folder = Join-Path $PSScriptRoot "data\scoped-scenes\$theme"
-    $subjects = @{ r101255='Japan'; l178='Japanese'; r101252='Ireland'; l176='Irish'; r100014='Seattle-Tacoma'; l180='Korean' }
-    $subject = if ($info.ProviderName) { $info.ProviderName } else { $info.Name }
-    $path = $null
-    if ($subjects.ContainsKey($info.Id) -and $subjects[$info.Id] -ceq $subject) {
-        $path = Join-Path $folder "$($info.Id).png"
+function Get-ScopedScene($theme, $info) {
+    if ($theme -notin 'Cartoon','Futuristic','Classic') { throw "Unsupported scoped scenery theme: $theme" }
+    if (-not $script:ScopedSubjects) {
+        $registry = Get-Content (Join-Path $PSScriptRoot 'data\scoped-scenes\subjects.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+        $subjects = @{}
+        foreach ($entry in $registry.PSObject.Properties) {
+            if ($entry.Name -cnotmatch '^[lr][1-9][0-9]{0,9}$' -or -not $entry.Value.subject) {
+                throw "Invalid scoped scenery subject: $($entry.Name)"
+            }
+            if ($entry.Value.country -and ($entry.Name -cnotmatch '^r' -or $entry.Value.country -cne $entry.Value.subject)) {
+                throw "Country scenery must identify its country: $($entry.Name)"
+            }
+            $subjects[$entry.Name] = $entry.Value
+        }
+        $script:ScopedSubjects = $subjects
     }
-    if (-not $path) {
+    $subject = if ($info.ProviderName) { $info.ProviderName } else { $info.Name }
+    $sourceId = $null; $title = $null
+    if ($script:ScopedSubjects.ContainsKey($info.Id) -and $script:ScopedSubjects[$info.Id].subject -ceq $subject) {
+        $sourceId = $info.Id; $title = $script:ScopedSubjects[$sourceId].title
+    } elseif ($info.Id -cmatch '^r' -and $info.Country) {
+        $countries = @($script:ScopedSubjects.Keys | Where-Object { $script:ScopedSubjects[$_].country -ceq $info.Country })
+        if ($countries.Count -gt 1) { throw "Multiple scenery sources for country: $($info.Country)" }
+        if ($countries.Count -eq 1) { $sourceId = $countries[0] }
+    }
+    if ($sourceId) {
+        return @{ Path=(Join-Path $PSScriptRoot "data\scoped-scenes\$theme\$sourceId.png")
+            SourceId=$sourceId; Title=$title; Inherited=($sourceId -cne $info.Id) }
+    }
+}
+
+function Assert-ScopedSceneCoverage($items, $theme) {
+    $missing = @($items | Where-Object {
+        $scene = Get-ScopedScene $theme $_
+        -not $scene -or -not (Test-Path -LiteralPath $scene.Path -PathType Leaf)
+    })
+    if ($missing.Count) {
+        $examples = ($missing | Select-Object -First 8 | ForEach-Object {
+            "$($_.Id) ($(if ($_.ProviderName) { $_.ProviderName } else { $_.Name }))"
+        }) -join ', '
+        throw "Subject-specific scenery is missing for $($missing.Count) of $($items.Count) $theme cards. Examples: $examples. Add verified entries to data\scoped-scenes\subjects.json and their $theme PNGs before rebuilding the refreshed packs."
+    }
+}
+
+function Scoped-Scenery($g, $theme, $info) {
+    $scene = Get-ScopedScene $theme $info
+    if ($scene) {
+        $path = $scene.Path
+        if (-not (Test-Path -LiteralPath $path -PathType Leaf)) { throw "Missing declared scoped scenery: $path" }
+    } else {
+        if ($RequireScopedScenery) { throw "No subject-specific $theme scenery for $($info.Id)." }
         if ($theme -eq 'Classic') {
             $path = Join-Path $PSScriptRoot 'data\scenes\classic.png'
         } else {
-            $path = if ($theme -eq 'Futuristic') { Join-Path $folder 'l178.png' } else { Join-Path $PSScriptRoot 'data\scenes\cartoon.png' }
+            $path = if ($theme -eq 'Futuristic') { Join-Path $PSScriptRoot 'data\scoped-scenes\Futuristic\l178.png' } else { Join-Path $PSScriptRoot 'data\scenes\cartoon.png' }
         }
     }
     if (-not $script:ScopedScenes) { $script:ScopedScenes = @{} }
@@ -147,6 +189,8 @@ function New-ScopedCard($info, [string]$file, [string]$theme) {
     $cy = if ($theme -eq 'Classic') { 300 } elseif ($theme -eq 'Futuristic') { 240 } elseif ($info.Motif -eq 'map') { 310 } else { 245 }
     Scoped-Motif $g $info $theme $cx $cy
     $displayTitle = $info.Name
+    $scene = Get-ScopedScene $theme $info
+    if ($scene -and $scene.Title) { $displayTitle = $scene.Title }
     $font = if ($info.NativeFont) { $info.NativeFont } else { 'Segoe UI' }
     if ($info.Id -eq 'r101255' -and $info.Name -eq 'Japan') {
         $displayTitle = [string][char]0x65E5 + [char]0x672C; $font = 'Meiryo'

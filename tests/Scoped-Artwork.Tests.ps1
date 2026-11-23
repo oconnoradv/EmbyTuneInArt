@@ -62,9 +62,15 @@ Assert ($unknown['r123'].Motif -eq 'neutral') 'Unverified region ID must not inh
 $countries = [ordered]@{
     r1=@{ Id='r1'; Name='Japan'; Country='Japan'; Level=2; Parent='Asia' }
     r2=@{ Id='r2'; Name='Ireland'; Country='Ireland'; Level=2; Parent='Europe' }
+    r100385=@{ Id='r100385'; Name='Netherlands'; Country='Netherlands'; Level=2; Parent='Europe' }
 }
 Set-LocationArt $countries
 Assert ($countries['r1'].MapRings.Count -gt 2 -and $countries['r2'].MapRings.Count -eq 2) 'Detailed country geometries must not be mixed.'
+Assert ($countries['r100385'].MapRings.Count -eq 9 -and $countries['r100385'].MapRings[0].Count -gt 300) 'Netherlands must retain its detailed mainland, coastal and Wadden island outlines.'
+$outsideEurope = @($countries['r100385'].MapGeometry.coordinates | ForEach-Object {
+    $_[0] | Where-Object { $_[0] -lt 3 -or $_[0] -gt 8 -or $_[1] -lt 50 -or $_[1] -gt 54 }
+})
+Assert (-not $outsideEurope.Count) 'The European Netherlands card must not be distorted by Caribbean territory geometry.'
 $regional = [ordered]@{
     r100516=@{ Id='r100516'; Name='Washington'; Country='United States'; Level=3; Parent='United States' }
     r100014=@{ Id='r100014'; Name='Seattle-Tacoma'; Country='United States'; Level=4; Parent='Washington'; ParentId='r100516' }
@@ -117,13 +123,36 @@ $wrapped = [pscustomobject]@{ type='Polygon'; coordinates=@(, @(@(-179,0), @(179
 Assert (-not (Get-MapRings $wrapped)) 'Antimeridian-spanning geometry must use the generic fallback.'
 
 . (Join-Path (Split-Path $PSScriptRoot -Parent) 'Scoped-Artwork-Styles.ps1')
+$dutchScene = Get-ScopedScene 'Classic' @{ Id='l101'; Name='Nederlands'; ProviderName='Dutch' }
+Assert ($dutchScene.SourceId -eq 'l101' -and -not $dutchScene.Inherited) 'Dutch must select its own language scenery.'
+$netherlandsScene = Get-ScopedScene 'Cartoon' @{ Id='r100385'; Name='Netherlands'; Country='Netherlands' }
+Assert ($netherlandsScene.SourceId -eq 'r100385' -and $netherlandsScene.Title -eq 'Nederland') 'Netherlands must select its country scenery and native title.'
+$cityScene = Get-ScopedScene 'Futuristic' @{ Id='r123'; Name='Amsterdam'; Country='Netherlands' }
+Assert ($cityScene.SourceId -eq 'r100385' -and $cityScene.Inherited -and -not $cityScene.Title) 'A city may inherit contextual country scenery, but not the country title.'
+Assert (-not (Get-ScopedScene 'Classic' @{ Id='r100385'; Name='Unrelated'; Country=$null })) 'A reused ID with a mismatched subject must not select curated scenery.'
+Assert (-not (Get-ScopedScene 'Classic' @{ Id='l123'; Name='Dutch'; ProviderName='Unrelated' })) 'Language scenery must match the provider label, not the displayed title.'
+Assert-ScopedSceneCoverage @(@{ Id='l101'; Name='Nederlands'; ProviderName='Dutch' }) 'Classic'
+$failed = $false
+try {
+    Assert-ScopedSceneCoverage @(
+        @{ Id='l101'; Name='Nederlands'; ProviderName='Dutch' },
+        @{ Id='l1'; Name='English'; ProviderName='English' }
+    ) 'Classic'
+} catch { $failed = $_.Exception.Message -like '*missing for 1 of 2*' -and $_.Exception.Message -like '*l1 (English)*' }
+Assert $failed 'Strict scenery coverage must fail with missing IDs instead of approving a generic fallback.'
+$script:ScopedSubjects['l999'] = [pscustomobject]@{ subject='Missing asset' }
+$failed = $false
+try { Assert-ScopedSceneCoverage @(@{ Id='l999'; Name='Missing asset' }) 'Classic' }
+catch { $failed = $_.Exception.Message -like '*missing for 1 of 1*' -and $_.Exception.Message -like '*l999*' }
+Assert $failed 'A registry entry without its theme PNG must fail strict coverage.'
+$script:ScopedSubjects.Remove('l999')
 Add-Type -AssemblyName System.Drawing
 $canvas = New-Object Drawing.Bitmap 1280, 720
 $graphics = [Drawing.Graphics]::FromImage($canvas)
 try {
     Scoped-Scenery $graphics 'Classic' @{ Id='l1'; Name='English'; Seed=0 }
     $classicScene = Join-Path (Split-Path $PSScriptRoot -Parent) 'data\scenes\classic.png'
-    Assert ($script:ScopedScenes.ContainsKey($classicScene)) 'Generic Classic scoped cards must use the scenic fallback background.'
+    Assert ($script:ScopedScenes.ContainsKey($classicScene)) 'Legacy builds must retain the generic Classic background when strict scenery is not requested.'
     Scoped-Scenery $graphics 'Classic' @{ Id='r101255'; Name='Japan'; Seed=0 }
     $japanScene = Join-Path (Split-Path $PSScriptRoot -Parent) 'data\scoped-scenes\Classic\r101255.png'
     Assert ($script:ScopedScenes.ContainsKey($japanScene)) 'Curated scoped scenery must override the generic background.'
