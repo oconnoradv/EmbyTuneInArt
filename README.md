@@ -9,7 +9,7 @@ Choose a pack type:
 TuneIn build. No schema 2 release packs have been published yet; build a new pack using the instructions below.
 Existing installed artwork is not deleted during the migration, but its old manifest is unsupported until replaced.
 
-**[Music genre packs](https://github.com/oconnoradv/EmbyTuneInArt/releases/tag/genre-artwork-v2) ·
+**[Music genre packs](https://github.com/oconnoradv/EmbyTuneInArt/releases) ·
 [Language packs](#complete-language-and-location-packs) ·
 [Location packs](#complete-language-and-location-packs) ·
 [Root category packs](#root-category-packs)**
@@ -115,10 +115,10 @@ Language scenery is selected separately, so a Classic language card can retain i
 
 The Netherlands (`r100385`) and Dutch (`l101`) have dedicated canal, windmill and tulip scenery in all three
 styles. Other catalog entries use the explicit country, language and verified state/province mappings in
-`data/scoped-scenes/profiles.json`: 24 shared regional scenery profiles in each style. Dedicated subject artwork
+`data/scoped-scenes/profiles.json`: 31 shared regional scenery profiles in each style. Dedicated subject artwork
 takes precedence. Cities inherit their verified regional or country scenery while retaining individual names and
 map coverage labels. Classic language cards use quiet fabric compositions. The shared North American city illustration contains
-Seattle-like landmarks, so location cards without a more specific scene use a generic landscape instead.
+Seattle-like landmarks, so locations still assigned to that profile use a generic landscape instead.
 Unmapped locations also use generic landscapes; generic scenery does not satisfy strict coverage.
 
 Use the strict coverage option for refreshed builds:
@@ -134,23 +134,23 @@ and their Spotlight aliases only. With `-Only`, it checks the selected preview c
 Without this option, generic fallbacks remain available. Coverage checks establish asset availability,
 not visual quality; review the generated cards before publishing a release.
 This changes strict-build results for locations previously using the Seattle-like North American shared profile:
-the replacement is generic and is rejected, whereas the old profile passed. For the v2 catalog, 557 cards used
-that profile. Supply verified subject/regional scenery or omit `-RequireScopedScenery` to allow generic landscapes.
+generic replacements are rejected, whereas the old profile passed. Seven new regional scene sets cover the
+remaining 327 generic-fallback locations in the complete 2026-11-24 snapshot of 2,032 locations. They are
+illustrative shared landscapes, not depictions of each city; future catalogs may still need additional scenery.
+Supply suitable subject/regional scenery or omit `-RequireScopedScenery` to allow generic landscapes.
 
 ## Complete language and location packs
 
-The [language packs](https://github.com/oconnoradv/EmbyTuneInArt/releases/tag/scoped-language-location-v2)
-use a TuneIn catalog snapshot completed **2026-11-23 01:54:32 UTC** and contain 91 cards per theme.
-The [updated location packs](https://github.com/oconnoradv/EmbyTuneInArt/releases/tag/location-artwork-v3)
-use a newer catalog snapshot and include generic landscapes and conservative location markers. They are built
-without strict scenery coverage so that generic fallbacks are available. Each manifest records the card count,
-tool commit and per-image SHA-256 hashes; ZIP checksums accompany the release. All cards are 1280×720.
+The published [language and location packs](https://github.com/oconnoradv/EmbyTuneInArt/releases/tag/scoped-language-location-v2)
+are legacy schema 1 packs. The language packs use a TuneIn catalog snapshot completed **2026-11-23 01:54:32 UTC**
+and contain 91 cards per theme. Build new schema 2 packs for a schema 2-only uploader. Generated schema 2
+manifests record the card count and per-image SHA-256 hashes; all cards are 1280×720.
 
 | Theme | Languages | Locations |
 |---|---|---|
-| Cartoon | [Download](https://github.com/oconnoradv/EmbyTuneInArt/releases/download/scoped-language-location-v2/artpack-cartoon-languages.zip) | [Download](https://github.com/oconnoradv/EmbyTuneInArt/releases/download/location-artwork-v3/artpack-cartoon-locations.zip) |
-| Futuristic | [Download](https://github.com/oconnoradv/EmbyTuneInArt/releases/download/scoped-language-location-v2/artpack-futuristic-languages.zip) | [Download](https://github.com/oconnoradv/EmbyTuneInArt/releases/download/location-artwork-v3/artpack-futuristic-locations.zip) |
-| Classic | [Download](https://github.com/oconnoradv/EmbyTuneInArt/releases/download/scoped-language-location-v2/artpack-classic-languages.zip) | [Download](https://github.com/oconnoradv/EmbyTuneInArt/releases/download/location-artwork-v3/artpack-classic-locations.zip) |
+| Cartoon | [Download](https://github.com/oconnoradv/EmbyTuneInArt/releases/download/scoped-language-location-v2/artpack-cartoon-languages.zip) | [Download](https://github.com/oconnoradv/EmbyTuneInArt/releases/download/scoped-language-location-v2/artpack-cartoon-locations.zip) |
+| Futuristic | [Download](https://github.com/oconnoradv/EmbyTuneInArt/releases/download/scoped-language-location-v2/artpack-futuristic-languages.zip) | [Download](https://github.com/oconnoradv/EmbyTuneInArt/releases/download/scoped-language-location-v2/artpack-futuristic-locations.zip) |
+| Classic | [Download](https://github.com/oconnoradv/EmbyTuneInArt/releases/download/scoped-language-location-v2/artpack-classic-languages.zip) | [Download](https://github.com/oconnoradv/EmbyTuneInArt/releases/download/scoped-language-location-v2/artpack-classic-locations.zip) |
 
 Complete coverage means one image for each discovered ID, not a detailed local map or a flag for every card.
 The language packs contain 78 representative flags and 13 neutral speech motifs; uncurated language names retain
@@ -285,7 +285,8 @@ Requirements:
    populated-places dataset (`data/NATURAL-EARTH-PLACES.txt`). Automatic matching requires an exact name and country,
    an unambiguous place, a directly associated verified country or US/Canadian region map, matching admin-1 for region
    maps, and a point inside the map geometry. Country-level names matching an admin-1 name are excluded to avoid
-   mistaking a region for a city. Dots show approximate city points, not metro or regional boundaries. Ambiguous names,
+   mistaking a region for a city. TuneIn does not provide authoritative coordinates or a city/region classification,
+   so automatic matches remain approximate and cannot establish every node's identity. Dots show city points, not metro or regional boundaries. Ambiguous names,
    composite areas, missing points, unsupported ancestry and locations outside the map remain unmarked; map centers are
    never substituted as coordinates.
 
@@ -413,8 +414,9 @@ only names, country names and geometry were retained. Natural Earth data is
 Japan and Ireland outlines additionally use Natural Earth
 [`ne_50m_admin_0_countries`](https://github.com/nvkelso/natural-earth-vector/blob/v5.1.2/geojson/ne_50m_admin_0_countries.geojson).
 The scoped scenic layers in `data\scoped-scenes` and `data\scenes` were AI-generated for this project and are
-decorative, not geographic data. Specific scenes are used only for the matching sample subjects; other cards
-use neutral scenes. They and the produced artwork are distributed under GPL-3.0.
+decorative, not geographic data. The seven North American regional sets added in 2026 were generated using
+existing project scenery as style references. Specific scenes are used only for matching subjects; other cards
+use shared regional or generic scenes. They and the produced artwork are distributed under GPL-3.0.
 The Korean flag construction follows the
 [Republic of Korea Ministry of the Interior and Safety](https://www.mois.go.kr/eng/sub/a03/nationalSymbol/screen.do).
 The approximate [Seattle coordinates](https://www.geodatos.net/en/coordinates/united-states/seattle) are used

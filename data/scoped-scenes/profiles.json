@@ -1,4 +1,4 @@
-﻿{
+{
     "regions":  {
                     "western-europe":  "Shared western and central European scenery: stone or gabled river towns, without a named monument.",
                     "alpine-europe":  "Shared European alpine scenery: mountain valleys and lakes.",
@@ -19,6 +19,13 @@
                     "african-savanna":  "Shared African scenery: wooded grassland and contemporary modest river towns.",
                     "tropical-africa":  "Shared African rainforest scenery: rivers and contemporary modest towns.",
                     "north-american-city":  "Shared North American urban waterfront scenery.",
+                    "north-atlantic-maritime":  "Illustrative Atlantic Canadian rocky coast and fishing settlements.",
+                    "north-american-forest":  "Illustrative eastern North American wooded hills and river.",
+                    "north-american-prairie":  "Illustrative central North American prairie and farmland.",
+                    "north-american-desert":  "Illustrative southwestern North American desert mesas.",
+                    "greenland-fjord":  "Illustrative Greenland fjord, glaciers and coastal settlement.",
+                    "pacific-coast":  "Illustrative western North American forested Pacific coast.",
+                    "gulf-wetlands":  "Illustrative southern North American cypress wetland.",
                     "latin-american-town":  "Shared Latin American scenery: colorful river and plaza towns.",
                     "andes":  "Shared Andean scenery: high mountains and terraced villages.",
                     "southern-plains":  "Shared southern South American scenery: open plains and river towns.",
@@ -33,31 +40,31 @@
                       "American Samoa":  "tropical-islands",
                       "Andorra":  "western-europe",
                       "Angola":  "african-savanna",
-                      "Anguilla":  "north-american-city",
+                      "Anguilla":  "tropical-islands",
                       "Antarctica":  "neutral",
-                      "Antigua and Barbuda":  "north-american-city",
+                      "Antigua and Barbuda":  "tropical-islands",
                       "Argentina":  "southern-plains",
                       "Armenia":  "caucasus",
-                      "Aruba":  "north-american-city",
+                      "Aruba":  "tropical-islands",
                       "Australia":  "australasia",
                       "Austria":  "alpine-europe",
                       "Azerbaijan":  "caucasus",
-                      "Bahamas":  "north-american-city",
+                      "Bahamas":  "tropical-islands",
                       "Bahrain":  "west-asia",
                       "Bangladesh":  "south-asian-plains",
-                      "Barbados":  "north-american-city",
+                      "Barbados":  "tropical-islands",
                       "Belarus":  "western-europe",
                       "Belgium":  "western-europe",
                       "Belize":  "latin-american-town",
                       "Benin":  "tropical-africa",
-                      "Bermuda":  "north-american-city",
+                      "Bermuda":  "tropical-islands",
                       "Bhutan":  "himalaya",
                       "Bolivia":  "andes",
                       "Bosnia and Herzegovina":  "western-europe",
                       "Botswana":  "african-savanna",
                       "Bouvet Island":  "neutral",
                       "Brazil":  "latin-american-town",
-                      "British Virgin Islands":  "north-american-city",
+                      "British Virgin Islands":  "tropical-islands",
                       "Brunei":  "southeast-asia",
                       "Brunei Darussalam":  "southeast-asia",
                       "Bulgaria":  "western-europe",
@@ -66,10 +73,10 @@
                       "Cabo Verde":  "tropical-africa",
                       "Cambodia":  "southeast-asia",
                       "Cameroon":  "tropical-africa",
-                      "Canada":  "north-american-city",
+                      "Canada":  "boreal-lakes",
                       "Cape Verde":  "tropical-africa",
-                      "Caribbean Islands":  "north-american-city",
-                      "Cayman Islands":  "north-american-city",
+                      "Caribbean Islands":  "tropical-islands",
+                      "Cayman Islands":  "tropical-islands",
                       "Central African Republic":  "african-savanna",
                       "Chad":  "desert-oasis",
                       "Chile":  "andes",
@@ -83,7 +90,7 @@
                       "Costa Rica":  "latin-american-town",
                       "Cote D\u0027ivoire":  "tropical-africa",
                       "Croatia":  "southern-coast",
-                      "Cuba":  "north-american-city",
+                      "Cuba":  "tropical-islands",
                       "Curacao":  "latin-american-town",
                       "Curaçao":  "latin-american-town",
                       "Cyprus":  "southern-coast",
@@ -91,8 +98,8 @@
                       "Democratic Republic of the Congo":  "tropical-africa",
                       "Denmark":  "western-europe",
                       "Djibouti":  "tropical-africa",
-                      "Dominica":  "north-american-city",
-                      "Dominican Republic":  "north-american-city",
+                      "Dominica":  "tropical-islands",
+                      "Dominican Republic":  "tropical-islands",
                       "DR Congo":  "tropical-africa",
                       "East Timor":  "maritime-tropics",
                       "Ecuador":  "andes",
@@ -118,14 +125,14 @@
                       "Germany":  "western-europe",
                       "Ghana":  "tropical-africa",
                       "Greece":  "southern-coast",
-                      "Greenland":  "north-american-city",
-                      "Grenada":  "north-american-city",
+                      "Greenland":  "greenland-fjord",
+                      "Grenada":  "tropical-islands",
                       "Guam":  "tropical-islands",
                       "Guatemala":  "latin-american-town",
                       "Guinea":  "tropical-africa",
                       "Guinea-Bissau":  "tropical-africa",
                       "Guyana":  "latin-american-town",
-                      "Haiti":  "north-american-city",
+                      "Haiti":  "tropical-islands",
                       "Heard Island and McDonald Islands":  "neutral",
                       "Honduras":  "latin-american-town",
                       "Hong Kong":  "east-asia",
@@ -139,7 +146,7 @@
                       "Israel":  "west-asia",
                       "Italy":  "southern-coast",
                       "Ivory Coast":  "tropical-africa",
-                      "Jamaica":  "north-american-city",
+                      "Jamaica":  "tropical-islands",
                       "Japan":  "east-asia",
                       "Jordan":  "west-asia",
                       "Kazakhstan":  "central-steppe",
@@ -168,13 +175,13 @@
                       "Mauritania":  "desert-oasis",
                       "Mauritius":  "tropical-africa",
                       "Mayotte":  "tropical-africa",
-                      "Mexico":  "north-american-city",
+                      "Mexico":  "latin-american-town",
                       "Micronesia":  "tropical-islands",
                       "Moldova":  "western-europe",
                       "Monaco":  "southern-coast",
                       "Mongolia":  "central-steppe",
                       "Montenegro":  "western-europe",
-                      "Montserrat":  "north-american-city",
+                      "Montserrat":  "tropical-islands",
                       "Morocco":  "desert-oasis",
                       "Mozambique":  "african-savanna",
                       "Myanmar":  "southeast-asia",
@@ -207,7 +214,7 @@
                       "Pitcairn Islands":  "tropical-islands",
                       "Poland":  "western-europe",
                       "Portugal":  "southern-coast",
-                      "Puerto Rico":  "north-american-city",
+                      "Puerto Rico":  "tropical-islands",
                       "Qatar":  "west-asia",
                       "Republic of the Congo":  "tropical-africa",
                       "Reunion":  "tropical-africa",
@@ -215,10 +222,10 @@
                       "Romania":  "western-europe",
                       "Russia":  "boreal-lakes",
                       "Rwanda":  "african-savanna",
-                      "Saint Kitts and Nevis":  "north-american-city",
-                      "Saint Lucia":  "north-american-city",
-                      "Saint Pierre and Miquelon":  "north-american-city",
-                      "Saint Vincent and the Grenadines":  "north-american-city",
+                      "Saint Kitts and Nevis":  "tropical-islands",
+                      "Saint Lucia":  "tropical-islands",
+                      "Saint Pierre and Miquelon":  "north-atlantic-maritime",
+                      "Saint Vincent and the Grenadines":  "tropical-islands",
                       "Samoa":  "tropical-islands",
                       "San Marino":  "western-europe",
                       "São Tomé and Príncipe":  "tropical-africa",
@@ -241,7 +248,7 @@
                       "Spain":  "southern-coast",
                       "Sri Lanka":  "south-asian-plains",
                       "St. Helena":  "atlantic-cliffs",
-                      "St. Pierre-Miquelon":  "north-american-city",
+                      "St. Pierre-Miquelon":  "north-atlantic-maritime",
                       "Sudan":  "desert-oasis",
                       "Suriname":  "latin-american-town",
                       "Svalbard":  "boreal-lakes",
@@ -253,26 +260,26 @@
                       "Tajikistan":  "central-steppe",
                       "Tanzania":  "african-savanna",
                       "Thailand":  "southeast-asia",
-                      "The Bahamas":  "north-american-city",
+                      "The Bahamas":  "tropical-islands",
                       "The Gambia":  "african-savanna",
                       "Timor-Leste":  "maritime-tropics",
                       "Togo":  "tropical-africa",
                       "Tokelau":  "tropical-islands",
                       "Tonga":  "tropical-islands",
-                      "Trinidad and Tobago":  "north-american-city",
+                      "Trinidad and Tobago":  "tropical-islands",
                       "Tunisia":  "desert-oasis",
                       "Turkey":  "west-asia",
                       "Turkish Republic of Northern Cyprus":  "west-asia",
                       "Turkmenistan":  "central-steppe",
-                      "Turks and Caicos Islands":  "north-american-city",
+                      "Turks and Caicos Islands":  "tropical-islands",
                       "Tuvalu":  "tropical-islands",
-                      "U.S. Virgin Islands":  "north-american-city",
+                      "U.S. Virgin Islands":  "tropical-islands",
                       "Uganda":  "african-savanna",
                       "Ukraine":  "western-europe",
                       "United Arab Emirates":  "west-asia",
                       "United Kingdom":  "atlantic-cliffs",
-                      "United States":  "north-american-city",
-                      "United States of America":  "north-american-city",
+                      "United States":  "north-american-forest",
+                      "United States of America":  "north-american-forest",
                       "Uruguay":  "southern-plains",
                       "Uzbekistan":  "central-steppe",
                       "Vanuatu":  "maritime-tropics",
@@ -292,7 +299,7 @@
                        "Australasia":  "australasia",
                        "Central America":  "latin-american-town",
                        "Europe":  "western-europe",
-                       "North America":  "north-american-city",
+                       "North America":  "north-american-forest",
                        "South America":  "latin-american-town"
                    },
     "states":  {
@@ -309,17 +316,17 @@
                    "r100449":  {
                                    "subject":  "Alabama",
                                    "country":  "United States",
-                                   "region":  "north-american-city"
+                                   "region":  "gulf-wetlands"
                                },
                    "r100450":  {
                                    "subject":  "Arkansas",
                                    "country":  "United States",
-                                   "region":  "north-american-city"
+                                   "region":  "north-american-forest"
                                },
                    "r100452":  {
                                    "subject":  "Arizona",
                                    "country":  "United States",
-                                   "region":  "north-american-city"
+                                   "region":  "north-american-desert"
                                },
                    "r100453":  {
                                    "subject":  "British Columbia",
@@ -329,7 +336,7 @@
                    "r100455":  {
                                    "subject":  "California",
                                    "country":  "United States",
-                                   "region":  "north-american-city"
+                                   "region":  "pacific-coast"
                                },
                    "r100457":  {
                                    "subject":  "Colorado",
@@ -339,22 +346,22 @@
                    "r100458":  {
                                    "subject":  "Connecticut",
                                    "country":  "United States",
-                                   "region":  "north-american-city"
+                                   "region":  "north-american-forest"
                                },
                    "r100460":  {
                                    "subject":  "Delaware",
                                    "country":  "United States",
-                                   "region":  "north-american-city"
+                                   "region":  "north-american-forest"
                                },
                    "r100462":  {
                                    "subject":  "Florida",
                                    "country":  "United States",
-                                   "region":  "north-american-city"
+                                   "region":  "gulf-wetlands"
                                },
                    "r100464":  {
                                    "subject":  "Georgia",
                                    "country":  "United States",
-                                   "region":  "north-american-city"
+                                   "region":  "north-american-forest"
                                },
                    "r100466":  {
                                    "subject":  "Hawaii",
@@ -364,7 +371,7 @@
                    "r100467":  {
                                    "subject":  "Iowa",
                                    "country":  "United States",
-                                   "region":  "north-american-city"
+                                   "region":  "north-american-prairie"
                                },
                    "r100468":  {
                                    "subject":  "Idaho",
@@ -374,32 +381,32 @@
                    "r100469":  {
                                    "subject":  "Illinois",
                                    "country":  "United States",
-                                   "region":  "north-american-city"
+                                   "region":  "north-american-prairie"
                                },
                    "r100470":  {
                                    "subject":  "Indiana",
                                    "country":  "United States",
-                                   "region":  "north-american-city"
+                                   "region":  "north-american-prairie"
                                },
                    "r100471":  {
                                    "subject":  "Kansas",
                                    "country":  "United States",
-                                   "region":  "north-american-city"
+                                   "region":  "north-american-prairie"
                                },
                    "r100472":  {
                                    "subject":  "Kentucky",
                                    "country":  "United States",
-                                   "region":  "north-american-city"
+                                   "region":  "north-american-forest"
                                },
                    "r100473":  {
                                    "subject":  "Louisiana",
                                    "country":  "United States",
-                                   "region":  "north-american-city"
+                                   "region":  "gulf-wetlands"
                                },
                    "r100474":  {
                                    "subject":  "Massachusetts",
                                    "country":  "United States",
-                                   "region":  "north-american-city"
+                                   "region":  "north-american-forest"
                                },
                    "r100475":  {
                                    "subject":  "Manitoba",
@@ -409,12 +416,12 @@
                    "r100476":  {
                                    "subject":  "Maryland",
                                    "country":  "United States",
-                                   "region":  "north-american-city"
+                                   "region":  "north-american-forest"
                                },
                    "r100477":  {
                                    "subject":  "Maine",
                                    "country":  "United States",
-                                   "region":  "north-american-city"
+                                   "region":  "boreal-lakes"
                                },
                    "r100478":  {
                                    "subject":  "Michigan",
@@ -429,12 +436,12 @@
                    "r100480":  {
                                    "subject":  "Missouri",
                                    "country":  "United States",
-                                   "region":  "north-american-city"
+                                   "region":  "north-american-forest"
                                },
                    "r100482":  {
                                    "subject":  "Mississippi",
                                    "country":  "United States",
-                                   "region":  "north-american-city"
+                                   "region":  "gulf-wetlands"
                                },
                    "r100483":  {
                                    "subject":  "Montana",
@@ -444,12 +451,12 @@
                    "r100484":  {
                                    "subject":  "New Brunswick",
                                    "country":  "Canada",
-                                   "region":  "north-american-city"
+                                   "region":  "boreal-lakes"
                                },
                    "r100485":  {
                                    "subject":  "North Carolina",
                                    "country":  "United States",
-                                   "region":  "north-american-city"
+                                   "region":  "north-american-forest"
                                },
                    "r100486":  {
                                    "subject":  "North Dakota",
@@ -459,32 +466,32 @@
                    "r100487":  {
                                    "subject":  "Nebraska",
                                    "country":  "United States",
-                                   "region":  "north-american-city"
+                                   "region":  "north-american-prairie"
                                },
                    "r100488":  {
                                    "subject":  "Newfoundland and Labrador",
                                    "country":  "Canada",
-                                   "region":  "north-american-city"
+                                   "region":  "north-atlantic-maritime"
                                },
                    "r100489":  {
                                    "subject":  "New Hampshire",
                                    "country":  "United States",
-                                   "region":  "north-american-city"
+                                   "region":  "boreal-lakes"
                                },
                    "r100490":  {
                                    "subject":  "New Jersey",
                                    "country":  "United States",
-                                   "region":  "north-american-city"
+                                   "region":  "north-american-forest"
                                },
                    "r100491":  {
                                    "subject":  "New Mexico",
                                    "country":  "United States",
-                                   "region":  "north-american-city"
+                                   "region":  "north-american-desert"
                                },
                    "r100492":  {
                                    "subject":  "Nova Scotia",
                                    "country":  "Canada",
-                                   "region":  "north-american-city"
+                                   "region":  "north-atlantic-maritime"
                                },
                    "r100493":  {
                                    "subject":  "Northwest Territories",
@@ -499,52 +506,52 @@
                    "r100495":  {
                                    "subject":  "Nevada",
                                    "country":  "United States",
-                                   "region":  "north-american-city"
+                                   "region":  "north-american-desert"
                                },
                    "r100496":  {
                                    "subject":  "Ohio",
                                    "country":  "United States",
-                                   "region":  "north-american-city"
+                                   "region":  "north-american-forest"
                                },
                    "r100497":  {
                                    "subject":  "Oklahoma",
                                    "country":  "United States",
-                                   "region":  "north-american-city"
+                                   "region":  "north-american-prairie"
                                },
                    "r100498":  {
                                    "subject":  "Ontario",
                                    "country":  "Canada",
-                                   "region":  "north-american-city"
+                                   "region":  "boreal-lakes"
                                },
                    "r100499":  {
                                    "subject":  "Oregon",
                                    "country":  "United States",
-                                   "region":  "north-american-city"
+                                   "region":  "pacific-coast"
                                },
                    "r100500":  {
                                    "subject":  "Pennsylvania",
                                    "country":  "United States",
-                                   "region":  "north-american-city"
+                                   "region":  "north-american-forest"
                                },
                    "r100501":  {
                                    "subject":  "Prince Edward Island",
                                    "country":  "Canada",
-                                   "region":  "north-american-city"
+                                   "region":  "north-atlantic-maritime"
                                },
                    "r100503":  {
                                    "subject":  "Quebec",
                                    "country":  "Canada",
-                                   "region":  "north-american-city"
+                                   "region":  "boreal-lakes"
                                },
                    "r100505":  {
                                    "subject":  "Rhode Island",
                                    "country":  "United States",
-                                   "region":  "north-american-city"
+                                   "region":  "north-american-forest"
                                },
                    "r100506":  {
                                    "subject":  "South Carolina",
                                    "country":  "United States",
-                                   "region":  "north-american-city"
+                                   "region":  "north-american-forest"
                                },
                    "r100507":  {
                                    "subject":  "South Dakota",
@@ -559,32 +566,32 @@
                    "r100510":  {
                                    "subject":  "Tennessee",
                                    "country":  "United States",
-                                   "region":  "north-american-city"
+                                   "region":  "north-american-forest"
                                },
                    "r100511":  {
                                    "subject":  "Texas",
                                    "country":  "United States",
-                                   "region":  "north-american-city"
+                                   "region":  "north-american-prairie"
                                },
                    "r100512":  {
                                    "subject":  "Utah",
                                    "country":  "United States",
-                                   "region":  "north-american-city"
+                                   "region":  "north-american-desert"
                                },
                    "r100513":  {
                                    "subject":  "Virginia",
                                    "country":  "United States",
-                                   "region":  "north-american-city"
+                                   "region":  "north-american-forest"
                                },
                    "r100515":  {
                                    "subject":  "Vermont",
                                    "country":  "United States",
-                                   "region":  "north-american-city"
+                                   "region":  "boreal-lakes"
                                },
                    "r100516":  {
                                    "subject":  "Washington",
                                    "country":  "United States",
-                                   "region":  "north-american-city"
+                                   "region":  "pacific-coast"
                                },
                    "r100517":  {
                                    "subject":  "Wisconsin",
@@ -594,7 +601,7 @@
                    "r100518":  {
                                    "subject":  "West Virginia",
                                    "country":  "United States",
-                                   "region":  "north-american-city"
+                                   "region":  "north-american-forest"
                                },
                    "r100519":  {
                                    "subject":  "Wyoming",
@@ -609,7 +616,7 @@
                    "r101322":  {
                                    "subject":  "New York",
                                    "country":  "United States",
-                                   "region":  "north-american-city"
+                                   "region":  "north-american-forest"
                                }
                },
     "languages":  {

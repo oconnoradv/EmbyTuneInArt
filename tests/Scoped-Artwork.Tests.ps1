@@ -186,15 +186,33 @@ Assert ($netherlandsScene.SourceId -eq 'r100385' -and $netherlandsScene.Title -e
 $cityScene = Get-ScopedScene 'Futuristic' @{ Id='r123'; Name='Amsterdam'; Country='Netherlands' }
 Assert ($cityScene.SourceId -eq 'r100385' -and $cityScene.Inherited -and -not $cityScene.Title) 'A city may inherit contextual country scenery, but not the country title.'
 foreach ($theme in 'Cartoon','Futuristic','Classic') {
-    $generic = Get-ScopedScene $theme @{ Id='r999'; Name='Unknown city'; Country='United States' }
+    $generic = Get-ScopedScene $theme @{ Id='r999'; Name='Unknown city'; Country='United States'; SceneryRegion='north-american-city' }
     Assert ($generic.SourceId -eq 'generic-landscape' -and $generic.Generic -and (Test-Path -LiteralPath $generic.Path)) "$theme must replace the Seattle-like shared scene with a generic landscape."
+    $caribbean = Get-ScopedScene $theme @{ Id='r999'; Name='Unknown city'; Country='Jamaica' }
+    Assert ($caribbean.SourceId -eq 'tropical-islands' -and (Test-Path -LiteralPath $caribbean.Path)) "$theme must use the curated island scene for Jamaica."
+    $ontario = Get-ScopedScene $theme @{ Id='r999'; Name='Unknown city'; Country='Canada'; SceneryRegion='boreal-lakes' }
+    Assert ($ontario.SourceId -eq 'boreal-lakes' -and (Test-Path -LiteralPath $ontario.Path)) "$theme must use the curated forest-and-lake scene for Ontario."
+    Assert-ScopedSceneCoverage @(@{ Id='r999'; Name='Unknown city'; Country='Jamaica' }, @{ Id='r998'; Name='Unknown city'; Country='Canada'; SceneryRegion='boreal-lakes' }) $theme
     $seattle = Get-ScopedScene $theme @{ Id='r100014'; Name='Seattle-Tacoma'; Country='United States' }
     Assert ($seattle.SourceId -eq 'r100014' -and -not $seattle.Generic) "$theme must retain Seattle's dedicated scene."
     $failed = $false
-    try { Assert-ScopedSceneCoverage @(@{ Id='r999'; Name='Unknown city'; Country='United States' }) $theme }
+    try { Assert-ScopedSceneCoverage @(@{ Id='r999'; Name='Unknown city'; Country='United States'; SceneryRegion='north-american-city' }) $theme }
     catch { $failed = $_.Exception.Message -like '*missing for 1 of 1*' }
     Assert $failed 'Strict scenery coverage must not count the generic landscape as regional scenery.'
+    foreach ($region in 'north-atlantic-maritime','north-american-forest','north-american-prairie','north-american-desert','greenland-fjord','pacific-coast','gulf-wetlands') {
+        $scene = Get-ScopedScene $theme @{ Id='r999'; Name='Unknown city'; Country='United States'; SceneryRegion=$region }
+        Assert ($scene.SourceId -eq $region -and -not $scene.Generic -and (Test-Path -LiteralPath $scene.Path)) "$theme must provide declared $region scenery."
+    }
 }
+$regionalScenes = [ordered]@{
+    r100498=@{ Id='r100498'; Name='Ontario'; Country='Canada'; Level=3 }
+    r999=@{ Id='r999'; Name='Unknown city'; Country='Canada'; Level=4; ParentId='r100498' }
+    r100516=@{ Id='r100516'; Name='Washington'; Country='United States'; Level=3 }
+    r998=@{ Id='r998'; Name='Unknown city'; Country='United States'; Level=4; ParentId='r100516' }
+}
+Set-LocationArt $regionalScenes
+Assert ($regionalScenes['r999'].SceneryRegion -eq 'boreal-lakes') 'Ontario descendants must inherit its curated regional scenery.'
+Assert ($regionalScenes['r998'].SceneryRegion -eq 'pacific-coast') 'Washington descendants must inherit its curated regional scenery.'
 Assert (-not (Get-ScopedScene 'Classic' @{ Id='r100385'; Name='Unrelated'; Country=$null })) 'A reused ID with a mismatched subject must not select curated scenery.'
 Assert (-not (Get-ScopedScene 'Classic' @{ Id='l123'; Name='Dutch'; ProviderName='Unrelated' })) 'Language scenery must match the provider label, not the displayed title.'
 Assert-ScopedSceneCoverage @(@{ Id='l101'; Name='Nederlands'; ProviderName='Dutch' }) 'Classic'

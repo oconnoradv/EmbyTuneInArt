@@ -7,7 +7,7 @@ function Assert($condition, [string]$message) { if (-not $condition) { throw $me
 $snapshot = Join-Path $Output 'snapshot'
 New-Item -ItemType Directory -Force $snapshot | Out-Null
 $responses = @{
-    r0='<outline type="link" text="North America" guide_id="r101218"/><outline type="link" text="Europe" guide_id="r101217"/>'
+    r0='<outline type="link" text="North America" guide_id="r101218"/><outline type="link" text="Europe" guide_id="r101217"/><outline type="link" text="Unknown continent" guide_id="r9999998"/>'
     r101218='<outline type="link" text="United States" guide_id="r101222"/><outline type="link" text="Canada" guide_id="r101227"/>'
     r101222='<outline type="link" text="Washington" guide_id="r100516"/>'
     r101227='<outline type="link" text="Alberta" guide_id="r100447"/>'
@@ -16,6 +16,7 @@ $responses = @{
     r101217='<outline type="link" text="Netherlands" guide_id="r100385"/>'
     r100385='<outline type="link" text="Amsterdam" guide_id="r101398"/>'
     r101398=''
+    r9999998=''
 }
 foreach ($id in $responses.Keys) {
     [IO.File]::WriteAllText((Join-Path $snapshot "$id.xml"), "<opml><head><status>200</status></head><body>$($responses[$id])</body></opml>", (New-Object Text.UTF8Encoding $false))
@@ -62,7 +63,7 @@ foreach ($theme in 'Cartoon','Futuristic','Classic') {
     } finally { $image.Dispose() }
     $strictFolder = Join-Path $Output "$theme-strict"
     $failed = $false
-    try { & $build -Scope locations -Theme $theme -CatalogSnapshot $snapshot -Output $strictFolder -Only 'r9999999' -RequireScopedScenery }
+    try { & $build -Scope locations -Theme $theme -CatalogSnapshot $snapshot -Output $strictFolder -Only 'r9999998' -RequireScopedScenery }
     catch { $failed = $_.Exception.Message -like '*missing for 1 of 1*' }
     Assert ($failed -and -not (Test-Path -LiteralPath $strictFolder)) "$theme strict build must reject generic scenery before writing."
 }
