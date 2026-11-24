@@ -291,15 +291,19 @@ Run the offline discovery and geometry checks with
 `powershell -NoProfile -ExecutionPolicy Bypass -File .\tests\Scoped-Artwork.Tests.ps1`.
 Run the offline category pack and theme checks with
 `powershell -NoProfile -ExecutionPolicy Bypass -File .\tests\Category-Artwork.Tests.ps1 -Output .\output\category-check`.
+Run the offline generated pack contract and scope/theme matrix with
+`powershell -NoProfile -ExecutionPolicy Bypass -File .\tests\Artwork-PackContract.Tests.ps1 -Output .\output\contract-check`.
 To check Spotlight and scoped rendering against the live TuneIn catalog, run
 `powershell -NoProfile -ExecutionPolicy Bypass -File .\tests\Spotlight.Integration.Tests.ps1 -Output .\output\integration-check`.
 
 ## Pack manifest
 
 Every build writes `tunein-artwork.json` next to the cards, and `-Pack` includes it in the ZIP. It is installed
-in the scope folder with the images so the TuneIn plugin can identify the pack:
+in the scope folder with the images so the TuneIn plugin can identify the pack. The contract below describes
+schema 1 and the compatible uploader being developed alongside this generator; older plugin builds may not accept
+all scoped metadata or flag provenance files. It does not change existing published packs.
 
-Category ZIPs contain only the manifest and its declared images, as required by the plugin's upload validator.
+Generated category ZIPs contain only the manifest and its declared images.
 Their manifest has exactly `schemaVersion`, `scope`, `packName`, `imageCount` and `images`; each image has only
 `id`, `file` and `sha256`. The additional metadata below applies to genre, language and location manifests.
 
@@ -307,12 +311,50 @@ Their manifest has exactly `schemaVersion`, `scope`, `packName`, `imageCount` an
 |---|---|
 | `schemaVersion` | Manifest format version, currently `1`. |
 | `scope` | `genres`, `languages`, `locations` or `categories`; legacy manifests without this field are genres only. |
-| `packId`, `packName`, `theme`, `version` | Pack identity, for example `artpack-cartoon`, `Cartoon`, `Cartoon`, `1`. |
+| `packId`, `packName`, `theme`, `version` | Pack identity, for example `artpack-cartoon`, `Cartoon`, `Cartoon`, `1`. `packName` is required; the other fields are optional. |
 | `description` | The theme's one-line description. |
 | `minPluginVersion` | Plugin assembly version (`1.2.8.0`); scoped and category packs require builds with the corresponding support. |
 | `sampleImageUrl`, `sourceUrl` | An optional genre sample image and the repository the pack was built from. |
 | `toolCommit`, `builtUtc`, `license` | The tool commit, build time and licence (`GPL-3.0`). |
-| `imageCount`, `images` | One entry per card with `id`, `file` and lower-case `sha256`; other scopes also include `name`, `parent` and `bytes`. |
+| `imageCount`, `images` | Required count and array; one entry per card with `id`, `file` and SHA-256 `sha256`. The generator emits lowercase hashes; genre, language and location entries also include `name`, `parent` and integer `bytes`. |
+
+The required root fields are `schemaVersion`, `packName`, `imageCount`, and `images`; `scope` is optional only for
+legacy genre packs. An omitted scope means `genres`, while explicit `null` is invalid. The other root fields in
+the table are optional informational strings and may be omitted or JSON `null`. The same applies to optional
+image strings `name`, `parent`, `motif`, `motifLabel`, `scenerySource`, `representativeFlag`, and `flagAsset`.
+If present, `bytes` must be an integer and `sceneryShared` a boolean. Unknown or duplicate properties are rejected
+by the uploader. The generator records motif and scenery details for Cartoon, Futuristic and Classic scoped
+cards, including Spotlight variants; flags are representative, not exclusive. `flagAsset` is informational,
+not a reference to a file that must be included in the ZIP.
+
+IDs are case-sensitive: genre IDs match `[cg][1-9][0-9]{0,9}`, language IDs `l[1-9][0-9]{0,9}`, and location IDs
+`r[1-9][0-9]{0,9}`; category IDs are the eight names listed above. The filename must be the ID followed by
+`.jpg` or `.png`; this generator writes JPEGs. IDs and filenames must be unique ignoring case, and each hash
+must be 64 hexadecimal digits matching the image bytes. Partial packs are valid: `imageCount` must equal the
+number of entries, from 1 to 20,000. `packName` must be trimmed, nonblank, at most 128 characters, and contain
+no control characters, colon, slash, backslash, `@`, or `www.` (case-insensitive).
+
+ZIP entries are flat at the root and consist only of the manifest, its declared images, and optional
+`LICENSE.txt`, `Noto-OFL.txt`, `README.txt`, `FLAGS-SOURCES.txt`, and `flag-sources.json`. Supplements are
+UTF-8, at most 1 MiB each, and may contain no control characters except tab, CR and LF. The generator includes
+the two flag provenance files for scenic language themes, including Spotlight; categories currently have no
+supplements. Duplicate, unknown, or nested files are invalid. The manifest is limited to 4 MiB, the ZIP to
+768 MiB, total expanded content to 2 GiB, and each image to 16 MiB, 4096 pixels per side and 16,777,216 pixels.
+The uploader additionally checks ZIP structure, scans entries and decodes each image. The generator checks its
+serialized manifest, JPEG headers, image decoding, hashes, sizes and generated ZIP contents before replacing
+the destination ZIP; the plugin remains the final authority on upload. A failed build can leave rendered files
+in the output directory, but validation failure does not replace an existing ZIP.
+
+Default `-Scope` is `genres`, default `-Theme` is `Futuristic`, and default `-PackVersion` is `1`.
+Default IDs are `artpack-<theme>` for genres and `artpack-<theme>-<scope>` for other non-category manifests.
+The default ZIP name is `artpack-<theme>-<scope>.zip`; `-PackName` overrides the ZIP name and non-category
+manifest `packId`. Category manifests remain minimal: their `packName` is the theme and they omit `packId` and
+`version`, including when `-PackName` or `-PackVersion` is supplied. Spotlight genre entries use bundled cards
+where available; other genres use the base theme. Scoped Spotlight cards use their base scoped theme.
+
+Builds are not byte-reproducible: `builtUtc`, ZIP timestamps, the checked-out Git commit, live catalog responses,
+Windows fonts and rendering/encoder versions can vary. `-CatalogSnapshot` freezes language and location responses,
+not genre discovery; it does not freeze the other inputs. Hashes describe the actual bytes of each build.
 
 The plugin compares installed files with the manifest: missing entries are absent, matching hashes identify
 unchanged pack cards, differing hashes identify modified cards, and extra files are added images. The manifest

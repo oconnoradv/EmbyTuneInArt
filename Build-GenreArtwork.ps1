@@ -32,6 +32,9 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 $Scope = $Scope.ToLowerInvariant()
+if ($Pack -and $PackName -and ($PackName -in '.', '..' -or $PackName.IndexOfAny([IO.Path]::GetInvalidFileNameChars()) -ge 0 -or $PackName -match '[/\\]')) {
+    throw 'PackName must be a valid ZIP file name.'
+}
 if ($LocationRoot -cnotmatch '^r(?:0|[1-9][0-9]{0,9})$') { throw 'LocationRoot must be a lowercase TuneIn location ID.' }
 if (-not $Output) { $Output = Join-Path $PSScriptRoot "output\$Scope" }
 if (($LocationRoot -eq 'r0') -ne ($LocationRootLevel -eq 0)) { throw 'LocationRoot r0 requires level 0; other roots require a level from 1 to 3.' }
@@ -1546,7 +1549,16 @@ if ($Scope -eq 'categories') {
     }
 }
 if ($Scope -eq 'genres') { $manifest.sampleImageUrl = "https://raw.githubusercontent.com/oconnoradv/EmbyTuneInArt/main/docs/samples/$($Theme.ToLowerInvariant()).jpg" }
-[IO.File]::WriteAllText((Join-Path $Output 'tunein-artwork.json'), ($manifest | ConvertTo-Json -Depth 4), (New-Object Text.UTF8Encoding $false))
+$manifestPath = Join-Path $Output 'tunein-artwork.json'
+. (Join-Path $PSScriptRoot 'Artwork-PackValidation.ps1')
+$tempManifest = Join-Path $Output ([IO.Path]::GetRandomFileName() + '.json')
+try {
+    [IO.File]::WriteAllText($tempManifest, ($manifest | ConvertTo-Json -Depth 4), (New-Object Text.UTF8Encoding $false))
+    $validatedManifest = Assert-ArtworkPack $Output $tempManifest
+    Move-Item -LiteralPath $tempManifest -Destination $manifestPath -Force
+} finally {
+    if (Test-Path -LiteralPath $tempManifest) { Remove-Item -LiteralPath $tempManifest -Force }
+}
 
 if ($Pack) {
     Add-Type -AssemblyName System.IO.Compression.FileSystem
@@ -1572,23 +1584,29 @@ Neutral language categories use speech motifs rather than an assigned nationalit
 Natural Earth country and region geometry and populated-place points are public domain: https://www.naturalearthdata.com/about/terms-of-use/
 Noto Sans Khmer and Noto Serif KR are distributed under the SIL Open Font License 1.1; see Noto-OFL.txt.
 "@ }
-    if (Test-Path $zip) { Remove-Item $zip }
-    $archive = [IO.Compression.ZipFile]::Open($zip, 'Create')
+    $tempZip = Join-Path (Split-Path $zip -Parent) ([IO.Path]::GetRandomFileName() + '.zip')
     try {
-        foreach ($image in $images) {
-            [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, (Join-Path $Output $image.file), $image.file, 'Optimal')
-        }
-        [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, (Join-Path $Output 'tunein-artwork.json'), 'tunein-artwork.json', 'Optimal')
-        if ($Scope -ne 'categories') {
-            [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, (Join-Path $PSScriptRoot 'LICENSE'), 'LICENSE.txt', 'Optimal')
-            [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, (Join-Path $PSScriptRoot 'data\Noto-OFL.txt'), 'Noto-OFL.txt', 'Optimal')
-            if ($Scope -eq 'languages' -and $baseTheme -in 'Cartoon','Futuristic','Classic') {
-                [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, (Join-Path $PSScriptRoot 'data\flags\FLAGS-SOURCES.txt'), 'FLAGS-SOURCES.txt', 'Optimal')
-                [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, (Join-Path $PSScriptRoot 'data\flags\sources.json'), 'flag-sources.json', 'Optimal')
+        $archive = [IO.Compression.ZipFile]::Open($tempZip, 'Create')
+        try {
+            foreach ($image in $images) {
+                [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, (Join-Path $Output $image.file), $image.file, 'Optimal')
             }
-            $writer = New-Object IO.StreamWriter ($archive.CreateEntry('README.txt').Open())
-            try { $writer.Write($note.Replace("`r`n", "`n").Replace("`n", "`r`n")) } finally { $writer.Dispose() }
-        }
-    } finally { $archive.Dispose() }
+            [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, (Join-Path $Output 'tunein-artwork.json'), 'tunein-artwork.json', 'Optimal')
+            if ($Scope -ne 'categories') {
+                [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, (Join-Path $PSScriptRoot 'LICENSE'), 'LICENSE.txt', 'Optimal')
+                [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, (Join-Path $PSScriptRoot 'data\Noto-OFL.txt'), 'Noto-OFL.txt', 'Optimal')
+                if ($Scope -eq 'languages' -and $baseTheme -in 'Cartoon','Futuristic','Classic') {
+                    [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, (Join-Path $PSScriptRoot 'data\flags\FLAGS-SOURCES.txt'), 'FLAGS-SOURCES.txt', 'Optimal')
+                    [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, (Join-Path $PSScriptRoot 'data\flags\sources.json'), 'flag-sources.json', 'Optimal')
+                }
+                $writer = New-Object IO.StreamWriter ($archive.CreateEntry('README.txt').Open())
+                try { $writer.Write($note.Replace("`r`n", "`n").Replace("`n", "`r`n")) } finally { $writer.Dispose() }
+            }
+        } finally { $archive.Dispose() }
+        Assert-ArtworkArchive $tempZip $validatedManifest $manifestPath
+        Move-Item -LiteralPath $tempZip -Destination $zip -Force
+    } finally {
+        if (Test-Path -LiteralPath $tempZip) { Remove-Item -LiteralPath $tempZip -Force }
+    }
     Write-Host "Pack: $zip"
 }
