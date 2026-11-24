@@ -1,5 +1,6 @@
 # Validates the generator's output against the TuneIn artwork upload contract.
 function Assert-ArtworkProperties($object, [string[]]$allowed) {
+    if (@($object.PSObject.Properties).Count -ne $allowed.Count) { throw 'Missing artwork properties.' }
     foreach ($property in $object.PSObject.Properties) {
         if ($allowed -cnotcontains $property.Name) { throw "Unknown artwork property: $($property.Name)." }
     }
@@ -14,11 +15,11 @@ function Assert-ArtworkJpegHeader([string]$path) {
             if ($reader.ReadByte() -ne 0xff) { throw "Invalid JPEG marker: $path." }
             do { $marker = $reader.ReadByte() } while ($marker -eq 0xff)
             if ($marker -in 0xd9,0xda) { break }
-            if ($marker -eq 0x01 -or ($marker -ge 0xd0 -and $marker -le 0xd7)) { continue }
+            if ($marker -eq 0x00 -or $marker -eq 0xd8 -or ($marker -ge 0xd0 -and $marker -le 0xd7)) { throw "Invalid JPEG marker before frame: $path." }
             $length = ([int]$reader.ReadByte() * 256) + $reader.ReadByte()
             if ($length -lt 2 -or $stream.Position + $length - 2 -gt $stream.Length) { throw "Invalid JPEG segment: $path." }
-            if ($marker -ge 0xc0 -and $marker -le 0xcf -and $marker -notin 0xc4,0xc8,0xcc) {
-                if ($marker -notin 0xc0,0xc1,0xc2 -or $length -lt 8) { throw "Unsupported JPEG frame: $path." }
+            if ($marker -in 0xc0,0xc1,0xc2) {
+                if ($length -lt 8) { throw "Invalid JPEG frame: $path." }
                 return
             }
             $stream.Position += $length - 2
@@ -31,21 +32,21 @@ function Assert-ArtworkPack($output, $manifestPath) {
     $manifestFile = Get-Item -LiteralPath $manifestPath
     if ($manifestFile.Length -gt 4MB) { throw 'Artwork manifest exceeds 4 MiB.' }
     $manifest = [IO.File]::ReadAllText($manifestPath, (New-Object Text.UTF8Encoding($false, $true))) | ConvertFrom-Json
-    Assert-ArtworkProperties $manifest @('schemaVersion','scope','packId','packName','theme','version','description','minPluginVersion','sampleImageUrl','sourceUrl','toolCommit','license','builtUtc','imageCount','images')
-    if ($manifest.schemaVersion -isnot [int] -or $manifest.schemaVersion -ne 1) { throw 'Invalid artwork schemaVersion.' }
-    if ($manifest.scope -cnotin @('genres','languages','locations','categories')) { throw 'Invalid artwork scope.' }
-    if ($manifest.packName -isnot [string] -or [string]::IsNullOrWhiteSpace($manifest.packName) -or
-        $manifest.packName -cne $manifest.packName.Trim() -or $manifest.packName.Length -gt 128 -or
-        $manifest.packName -match '[\p{Cc}:/\\@]|www\.') { throw 'Invalid artwork packName.' }
-    foreach ($field in 'packId','theme','version','description','minPluginVersion','sampleImageUrl','sourceUrl','toolCommit','builtUtc','license') {
-        $property = $manifest.PSObject.Properties[$field]
-        if ($property -and $null -ne $property.Value -and $property.Value -isnot [string]) { throw "Invalid manifest field: $field." }
+    Assert-ArtworkProperties $manifest @('schemaVersion','scope','packId','packName','theme','version','imageCount','images')
+    if ($manifest.schemaVersion -isnot [int] -or $manifest.schemaVersion -ne 2) { throw 'Invalid artwork schemaVersion.' }
+    if ($manifest.scope -isnot [string] -or $manifest.scope -cnotin @('genres','languages','locations','categories')) { throw 'Invalid artwork scope.' }
+    if ($manifest.packId -isnot [string] -or $manifest.packId -cnotmatch '^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$') { throw 'Invalid artwork packId.' }
+    if ($manifest.version -isnot [string] -or $manifest.version -cnotmatch '^[0-9A-Za-z][0-9A-Za-z.+_-]{0,63}$') { throw 'Invalid artwork version.' }
+    foreach ($field in 'packName','theme') {
+        $value = $manifest.$field
+        if ($value -isnot [string] -or [string]::IsNullOrWhiteSpace($value) -or
+            $value -cne $value.Trim() -or $value.Length -gt 128 -or $value -match '[\p{Cc}:/\\@]|www\.') { throw "Invalid artwork $field." }
     }
     if ($manifest.imageCount -isnot [int] -or $manifest.imageCount -lt 1 -or $manifest.imageCount -gt 20000 -or
         $manifest.images -isnot [array] -or $manifest.imageCount -ne $manifest.images.Count) { throw 'Invalid artwork image count.' }
     $ids = @{}; $files = @{}
     foreach ($entry in $manifest.images) {
-        Assert-ArtworkProperties $entry @('id','file','sha256','name','parent','bytes','motif','motifLabel','scenerySource','sceneryShared','representativeFlag','flagAsset')
+        Assert-ArtworkProperties $entry @('id','file','sha256')
         if ($entry.id -isnot [string] -or $entry.file -isnot [string] -or $entry.sha256 -isnot [string]) { throw 'Invalid artwork image fields.' }
         $validId = switch ($manifest.scope) {
             'genres' { $entry.id -cmatch '^[cg][1-9][0-9]{0,9}$' }
@@ -56,16 +57,8 @@ function Assert-ArtworkPack($output, $manifestPath) {
         if (-not $validId -or $entry.file -cne "$($entry.id).jpg" -or $entry.sha256 -cnotmatch '^[0-9a-f]{64}$' -or
             $ids.ContainsKey($entry.id) -or $files.ContainsKey($entry.file)) { throw "Invalid or duplicate artwork image: $($entry.id)." }
         $ids[$entry.id] = $true; $files[$entry.file] = $true
-        foreach ($field in 'name','parent','motif','motifLabel','scenerySource','representativeFlag','flagAsset') {
-            $property = $entry.PSObject.Properties[$field]
-            if ($property -and $null -ne $property.Value -and $property.Value -isnot [string]) { throw "Invalid image field: $field." }
-        }
-        $property = $entry.PSObject.Properties['sceneryShared']
-        if ($property -and $property.Value -isnot [bool]) { throw 'Invalid sceneryShared.' }
         $image = Get-Item -LiteralPath (Join-Path $output $entry.file)
         if ($image.Length -le 0 -or $image.Length -gt 16MB) { throw "Invalid artwork image size: $($entry.file)." }
-        $property = $entry.PSObject.Properties['bytes']
-        if ($property -and (($property.Value -isnot [int] -and $property.Value -isnot [long]) -or $property.Value -ne $image.Length)) { throw "Invalid artwork byte count: $($entry.file)." }
         if ((Get-FileHash -LiteralPath $image.FullName -Algorithm SHA256).Hash -cne $entry.sha256.ToUpperInvariant()) { throw "Artwork hash mismatch: $($entry.file)." }
         Assert-ArtworkJpegHeader $image.FullName
         $decoded = [Drawing.Image]::FromFile($image.FullName)
@@ -100,7 +93,7 @@ function Assert-ArtworkArchive($zip, $manifest, $manifestPath) {
             $expanded += $entry.Length
             if ($expanded -gt 2GB) { throw 'Expanded artwork archive exceeds 2 GiB.' }
             if ($supplements -ccontains $name) {
-                if ($entry.Length -gt 1MB) { throw "Artwork supplement exceeds 1 MiB: $name." }
+                if ($entry.Length -le 0 -or $entry.Length -gt 1MB) { throw "Invalid artwork supplement size: $name." }
                 $reader = New-Object IO.StreamReader($entry.Open(), (New-Object Text.UTF8Encoding($false, $true)), $false)
                 try { $text = $reader.ReadToEnd() } finally { $reader.Dispose() }
                 if ($text -match '[\p{Cc}-[\t\r\n]]') { throw "Invalid control character in artwork supplement: $name." }
@@ -114,5 +107,13 @@ function Assert-ArtworkArchive($zip, $manifest, $manifestPath) {
             }
         }
         foreach ($name in $expected.Keys) { if (-not $seen.ContainsKey($name)) { throw "Missing artwork archive entry: $name." } }
+        foreach ($name in @('LICENSE.txt','Noto-OFL.txt','README.txt')) {
+            if (-not $seen.ContainsKey($name)) { throw "Missing generated artwork notice: $name." }
+        }
+        if ($manifest.scope -ceq 'languages') {
+            foreach ($name in @('FLAGS-SOURCES.txt','flag-sources.json')) {
+                if (-not $seen.ContainsKey($name)) { throw "Missing generated flag provenance: $name." }
+            }
+        }
     } finally { $archive.Dispose() }
 }

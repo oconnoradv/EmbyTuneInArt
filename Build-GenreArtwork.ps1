@@ -32,9 +32,12 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 $Scope = $Scope.ToLowerInvariant()
-if ($Pack -and $PackName -and ($PackName -in '.', '..' -or $PackName.IndexOfAny([IO.Path]::GetInvalidFileNameChars()) -ge 0 -or $PackName -match '[/\\]')) {
-    throw 'PackName must be a valid ZIP file name.'
-}
+$customPackName = [bool]$PackName
+if (-not $PackName) { $PackName = 'artpack-' + $Theme.ToLowerInvariant(); if ($Scope -ne 'genres') { $PackName += "-$Scope" } }
+if ($PackName -cnotmatch '^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$') { throw 'PackName must be an ASCII pack ID of 1-128 letters, digits, dots, underscores or hyphens, beginning with a letter or digit.' }
+if ($PackVersion -cnotmatch '^[0-9A-Za-z][0-9A-Za-z.+_-]{0,63}$') { throw 'PackVersion must be an ASCII version token of 1-64 letters, digits, dots, plus signs, underscores or hyphens, beginning with a letter or digit.' }
+$zipName = if (-not $customPackName -and $Scope -eq 'genres') { "$PackName-genres" } else { $PackName }
+if ($Pack -and $zipName -match '^(con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)') { throw 'PackName is reserved as a Windows ZIP file name.' }
 if ($LocationRoot -cnotmatch '^r(?:0|[1-9][0-9]{0,9})$') { throw 'LocationRoot must be a lowercase TuneIn location ID.' }
 if (-not $Output) { $Output = Join-Path $PSScriptRoot "output\$Scope" }
 if (($LocationRoot -eq 'r0') -ne ($LocationRootLevel -eq 0)) { throw 'LocationRoot r0 requires level 0; other roots require a level from 1 to 3.' }
@@ -1515,40 +1518,17 @@ foreach ($info in $selected) {
 }
 if ($Only -and -not $rendered.Count) { throw 'No artwork matched -Only.' }
 
-# tunein-artwork.json identifies the installed pack to the TuneIn plugin. The SHA-256 hashes let it tell
-# pack images from ones a user has replaced.
-$customPackName = [bool]$PackName
-if (-not $PackName) { $PackName = 'artpack-' + $Theme.ToLowerInvariant(); if ($Scope -ne 'genres') { $PackName += "-$Scope" } }
-$zipName = if (-not $customPackName -and $Scope -eq 'genres') { "$PackName-genres" } else { $PackName }
-$commit = try { (& git -C $PSScriptRoot rev-parse HEAD 2>$null) } catch { $null }
+# SHA-256 hashes identify the exact image bytes installed from this pack.
 $images = @($rendered | Sort-Object | ForEach-Object {
     $file = Get-Item (Join-Path $Output "$_.jpg")
     $info = $genres[$file.BaseName]
-    $entry = [ordered]@{ id = $info.Id; name = $(if ($info.ProviderName) { $info.ProviderName } else { $info.Name }); parent = $info.Parent; file = $file.Name; bytes = $file.Length
+    [ordered]@{ id = $info.Id; file = $file.Name
         sha256 = (Get-FileHash $file.FullName -Algorithm SHA256).Hash.ToLowerInvariant() }
-    if ($Scope -in 'languages','locations' -and $baseTheme -in 'Cartoon','Futuristic','Classic') {
-        $scene = Get-ScopedScene $baseTheme $info
-        $entry.motif = $info.Motif; $entry.motifLabel = $info.Label
-        $entry.scenerySource = if ($scene) { $scene.SourceId } else { 'legacy-generic' }
-        $entry.sceneryShared = [bool]($scene -and $scene.Inherited)
-        if ($info.Flag) { $entry.representativeFlag = $info.Flag }
-        if ($info.FlagCode) { $entry.flagAsset = "$($info.FlagCode).png" }
-    }
-    $entry
 })
 $manifest = [ordered]@{
-    schemaVersion = 1; scope = $Scope; packId = $PackName; packName = $Theme; theme = $Theme; version = $PackVersion
-    description = $(if ($Scope -eq 'genres' -and $Theme -ne $baseTheme) { "$baseTheme with illustrated Spotlight cards for selected genres." } else { $script:T.Description }); minPluginVersion = '1.2.8.0'
-    sourceUrl = 'https://github.com/oconnoradv/EmbyTuneInArt'; toolCommit = $commit; license = 'GPL-3.0'
-    builtUtc = [DateTime]::UtcNow.ToString('yyyy-MM-ddTHH:mm:ssZ'); imageCount = $images.Count; images = $images
+    schemaVersion = 2; scope = $Scope; packId = $PackName; packName = $Theme; theme = $Theme; version = $PackVersion
+    imageCount = $images.Count; images = $images
 }
-if ($Scope -eq 'categories') {
-    $manifest = [ordered]@{
-        schemaVersion = 1; scope = $Scope; packName = $Theme; imageCount = $images.Count
-        images = @($images | ForEach-Object { [ordered]@{ id = $_.id; file = $_.file; sha256 = $_.sha256 } })
-    }
-}
-if ($Scope -eq 'genres') { $manifest.sampleImageUrl = "https://raw.githubusercontent.com/oconnoradv/EmbyTuneInArt/main/docs/samples/$($Theme.ToLowerInvariant()).jpg" }
 $manifestPath = Join-Path $Output 'tunein-artwork.json'
 . (Join-Path $PSScriptRoot 'Artwork-PackValidation.ps1')
 $tempManifest = Join-Path $Output ([IO.Path]::GetRandomFileName() + '.json')
@@ -1580,7 +1560,7 @@ Cities may use a labeled regional ancestor map. Unmapped locations use a labeled
 City markers are approximate and appear only when a reliable matching point is available; unmarked maps do not imply a center point.
 Scenery is shared by explicitly mapped countries/regions; it is decorative, not a depiction of every individual city.
 Scenic backgrounds and map-fill textures are AI-generated illustrations, not geographic or terrain data.
-Neutral language categories use speech motifs rather than an assigned nationality. See FLAGS-SOURCES.txt for representative flag provenance.
+Neutral language categories use speech motifs rather than an assigned nationality. Language packs include FLAGS-SOURCES.txt for representative flag provenance.
 Natural Earth country and region geometry and populated-place points are public domain: https://www.naturalearthdata.com/about/terms-of-use/
 Noto Sans Khmer and Noto Serif KR are distributed under the SIL Open Font License 1.1; see Noto-OFL.txt.
 "@ }
@@ -1592,16 +1572,14 @@ Noto Sans Khmer and Noto Serif KR are distributed under the SIL Open Font Licens
                 [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, (Join-Path $Output $image.file), $image.file, 'Optimal')
             }
             [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, (Join-Path $Output 'tunein-artwork.json'), 'tunein-artwork.json', 'Optimal')
-            if ($Scope -ne 'categories') {
-                [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, (Join-Path $PSScriptRoot 'LICENSE'), 'LICENSE.txt', 'Optimal')
-                [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, (Join-Path $PSScriptRoot 'data\Noto-OFL.txt'), 'Noto-OFL.txt', 'Optimal')
-                if ($Scope -eq 'languages' -and $baseTheme -in 'Cartoon','Futuristic','Classic') {
-                    [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, (Join-Path $PSScriptRoot 'data\flags\FLAGS-SOURCES.txt'), 'FLAGS-SOURCES.txt', 'Optimal')
-                    [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, (Join-Path $PSScriptRoot 'data\flags\sources.json'), 'flag-sources.json', 'Optimal')
-                }
-                $writer = New-Object IO.StreamWriter ($archive.CreateEntry('README.txt').Open())
-                try { $writer.Write($note.Replace("`r`n", "`n").Replace("`n", "`r`n")) } finally { $writer.Dispose() }
+            [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, (Join-Path $PSScriptRoot 'LICENSE'), 'LICENSE.txt', 'Optimal')
+            [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, (Join-Path $PSScriptRoot 'data\Noto-OFL.txt'), 'Noto-OFL.txt', 'Optimal')
+            if ($Scope -eq 'languages') {
+                [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, (Join-Path $PSScriptRoot 'data\flags\FLAGS-SOURCES.txt'), 'FLAGS-SOURCES.txt', 'Optimal')
+                [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, (Join-Path $PSScriptRoot 'data\flags\sources.json'), 'flag-sources.json', 'Optimal')
             }
+            $writer = New-Object IO.StreamWriter ($archive.CreateEntry('README.txt').Open())
+            try { $writer.Write($note.Replace("`r`n", "`n").Replace("`n", "`r`n")) } finally { $writer.Dispose() }
         } finally { $archive.Dispose() }
         Assert-ArtworkArchive $tempZip $validatedManifest $manifestPath
         Move-Item -LiteralPath $tempZip -Destination $zip -Force

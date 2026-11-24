@@ -50,13 +50,13 @@ foreach ($theme in 'FuturisticSpotlight','CartoonSpotlight','ClassicSpotlight') 
     Assert ((Get-FileHash (Join-Path $folder 'g2698.jpg')).Hash -ceq (Get-FileHash (Join-Path $root "spotlight\$theme\g2698.jpg")).Hash) "$theme Spotlight source changed."
 }
 $category = Join-Path $Output 'category-custom'
-& $build -Scope categories -Theme Retro -Only music -Output $category -Pack -PackName 'custom-category' -PackVersion '2.3'
+& $build -Scope categories -Theme Retro -Only music -Output $category -Pack -PackName 'Custom.Category' -PackVersion '2.3+build_4'
 $categoryManifest = Assert-ArtworkPack $category (Join-Path $category 'tunein-artwork.json')
-Assert ((Test-Path -LiteralPath (Join-Path $Output 'custom-category.zip')) -and $categoryManifest.packName -ceq 'Retro' -and
-    $null -eq $categoryManifest.PSObject.Properties['packId'] -and $null -eq $categoryManifest.PSObject.Properties['version']) 'Category custom options changed manifest identity.'
-& $build -Scope categories -Theme Neon -Only talk -Output $category -Pack -PackName 'custom-category'
+Assert ((Test-Path -LiteralPath (Join-Path $Output 'Custom.Category.zip')) -and $categoryManifest.packName -ceq 'Retro' -and
+    $categoryManifest.packId -ceq 'Custom.Category' -and $categoryManifest.version -ceq '2.3+build_4') 'Category custom options were not recorded.'
+& $build -Scope categories -Theme Neon -Only talk -Output $category -Pack -PackName 'Custom.Category'
 $replacement = Assert-ArtworkPack $category (Join-Path $category 'tunein-artwork.json')
-Assert-ArtworkArchive (Join-Path $Output 'custom-category.zip') $replacement (Join-Path $category 'tunein-artwork.json')
+Assert-ArtworkArchive (Join-Path $Output 'Custom.Category.zip') $replacement (Join-Path $category 'tunein-artwork.json')
 Assert ($replacement.images[0].id -ceq 'talk') 'Existing ZIP was not replaced by the validated pack.'
 
 $language = Join-Path $Output 'language-flag'
@@ -64,7 +64,7 @@ $language = Join-Path $Output 'language-flag'
 $manifestPath = Join-Path $language 'tunein-artwork.json'
 $manifest = Assert-ArtworkPack $language $manifestPath
 Assert ($manifest.packId -ceq 'custom-language' -and $manifest.version -ceq '2.3') 'Custom identity/version changed.'
-Assert ($manifest.images[0].representativeFlag -ceq 'United Kingdom' -and $manifest.images[0].flagAsset -ceq 'gb.png') 'Representative flag metadata missing.'
+Assert ((@($manifest.images[0].PSObject.Properties.Name | Sort-Object) -join ',') -ceq 'file,id,sha256') 'Noncanonical image metadata was emitted.'
 $zip = Join-Path $Output 'custom-language.zip'
 $archive = [IO.Compression.ZipFile]::OpenRead($zip)
 try {
@@ -74,7 +74,7 @@ try {
 $neutral = Join-Path $Output 'language-neutral'
 & $build -Scope languages -Theme CartoonSpotlight -Only l100 -CatalogSnapshot $snapshot -Output $neutral -NeutralLanguages -Pack
 $neutralManifest = Assert-ArtworkPack $neutral (Join-Path $neutral 'tunein-artwork.json')
-Assert ($null -eq $neutralManifest.images[0].PSObject.Properties['representativeFlag'] -and $null -eq $neutralManifest.images[0].PSObject.Properties['flagAsset']) 'Neutral language must not assign a flag.'
+Assert ($neutralManifest.images[0].sha256 -cne $manifest.images[0].sha256) 'Neutral language must render differently from representative-flag artwork.'
 foreach ($scope in 'languages','locations') {
     $base = Join-Path $Output "$scope-base"
     $spot = Join-Path $Output "$scope-spot"
@@ -91,8 +91,10 @@ $original = [IO.File]::ReadAllText($manifestPath)
 foreach ($change in @(
     { param($m) $m.images[0].sha256 = '0' * 64 },
     { param($m) $m.images[0].id = 'L100' },
-    { param($m) $m.images[0].sceneryShared = 'true' },
-    { param($m) $m.images[0].bytes = '1' },
+    { param($m) $m.images[0] | Add-Member -NotePropertyName representativeFlag -NotePropertyValue 'flag' },
+    { param($m) $m.version = 2 },
+    { param($m) $m.scope = $null },
+    { param($m) $m.schemaVersion = 1 },
     { param($m) $m.packName = ' www.invalid' },
     { param($m) $m.images[0] | Add-Member -NotePropertyName extra -NotePropertyValue 'bad' },
     { param($m) $m.imageCount = 2 }
@@ -106,12 +108,39 @@ foreach ($change in @(
 }
 [IO.File]::WriteAllText($manifestPath, $original, (New-Object Text.UTF8Encoding $false))
 $manifest = Assert-ArtworkPack $language $manifestPath
+$missingProvenance = Join-Path $Output 'missing-provenance.zip'
+Copy-Item -LiteralPath $zip -Destination $missingProvenance
+$archive = [IO.Compression.ZipFile]::Open($missingProvenance, 'Update')
+try { $archive.GetEntry('flag-sources.json').Delete() } finally { $archive.Dispose() }
+$failed = $false
+try { Assert-ArtworkArchive $missingProvenance $manifest $manifestPath } catch { $failed = $true }
+Assert $failed 'Missing flag provenance was accepted.'
 $archive = [IO.Compression.ZipFile]::Open($zip, 'Update')
 try { $null = $archive.CreateEntry('unexpected.txt') } finally { $archive.Dispose() }
 $failed = $false
 try { Assert-ArtworkArchive $zip $manifest $manifestPath } catch { $failed = $true }
 Assert $failed 'Unexpected ZIP entry was accepted.'
 $failed = $false
-try { & $build -Scope categories -Only music -Output (Join-Path $Output 'invalid-name') -Pack -PackName '..\escape' } catch { $failed = $_.Exception.Message -like '*valid ZIP file name*' }
-Assert $failed 'Unsafe ZIP name was accepted.'
+try { & $build -Scope categories -Only music -Output (Join-Path $Output 'invalid-name') -Pack -PackName '..\escape' } catch { $failed = $_.Exception.Message -like '*PackName*' }
+Assert ($failed -and -not (Test-Path -LiteralPath (Join-Path $Output 'invalid-name'))) 'Unsafe pack ID was accepted or failed after rendering.'
+$failed = $false
+try { & $build -Scope categories -Only music -Output (Join-Path $Output 'reserved-name') -Pack -PackName 'CON' } catch { $failed = $_.Exception.Message -like '*reserved*' }
+Assert ($failed -and -not (Test-Path -LiteralPath (Join-Path $Output 'reserved-name'))) 'Reserved Windows ZIP name was accepted or failed after rendering.'
+$failed = $false
+try { & $build -Scope categories -Only music -Output (Join-Path $Output 'invalid-version') -PackVersion 'bad version' } catch { $failed = $_.Exception.Message -like '*PackVersion*' }
+Assert ($failed -and -not (Test-Path -LiteralPath (Join-Path $Output 'invalid-version'))) 'Invalid version was accepted or failed after rendering.'
+$header = Join-Path $Output 'jpeg-header-test.jpg'
+$validHeader = [byte[]](0xff,0xd8,0xff,0xc0,0x00,0x08,0x08,0x00,0x01,0x00,0x01,0x01)
+[IO.File]::WriteAllBytes($header, $validHeader)
+Assert-ArtworkJpegHeader $header
+foreach ($marker in 0x00,0x01,0xd0,0xd7,0xd8) {
+    $invalidHeader = [byte[]](@(0xff,0xd8,0xff,$marker) + $validHeader[2..($validHeader.Length - 1)])
+    [IO.File]::WriteAllBytes($header, $invalidHeader)
+    $failed = $false
+    try { Assert-ArtworkJpegHeader $header } catch { $failed = $true }
+    Assert $failed "Invalid pre-frame JPEG marker $marker was accepted."
+}
+$skippedFrame = [byte[]](@(0xff,0xd8,0xff,0xc3,0x00,0x02) + $validHeader[2..($validHeader.Length - 1)])
+[IO.File]::WriteAllBytes($header, $skippedFrame)
+Assert-ArtworkJpegHeader $header
 Write-Host 'Artwork pack contract tests passed.'

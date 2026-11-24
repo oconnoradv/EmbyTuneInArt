@@ -18,8 +18,8 @@ foreach ($id in $expected.Keys) {
 }
 $manifestPath = Join-Path $folder 'tunein-artwork.json'
 $manifest = Get-Content -LiteralPath $manifestPath -Raw -Encoding UTF8 | ConvertFrom-Json
-Assert ($manifest.schemaVersion -eq 1 -and $manifest.scope -ceq 'categories' -and $manifest.packName -eq 'Futuristic') 'Invalid category manifest identity.'
-Assert ((@($manifest.PSObject.Properties.Name | Sort-Object) -join ',') -ceq 'imageCount,images,packName,schemaVersion,scope') 'Category manifest has missing or extra fields.'
+Assert ($manifest.schemaVersion -eq 2 -and $manifest.scope -ceq 'categories' -and $manifest.packName -eq 'Futuristic' -and $manifest.packId -ceq 'artpack-futuristic-categories' -and $manifest.version -ceq '1') 'Invalid category manifest identity.'
+Assert ((@($manifest.PSObject.Properties.Name | Sort-Object) -join ',') -ceq 'imageCount,images,packId,packName,schemaVersion,scope,theme,version') 'Category manifest has missing or extra fields.'
 Assert ($manifest.imageCount -eq 8 -and @($manifest.images).Count -eq 8) 'Category manifest must contain exactly eight images.'
 $seen = @{}
 $hashes = @{}
@@ -43,8 +43,8 @@ $zip = Join-Path $Output 'artpack-futuristic-categories.zip'
 $archive = [IO.Compression.ZipFile]::OpenRead($zip)
 try {
     $entries = @($archive.Entries | ForEach-Object { $_.FullName })
-    Assert ($entries.Count -eq 9 -and ($entries | Select-Object -Unique).Count -eq 9) 'Unexpected ZIP contents.'
-    foreach ($name in @('tunein-artwork.json') + @($manifest.images | ForEach-Object { $_.file })) {
+    Assert ($entries.Count -eq 12 -and ($entries | Select-Object -Unique).Count -eq 12) 'Unexpected ZIP contents.'
+    foreach ($name in @('tunein-artwork.json','LICENSE.txt','Noto-OFL.txt','README.txt') + @($manifest.images | ForEach-Object { $_.file })) {
         Assert ($entries -ccontains $name) "ZIP is missing $name."
         $stream = $archive.GetEntry($name).Open()
         try {
