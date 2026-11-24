@@ -1380,6 +1380,19 @@ function New-Card($info, [string]$file) {
     $script:OX = $T.OX; $script:OY = $T.OY; $script:ArtScale = 1
     & $T.Background $g0 $cl $pal $info
 
+    if ($Scope -eq 'categories' -and $Theme -ne $baseTheme) {
+        $x = [float]$T.OX; $y = [float]$T.OY
+        $beam = Pts @(($x - 48), 0, ($x + 48), 0, ($x + 260), ($y + 190), ($x - 260), ($y + 190))
+        $g0.FillPolygon((Br (Argb 22 $cl[0])), $beam)
+        FE $g0 (Br (Argb 24 $cl[1])) $x $y 238 172
+        $ring = New-Object Drawing.Pen (Argb 105 $cl[0]), 4
+        E $g0 $ring $x $y 218 158
+        $ring.Dispose()
+        $fixture = New-Object Drawing.Pen (Argb 150 $cl[0]), 8
+        L $g0 $fixture ($x - 52) 24 ($x + 52) 24
+        $fixture.Dispose()
+    }
+
     if ($T.Clip) { $g0.SetClip((& $T.Clip)) }
     $script:ArtScale = $T.Scale
     & "Motif-$($info.Motif)" $cl $info

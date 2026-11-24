@@ -49,14 +49,15 @@ The Spotlight themes retain their original base theme for genres without a Spotl
 and Cartoon Spotlight include illustrated Punk, Grunge, Hip Hop, Classic Rock, Smooth Jazz and Metal cards; Classic
 Spotlight includes Punk and Grunge. These selected cards are supplied as fixed AI-generated illustrations in
 `spotlight/`; other cards are rendered by the tool. The original themes and packs remain unchanged.
-For language, location and root category packs, Spotlight variants render the corresponding base theme; the fixed genre
-illustrations are never used.
+For language and location packs, Spotlight variants render the corresponding base theme. Root category Spotlight packs
+add a staged light-cone and halo treatment to the matching base theme; the fixed genre illustrations are never used.
 
 ## Root category packs
 
 [Download the root category packs](https://github.com/oconnoradv/EmbyTuneInArt/releases/tag/root-category-artwork-v1)
 for any of the sixteen themes. Each ZIP contains eight 1280×720 cards for Local Radio, Music, By Language,
-By Location, Talk, Sports, Podcasts and My Favorites. Spotlight variants use the corresponding base theme.
+By Location, Talk, Sports, Podcasts and My Favorites. Spotlight variants use a distinct stage-light treatment over the
+corresponding base theme.
 These packs require a TuneIn build with category-pack support. Upload an individual theme ZIP in
 **Settings → TuneIn → Advanced Settings → Custom Artwork Packs**, or install it manually as described below,
 then refresh the affected categories.

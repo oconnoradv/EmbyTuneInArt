@@ -72,9 +72,13 @@ foreach ($theme in 'Neon','Retro','Futuristic','Cartoon','Cat','Dog','Nature','B
 }
 foreach ($theme in 'Futuristic','Cartoon','Classic') {
     $spot = Join-Path $Output "${theme}Spotlight"
-    & $build -Scope categories -Theme "${theme}Spotlight" -Output $spot
+    & $build -Scope categories -Theme "${theme}Spotlight" -Output $spot -Pack
+    $spotHashes = @{}
     foreach ($id in $expected.Keys) {
-        Assert ((Hash (Join-Path $spot "$id.jpg")) -ceq (Hash (Join-Path (Join-Path $Output $theme) "$id.jpg"))) "$theme Spotlight category differs from its base theme: $id."
+        $spotHash = Hash (Join-Path $spot "$id.jpg")
+        Assert ($spotHash -cne (Hash (Join-Path (Join-Path $Output $theme) "$id.jpg"))) "$theme Spotlight category duplicates its base theme: $id."
+        Assert (-not $spotHashes.ContainsKey($spotHash)) "$theme Spotlight category images are duplicates: $id."
+        $spotHashes[$spotHash] = $true
     }
 }
 $filtered = Join-Path $Output 'filtered'
