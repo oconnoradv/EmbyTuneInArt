@@ -37,16 +37,25 @@ function Get-ScopedScene($theme, $info) {
     }
     if ($region) {
         if (-not $profiles.regions.PSObject.Properties[[string]$region]) { throw "Unknown scenery region: $region" }
+        if (-not $info.ProviderName -and $region -eq 'north-american-city') {
+            return @{ Path=(Get-GenericLocationScenePath $theme); SourceId='generic-landscape'
+                Title=$null; Inherited=$true; Generic=$true }
+        }
         $asset = if ($theme -eq 'Classic' -and $info.ProviderName) { 'language-fabric' } else { $region }
         return @{ Path=(Join-Path $PSScriptRoot "data\scoped-scenes\$theme\$asset.png")
             SourceId=$asset; Title=$null; Inherited=$true }
     }
 }
 
+function Get-GenericLocationScenePath($theme) {
+    $asset = if ($theme -eq 'Futuristic') { 'futuristic-landscape' } else { $theme.ToLowerInvariant() }
+    return Join-Path $PSScriptRoot "data\scenes\$asset.png"
+}
+
 function Assert-ScopedSceneCoverage($items, $theme) {
     $missing = @($items | Where-Object {
         $scene = Get-ScopedScene $theme $_
-        -not $scene -or -not (Test-Path -LiteralPath $scene.Path -PathType Leaf) -or
+        -not $scene -or $scene.Generic -or -not (Test-Path -LiteralPath $scene.Path -PathType Leaf) -or
             ($_.FlagCode -and -not (Test-Path -LiteralPath (Join-Path $PSScriptRoot "data\flags\$($_.FlagCode).png") -PathType Leaf))
     })
     if ($missing.Count) {
@@ -60,11 +69,14 @@ function Assert-ScopedSceneCoverage($items, $theme) {
 function Scoped-Scenery($g, $theme, $info) {
     $scene = Get-ScopedScene $theme $info
     if ($scene) {
+        if ($RequireScopedScenery -and $scene.Generic) { throw "No subject-specific $theme scenery for $($info.Id)." }
         $path = $scene.Path
         if (-not (Test-Path -LiteralPath $path -PathType Leaf)) { throw "Missing declared scoped scenery: $path" }
     } else {
         if ($RequireScopedScenery) { throw "No subject-specific $theme scenery for $($info.Id)." }
-        if ($theme -eq 'Classic') {
+        if (-not $info.ProviderName -and $info.Id -cmatch '^r') {
+            $path = Get-GenericLocationScenePath $theme
+        } elseif ($theme -eq 'Classic') {
             $path = Join-Path $PSScriptRoot 'data\scenes\classic.png'
         } else {
             $path = if ($theme -eq 'Futuristic') { Join-Path $PSScriptRoot 'data\scoped-scenes\Futuristic\l178.png' } else { Join-Path $PSScriptRoot 'data\scenes\cartoon.png' }
@@ -323,7 +335,15 @@ function New-ScopedCard($info, [string]$file, [string]$theme) {
     if ($info.Label -in 'Generic location','Regional map') {
         $small = New-Object Drawing.Font 'Segoe UI', 22, ([Drawing.FontStyle]::Bold), ([Drawing.GraphicsUnit]::Pixel)
         $y = if ($theme -eq 'Cartoon' -and $info.Motif -eq 'map') { 480 } else { $cy+225 }
-        $g.DrawString($info.Label.ToUpperInvariant(), $small, (Br $color), (New-Object Drawing.RectangleF ($cx-230), $y, 460, 32), $fmt)
+        $area = New-Object Drawing.RectangleF ($cx-230), $y, 460, 32
+        if ($theme -eq 'Cartoon' -and $info.Motif -eq 'map' -and $info.MapPoint) {
+            $markerX = $cx + 1.3 * $info.MapPoint[0]; $markerY = $cy + 1.3 * $info.MapPoint[1]
+            if ($markerX + 17 -ge $area.Left -and $markerX - 17 -le $area.Right -and
+                $markerY + 17 -ge $area.Top -and $markerY - 17 -le $area.Bottom) {
+                $area = New-Object Drawing.RectangleF 650, $y, 570, 32
+            }
+        }
+        $g.DrawString($info.Label.ToUpperInvariant(), $small, (Br $color), $area, $fmt)
     }
     $codec = [Drawing.Imaging.ImageCodecInfo]::GetImageEncoders() | Where-Object MimeType -eq 'image/jpeg'
     $ep = New-Object Drawing.Imaging.EncoderParameters 1

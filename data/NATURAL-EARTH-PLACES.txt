@@ -1,0 +1,7 @@
+natural-earth-places-10m.json contains name, admin-0, admin-1 and point
+coordinates extracted from Natural Earth v5.1.2 populated places (10m).
+Only populated places and administrative capitals are included.
+
+Source: https://github.com/nvkelso/natural-earth-vector/blob/v5.1.2/geojson/ne_10m_populated_places.geojson
+Source SHA-256: 9b8e3de09048ef00dfc70357dbb9fa324493f214b5e0ae4daf1aa79a8d10116b
+Natural Earth data is public domain: https://www.naturalearthdata.com/about/terms-of-use/

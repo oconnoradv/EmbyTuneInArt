@@ -5,7 +5,7 @@
 Download ready-made packs or create original 1280×720 artwork for the [Emby TuneIn plugin](https://github.com/oconnoradv/EmbyTuneIn).
 Choose a pack type:
 
-**[Music genre packs](https://github.com/oconnoradv/EmbyTuneInArt/releases) ·
+**[Music genre packs](https://github.com/oconnoradv/EmbyTuneInArt/releases/tag/genre-artwork-v2) ·
 [Language packs](#complete-language-and-location-packs) ·
 [Location packs](#complete-language-and-location-packs) ·
 [Root category packs](#root-category-packs)**
@@ -112,7 +112,9 @@ The Netherlands (`r100385`) and Dutch (`l101`) have dedicated canal, windmill an
 styles. Other catalog entries use the explicit country, language and verified state/province mappings in
 `data/scoped-scenes/profiles.json`: 24 shared regional scenery profiles in each style. Dedicated subject artwork
 takes precedence. Cities inherit their verified regional or country scenery while retaining individual names and
-map coverage labels. Classic language cards use quiet fabric compositions.
+map coverage labels. Classic language cards use quiet fabric compositions. The shared North American city illustration contains
+Seattle-like landmarks, so location cards without a more specific scene use a generic landscape instead.
+Unmapped locations also use generic landscapes; generic scenery does not satisfy strict coverage.
 
 Use the strict coverage option for refreshed builds:
 
@@ -124,30 +126,34 @@ powershell -NoProfile -ExecutionPolicy Bypass -File Build-GenreArtwork.ps1 -Scop
 `-RequireScopedScenery` checks every selected subject **before writing images, manifests or ZIPs** and stops with
 the missing count and example IDs if any card lacks declared subject/regional scenery or its required flag asset. It supports these three scoped base themes
 and their Spotlight aliases only. With `-Only`, it checks the selected preview cards, not the complete catalog.
-Without this option, the legacy generic fallbacks remain available. Coverage checks establish asset availability,
+Without this option, generic fallbacks remain available. Coverage checks establish asset availability,
 not visual quality; review the generated cards before publishing a release.
+This changes strict-build results for locations previously using the Seattle-like North American shared profile:
+the replacement is generic and is rejected, whereas the old profile passed. For the v2 catalog, 557 cards used
+that profile. Supply verified subject/regional scenery or omit `-RequireScopedScenery` to allow generic landscapes.
 
 ## Complete language and location packs
 
-The [refreshed complete scoped packs](https://github.com/oconnoradv/EmbyTuneInArt/releases/tag/scoped-language-location-v2)
-use a TuneIn catalog snapshot completed **2026-11-23 01:54:32 UTC**. Each theme contains 91 language cards
-and 2,031 location cards, all 1280×720. Every final card and ZIP is built by `Build-GenreArtwork.ps1` with
-strict scenery coverage; the exact tool commit and per-image SHA-256 hashes are recorded in each manifest.
-ZIP checksums are included in the release. Background-only source illustrations are not completed pack cards:
-the tool adds titles, captions, flags and verified maps.
+The [language packs](https://github.com/oconnoradv/EmbyTuneInArt/releases/tag/scoped-language-location-v2)
+use a TuneIn catalog snapshot completed **2026-11-23 01:54:32 UTC** and contain 91 cards per theme.
+The [updated location packs](https://github.com/oconnoradv/EmbyTuneInArt/releases/tag/location-artwork-v3)
+use a newer catalog snapshot and include generic landscapes and conservative location markers. They are built
+without strict scenery coverage so that generic fallbacks are available. Each manifest records the card count,
+tool commit and per-image SHA-256 hashes; ZIP checksums accompany the release. All cards are 1280×720.
 
 | Theme | Languages | Locations |
 |---|---|---|
-| Cartoon | [Download](https://github.com/oconnoradv/EmbyTuneInArt/releases/download/scoped-language-location-v2/artpack-cartoon-languages.zip) | [Download](https://github.com/oconnoradv/EmbyTuneInArt/releases/download/scoped-language-location-v2/artpack-cartoon-locations.zip) |
-| Futuristic | [Download](https://github.com/oconnoradv/EmbyTuneInArt/releases/download/scoped-language-location-v2/artpack-futuristic-languages.zip) | [Download](https://github.com/oconnoradv/EmbyTuneInArt/releases/download/scoped-language-location-v2/artpack-futuristic-locations.zip) |
-| Classic | [Download](https://github.com/oconnoradv/EmbyTuneInArt/releases/download/scoped-language-location-v2/artpack-classic-languages.zip) | [Download](https://github.com/oconnoradv/EmbyTuneInArt/releases/download/scoped-language-location-v2/artpack-classic-locations.zip) |
+| Cartoon | [Download](https://github.com/oconnoradv/EmbyTuneInArt/releases/download/scoped-language-location-v2/artpack-cartoon-languages.zip) | [Download](https://github.com/oconnoradv/EmbyTuneInArt/releases/download/location-artwork-v3/artpack-cartoon-locations.zip) |
+| Futuristic | [Download](https://github.com/oconnoradv/EmbyTuneInArt/releases/download/scoped-language-location-v2/artpack-futuristic-languages.zip) | [Download](https://github.com/oconnoradv/EmbyTuneInArt/releases/download/location-artwork-v3/artpack-futuristic-locations.zip) |
+| Classic | [Download](https://github.com/oconnoradv/EmbyTuneInArt/releases/download/scoped-language-location-v2/artpack-classic-languages.zip) | [Download](https://github.com/oconnoradv/EmbyTuneInArt/releases/download/location-artwork-v3/artpack-classic-locations.zip) |
 
 Complete coverage means one image for each discovered ID, not a detailed local map or a flag for every card.
 The language packs contain 78 representative flags and 13 neutral speech motifs; uncurated language names retain
 their TuneIn labels. Shared regional scenery is illustrative, not a claim that every city has the pictured landmarks.
 Scenic art and map textures are decorative, not terrain data. Verified geometry is never replaced by an AI-drawn map.
-The [historical v1 release](https://github.com/oconnoradv/EmbyTuneInArt/releases/tag/scoped-language-location-v1)
-remains available unchanged. Music genre packs are unchanged.
+The [historical v1](https://github.com/oconnoradv/EmbyTuneInArt/releases/tag/scoped-language-location-v1)
+and [v2 location packs](https://github.com/oconnoradv/EmbyTuneInArt/releases/tag/scoped-language-location-v2)
+remain available unchanged.
 
 ## Install a ready-made pack
 
@@ -204,8 +210,10 @@ Requirements:
    [Customizing](#customizing), then repeat step 2 until you are happy.
 
 4. **Build the full genre pack.** This writes the discovered cards and `tunein-artwork.json` to `.\output\genres`
-   and the ZIP to `.\output\artpack-retro.zip`. `-PackName` overrides the name; its default is
-   `artpack-<theme>` for genres and `artpack-<theme>-<scope>` for other scopes. `-PackVersion` sets the
+   and the ZIP to `.\output\artpack-retro-genres.zip`. Default ZIP names follow `artpack-<theme>-<scope>`
+   for all scopes, so genre ZIPs are distinct from `-categories` root-category ZIPs. Existing published genre ZIPs
+   retain their historical `artpack-<theme>-v1.zip` names. `-PackName` overrides both the ZIP name and manifest
+   identity; the default genre manifest identity remains `artpack-<theme>` for compatibility. `-PackVersion` sets the
    manifest version for genre, language and location packs and defaults to `1`. The number of cards depends on
    TuneIn's current catalog.
 
@@ -266,8 +274,14 @@ Requirements:
    regions and unsupported geometry use a pin explicitly labeled **Generic location** in these three scoped styles.
    Antimeridian-spanning shapes use a continuous longitude interval rather than a generic fallback.
    Longitude is scaled at the map's midpoint latitude to preserve local proportions.
-   The map-fill textures are decorative, not terrain. A map is a stylized outline, not a navigation map. The Seattle-Tacoma card marks
-   approximate Seattle coordinates on the Washington state outline; it does not depict metro boundaries.
+   The map-fill textures are decorative, not terrain. A map is a stylized outline, not a navigation map. Seattle-Tacoma
+   and Calgary use curated approximate city points. Other city points come from the public-domain Natural Earth 10m
+   populated-places dataset (`data/NATURAL-EARTH-PLACES.txt`). Automatic matching requires an exact name and country,
+   an unambiguous place, a directly associated verified country or US/Canadian region map, matching admin-1 for region
+   maps, and a point inside the map geometry. Country-level names matching an admin-1 name are excluded to avoid
+   mistaking a region for a city. Dots show approximate city points, not metro or regional boundaries. Ambiguous names,
+   composite areas, missing points, unsupported ancestry and locations outside the map remain unmarked; map centers are
+   never substituted as coordinates.
 
 6. **Share it (optional).** Publish the ZIP as a release, for example with
    `gh release create artpack-<name>-v1 .\output\<name>.zip`.

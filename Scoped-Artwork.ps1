@@ -42,6 +42,13 @@ function Motif-map($cl, $info) {
         foreach ($ring in $info.MapRings) {
             if ($ring.Count -ge 6) { $g.DrawPolygon($pen, (Pts $ring)) }
         }
+        if ($info.MapPoint) {
+            $state = $script:G.Save(); Place $script:G $script:OX $script:OY
+            FE $script:G (Br (Rgb 255 246 220)) $info.MapPoint[0] $info.MapPoint[1] 13 13
+            FE $script:G (Br (Rgb 208 32 45)) $info.MapPoint[0] $info.MapPoint[1] 9 9
+            FE $script:G (Br (Rgb 255 255 255)) $info.MapPoint[0] $info.MapPoint[1] 3 3
+            $script:G.Restore($state)
+        }
     }
 }
 $LanguageCultures = @{
@@ -269,6 +276,53 @@ function Get-MapPoint($geometry, [double]$lon, [double]$lat) {
     return ,@([float](($lon - ($projection.XMin + $projection.XMax) / 2) * $projection.LonFactor * $projection.Scale), [float]((($projection.YMin + $projection.YMax) / 2 - $lat) * $projection.Scale))
 }
 
+function Test-MapContainsPoint($geometry, [double]$lon, [double]$lat) {
+    $projection = Get-MapProjection $geometry
+    if (-not $projection) { return $false }
+    if ($projection.Wrapped -and $lon -lt 0) { $lon += 360 }
+    if ($lon -lt $projection.XMin -or $lon -gt $projection.XMax -or $lat -lt $projection.YMin -or $lat -gt $projection.YMax) { return $false }
+    $polygons = @()
+    if ($geometry.type -eq 'Polygon') { $polygons += ,$geometry.coordinates }
+    else { foreach ($polygon in $geometry.coordinates) { $polygons += ,$polygon } }
+    foreach ($polygon in $polygons) {
+        $insidePolygon = $false
+        for ($r = 0; $r -lt $polygon.Count; $r++) {
+            $ring = $polygon[$r]; $inside = $false
+            $j = $ring.Count - 1
+            for ($i = 0; $i -lt $ring.Count; $i++) {
+                $xi = [double]$ring[$i][0]; $xj = [double]$ring[$j][0]
+                if ($projection.Wrapped) {
+                    if ($xi -lt 0) { $xi += 360 }
+                    if ($xj -lt 0) { $xj += 360 }
+                }
+                $yi = [double]$ring[$i][1]; $yj = [double]$ring[$j][1]
+                if (($yi -gt $lat) -ne ($yj -gt $lat) -and $lon -lt (($xj - $xi) * ($lat - $yi) / ($yj - $yi) + $xi)) { $inside = -not $inside }
+                $j = $i
+            }
+            if ($r -eq 0) { $insidePolygon = $inside }
+            elseif ($inside) { $insidePolygon = $false; break }
+        }
+        if ($insidePolygon) { return $true }
+    }
+    return $false
+}
+
+function Get-PopulatedPlacePoint($info, $parent, [string]$country, $places) {
+    if ($info.ParentId -cne $parent.Id -or $info.Country -cne $parent.Country -or
+        $info.Name -ceq $parent.Name -or $parent.Level -notin 2,3) { return }
+    if ($parent.Level -eq 3 -and $KnownRegions[$parent.Id] -cne "$($parent.Country)|$($parent.Name)") { return }
+    $candidates = @($places | Where-Object {
+        $_.name -ceq $info.Name -and $_.country -ceq $country -and
+        $(if ($parent.Level -eq 3) { $_.region -ceq $parent.Name } else { $true })
+    })
+    if ($candidates.Count -ne 1) { return }
+    $place = $candidates[0]
+    if ($parent.Level -eq 2 -and $place.region -ceq $info.Name) { return }
+    if (Test-MapContainsPoint $parent.MapGeometry $place.lon $place.lat) {
+        return ,(Get-MapPoint $parent.MapGeometry $place.lon $place.lat)
+    }
+}
+
 function Set-LocationArt($items) {
     $data = Get-Content (Join-Path $PSScriptRoot 'data\natural-earth.json') -Raw -Encoding UTF8 | ConvertFrom-Json
     $detailedCountries = Get-Content (Join-Path $PSScriptRoot 'data\natural-earth-countries-50m.json') -Raw -Encoding UTF8 | ConvertFrom-Json
@@ -289,7 +343,22 @@ function Set-LocationArt($items) {
         "Saint Barth$([char]0xE9)lemy"='Saint Barthelemy'; "Cura$([char]0xE7)ao"="Cura$([char]0xE7)ao"
     }
     $profiles = if ($baseTheme -in 'Cartoon','Futuristic','Classic') { Get-ScopedProfiles }
+    if (-not $script:ScopedPlaces) {
+        $script:ScopedPlaces = @{}
+        $places = Get-Content (Join-Path $PSScriptRoot 'data\natural-earth-places-10m.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+        foreach ($place in $places) {
+            $key = "$($place.country)`n$($place.name)"
+            if (-not $script:ScopedPlaces.ContainsKey($key)) { $script:ScopedPlaces[$key] = New-Object System.Collections.ArrayList }
+            [void]$script:ScopedPlaces[$key].Add($place)
+        }
+    }
+    # Approximate city centers, tied to the exact TuneIn subject and verified ancestor.
+    $markers = @{
+        r100014=@{ Name='Seattle-Tacoma'; Country='United States'; ParentId='r100516'; Lon=-122.3321; Lat=47.6062 }
+        r100598=@{ Name='Calgary'; Country='Canada'; ParentId='r100447'; Lon=-114.0719; Lat=51.0447 }
+    }
     foreach ($info in $items.Values) {
+        $info.Remove('MapPoint')
         $info.Style = 'Electronic'; $info.Sub = $false; $info.NativeFont = 'Segoe UI'
         $info.Motif = 'neutral'; $info.Label = 'Generic location'
         if ($profiles) {
@@ -332,8 +401,16 @@ function Set-LocationArt($items) {
             $seen[$parentId] = $true; $parent = $items[$parentId]
             if ($parent.Motif -eq 'map' -and $parent.Label -eq 'Map') {
                 $info.Motif = 'map'; $info.MapRings = $parent.MapRings; $info.Label = 'Regional map'
-                if ($info.Id -eq 'r100014' -and $info.Name -eq 'Seattle-Tacoma' -and $parent.Id -eq 'r100516') {
-                    $info.MapPoint = Get-MapPoint $parent.MapGeometry -122.3321 47.6062
+                $marker = $markers[$info.Id]
+                if ($marker -and $info.Name -ceq $marker.Name -and $info.Country -ceq $marker.Country -and
+                    $info.ParentId -ceq $marker.ParentId -and $parent.Id -ceq $marker.ParentId) {
+                    $info.MapPoint = Get-MapPoint $parent.MapGeometry $marker.Lon $marker.Lat
+                } elseif (-not $marker) {
+                    $country = if ($aliases.ContainsKey($info.Country)) { $aliases[$info.Country] } else { $info.Country }
+                    $key = "$country`n$($info.Name)"
+                    if ($script:ScopedPlaces.ContainsKey($key)) {
+                        $info.MapPoint = Get-PopulatedPlacePoint $info $parent $country $script:ScopedPlaces[$key]
+                    }
                 }
                 break
             }

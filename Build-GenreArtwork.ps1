@@ -24,7 +24,7 @@ param(
     [switch]$RequireScopedScenery,
     [ValidateSet('Neon', 'Retro', 'Futuristic', 'Cartoon', 'Cat', 'Dog', 'Nature', 'Blocky', 'Rebel', 'Imperial', 'Elegant', 'Tile', 'Classic', 'FuturisticSpotlight', 'CartoonSpotlight', 'ClassicSpotlight')]
     [string]$Theme = 'Futuristic',
-    # Writes <Output>\..\<PackName>.zip containing the cards and an install note; defaults to artpack-<theme>.
+    # Writes a ZIP beside Output; explicit PackName overrides its default name and manifest identity.
     [switch]$Pack,
     [string]$PackName,
     # Pack version recorded in tunein-artwork.json.
@@ -1514,7 +1514,9 @@ if ($Only -and -not $rendered.Count) { throw 'No artwork matched -Only.' }
 
 # tunein-artwork.json identifies the installed pack to the TuneIn plugin. The SHA-256 hashes let it tell
 # pack images from ones a user has replaced.
+$customPackName = [bool]$PackName
 if (-not $PackName) { $PackName = 'artpack-' + $Theme.ToLowerInvariant(); if ($Scope -ne 'genres') { $PackName += "-$Scope" } }
+$zipName = if (-not $customPackName -and $Scope -eq 'genres') { "$PackName-genres" } else { $PackName }
 $commit = try { (& git -C $PSScriptRoot rev-parse HEAD 2>$null) } catch { $null }
 $images = @($rendered | Sort-Object | ForEach-Object {
     $file = Get-Item (Join-Path $Output "$_.jpg")
@@ -1548,7 +1550,7 @@ if ($Scope -eq 'genres') { $manifest.sampleImageUrl = "https://raw.githubusercon
 
 if ($Pack) {
     Add-Type -AssemblyName System.IO.Compression.FileSystem
-    $zip = Join-Path (Split-Path ([IO.Path]::GetFullPath($Output)) -Parent) "$PackName.zip"
+    $zip = Join-Path (Split-Path ([IO.Path]::GetFullPath($Output)) -Parent) "$zipName.zip"
     $note = @"
 $PackName - $Scope artwork for the Emby TuneIn plugin ($Theme theme)
 Built by Build-GenreArtwork.ps1 from https://github.com/oconnoradv/EmbyTuneInArt (GPL-3.0).
@@ -1563,10 +1565,11 @@ Delete the images and refresh again to return to the default icons. Also delete 
 Scoped packs require the TuneIn 1.2.8.0 RC1 build with scoped artwork support; older builds with the same version number do not support scoped packs.
 Flags are representative, not exclusive to a language. Unknown language names retain the provider's label.
 Cities may use a labeled regional ancestor map. Unmapped locations use a labeled generic location pin, not invented boundaries.
+City markers are approximate and appear only when a reliable matching point is available; unmarked maps do not imply a center point.
 Scenery is shared by explicitly mapped countries/regions; it is decorative, not a depiction of every individual city.
 Scenic backgrounds and map-fill textures are AI-generated illustrations, not geographic or terrain data.
 Neutral language categories use speech motifs rather than an assigned nationality. See FLAGS-SOURCES.txt for representative flag provenance.
-Natural Earth country and region geometry is public domain: https://www.naturalearthdata.com/about/terms-of-use/
+Natural Earth country and region geometry and populated-place points are public domain: https://www.naturalearthdata.com/about/terms-of-use/
 Noto Sans Khmer and Noto Serif KR are distributed under the SIL Open Font License 1.1; see Noto-OFL.txt.
 "@ }
     if (Test-Path $zip) { Remove-Item $zip }
