@@ -5,11 +5,11 @@
 Download ready-made packs or create original 1280×720 artwork for the [Emby TuneIn plugin](https://github.com/oconnoradv/EmbyTuneIn).
 Choose a pack type:
 
-**Migration:** The published downloads below are legacy schema 1 packs and cannot be uploaded to a schema 2-only
-TuneIn build. No schema 2 release packs have been published yet; build a new pack using the instructions below.
-Existing installed artwork is not deleted during the migration, but its old manifest is unsupported until replaced.
+**Compatibility:** The current downloads use manifest schema 2 and pack content version `2`; they require a TuneIn
+plugin build with schema 2 artwork-pack support. Legacy schema 1 ZIP assets have been removed from GitHub.
+Existing installed artwork is not deleted during migration, but its old manifest is unsupported until replaced.
 
-**[Music genre packs](https://github.com/oconnoradv/EmbyTuneInArt/releases) ·
+**[Music genre packs](#download-packs) ·
 [Language packs](#complete-language-and-location-packs) ·
 [Location packs](#complete-language-and-location-packs) ·
 [Root category packs](#root-category-packs)**
@@ -21,6 +21,23 @@ The cards contain no TuneIn logos or station images.
 The plugin ships with default category icons. Packs are optional and replace icons for matching guide IDs in
 Music, Languages or Locations, or the root category icons. Find ready-made packs on the
 [Releases](https://github.com/oconnoradv/EmbyTuneInArt/releases) page, or build packs with this tool.
+
+## Download packs
+
+Each theme release contains four separate ZIPs: **genres** (music genres and subgenres), **languages**,
+**locations**, and **categories** (root category icons). The recorded catalog snapshots contain 134 genres,
+91 languages and 2,032 locations; each categories ZIP has eight cards. Each manifest records the image count and
+SHA-256 hashes. The location snapshot completed 2026-11-24 23:08 UTC.
+
+| Theme | Theme | Theme | Theme |
+|---|---|---|---|
+| [Futuristic](https://github.com/oconnoradv/EmbyTuneInArt/releases/tag/artwork-schema2-futuristic-v2) | [Classic](https://github.com/oconnoradv/EmbyTuneInArt/releases/tag/artwork-schema2-classic-v2) | [Tile](https://github.com/oconnoradv/EmbyTuneInArt/releases/tag/artwork-schema2-tile-v2) | [Cartoon](https://github.com/oconnoradv/EmbyTuneInArt/releases/tag/artwork-schema2-cartoon-v2) |
+| [Neon](https://github.com/oconnoradv/EmbyTuneInArt/releases/tag/artwork-schema2-neon-v2) | [Retro](https://github.com/oconnoradv/EmbyTuneInArt/releases/tag/artwork-schema2-retro-v2-corrected) | [Cat](https://github.com/oconnoradv/EmbyTuneInArt/releases/tag/artwork-schema2-cat-v2-corrected) | [Dog](https://github.com/oconnoradv/EmbyTuneInArt/releases/tag/artwork-schema2-dog-v2-corrected) |
+| [Nature](https://github.com/oconnoradv/EmbyTuneInArt/releases/tag/artwork-schema2-nature-v2) | [Blocky](https://github.com/oconnoradv/EmbyTuneInArt/releases/tag/artwork-schema2-blocky-v2) | [Rebel](https://github.com/oconnoradv/EmbyTuneInArt/releases/tag/artwork-schema2-rebel-v2) | [Imperial](https://github.com/oconnoradv/EmbyTuneInArt/releases/tag/artwork-schema2-imperial-v2) |
+| [Elegant](https://github.com/oconnoradv/EmbyTuneInArt/releases/tag/artwork-schema2-elegant-v2) | [Futuristic Spotlight](https://github.com/oconnoradv/EmbyTuneInArt/releases/tag/artwork-schema2-futuristicspotlight-v2) | [Cartoon Spotlight](https://github.com/oconnoradv/EmbyTuneInArt/releases/tag/artwork-schema2-cartoonspotlight-v2) | [Classic Spotlight](https://github.com/oconnoradv/EmbyTuneInArt/releases/tag/artwork-schema2-classicspotlight-v2) |
+
+Historical release pages, source archives and non-pack assets remain available; their legacy schema 1 ZIPs do not.
+Earlier schema 2 Cat, Dog and Retro releases are deprecated in favor of the corrected releases linked above.
 
 ## Themes
 
@@ -52,18 +69,16 @@ using any franchise's names, logos, emblems or fonts.
 The Spotlight themes retain their original base theme for genres without a Spotlight illustration. Futuristic Spotlight
 and Cartoon Spotlight include illustrated Punk, Grunge, Hip Hop, Classic Rock, Smooth Jazz and Metal cards; Classic
 Spotlight includes Punk and Grunge. These selected cards are supplied as fixed AI-generated illustrations in
-`spotlight/`; other cards are rendered by the tool. The original themes and packs remain unchanged.
+`spotlight/`; other cards are rendered by the tool. The base themes remain available separately.
 For language and location packs, Spotlight variants render the corresponding base theme. Root category Spotlight packs
 add a staged light-cone and halo treatment to the matching base theme; the fixed genre illustrations are never used.
 
 ## Root category packs
 
-[Download the root category packs](https://github.com/oconnoradv/EmbyTuneInArt/releases/tag/root-category-artwork-v1)
-for any of the sixteen themes. Each ZIP contains eight 1280×720 cards for Local Radio, Music, By Language,
+[Download a root category pack](#download-packs) for any of the sixteen themes. Each ZIP contains eight 1280×720 cards for Local Radio, Music, By Language,
 By Location, Talk, Sports, Podcasts and My Favorites. Spotlight variants use a distinct stage-light treatment over the
 corresponding base theme.
-These legacy packs require an older compatible TuneIn build. To use the schema 2 uploader, build a new category
-ZIP instead. Upload an individual theme ZIP in
+Upload an individual theme ZIP in
 **Settings → TuneIn → Advanced Settings → Custom Artwork Packs**, or install it manually as described below,
 then refresh the affected categories.
 
@@ -141,29 +156,21 @@ Supply suitable subject/regional scenery or omit `-RequireScopedScenery` to allo
 
 ## Complete language and location packs
 
-The published [language and location packs](https://github.com/oconnoradv/EmbyTuneInArt/releases/tag/scoped-language-location-v2)
-are legacy schema 1 packs. The language packs use a TuneIn catalog snapshot completed **2026-11-23 01:54:32 UTC**
-and contain 91 cards per theme. Build new schema 2 packs for a schema 2-only uploader. Generated schema 2
-manifests record the card count and per-image SHA-256 hashes; all cards are 1280×720.
-
-| Theme | Languages | Locations |
-|---|---|---|
-| Cartoon | [Download](https://github.com/oconnoradv/EmbyTuneInArt/releases/download/scoped-language-location-v2/artpack-cartoon-languages.zip) | [Download](https://github.com/oconnoradv/EmbyTuneInArt/releases/download/scoped-language-location-v2/artpack-cartoon-locations.zip) |
-| Futuristic | [Download](https://github.com/oconnoradv/EmbyTuneInArt/releases/download/scoped-language-location-v2/artpack-futuristic-languages.zip) | [Download](https://github.com/oconnoradv/EmbyTuneInArt/releases/download/scoped-language-location-v2/artpack-futuristic-locations.zip) |
-| Classic | [Download](https://github.com/oconnoradv/EmbyTuneInArt/releases/download/scoped-language-location-v2/artpack-classic-languages.zip) | [Download](https://github.com/oconnoradv/EmbyTuneInArt/releases/download/scoped-language-location-v2/artpack-classic-locations.zip) |
+The [theme releases](#download-packs) include language and location ZIPs for all sixteen themes. Each contains
+91 language or 2,032 location cards respectively, all 1280×720, with schema 2 manifests and per-image SHA-256 hashes.
 
 Complete coverage means one image for each discovered ID, not a detailed local map or a flag for every card.
 The language packs contain 78 representative flags and 13 neutral speech motifs; uncurated language names retain
 their TuneIn labels. Shared regional scenery is illustrative, not a claim that every city has the pictured landmarks.
 Scenic art and map textures are decorative, not terrain data. Verified geometry is never replaced by an AI-drawn map.
-The [historical v1](https://github.com/oconnoradv/EmbyTuneInArt/releases/tag/scoped-language-location-v1)
-and [v2 location packs](https://github.com/oconnoradv/EmbyTuneInArt/releases/tag/scoped-language-location-v2)
-remain available unchanged.
+Markers appear only where a location's identity and placement have been verified; other cards do not imply
+precise coordinates.
 
 ## Install a ready-made pack
 
-1. Build a schema 2 pack using the instructions below. Published legacy ZIPs are not accepted by the schema 2
-   uploader; a new release is not yet available.
+1. Download the ZIP for your theme and scope from the [theme releases](#download-packs), or build a schema 2 pack
+   using the instructions below. In a compatible TuneIn build, you can upload the ZIP under **Custom Artwork Packs**
+   and then follow the refresh instructions in step 5. For manual installation, continue with step 2.
 2. In Emby, open **Settings → TuneIn → Advanced Settings → Custom Artwork Packs**, then expand
    **Details & installation** for the folder paths. For example, the genres folder may be
    `C:\ProgramData\Emby-Server\programdata\plugins\configurations\TuneInArtwork\genres`.
@@ -216,8 +223,7 @@ Requirements:
 
 4. **Build the full genre pack.** This writes the discovered cards and `tunein-artwork.json` to `.\output\genres`
    and the ZIP to `.\output\artpack-retro-genres.zip`. Default ZIP names follow `artpack-<theme>-<scope>`
-   for all scopes, so genre ZIPs are distinct from `-categories` root-category ZIPs. Existing published genre ZIPs
-   retain their historical `artpack-<theme>-v1.zip` names and use unsupported schema 1. `-PackName` overrides both
+   for all scopes, so genre ZIPs are distinct from `-categories` root-category ZIPs. `-PackName` overrides both
    the ZIP name and manifest identity; the default genre manifest identity remains `artpack-<theme>`.
    `-PackVersion` sets the manifest version for all four scopes and defaults to `1`. The number of cards depends on
    TuneIn's current catalog.
@@ -291,7 +297,7 @@ Requirements:
    never substituted as coordinates.
 
 6. **Share it (optional).** Publish the ZIP as a release, for example with
-   `gh release create artpack-<name>-v1 .\output\<name>.zip`.
+   `gh release create my-artwork-pack .\output\<name>.zip`.
 
 Each card prints `id  name  [style/motif]` as it is drawn.
 Run the offline discovery and geometry checks with
