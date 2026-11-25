@@ -25,9 +25,11 @@ Music, Languages or Locations, or the root category icons. Find ready-made packs
 ## Download packs
 
 Each theme release contains four separate ZIPs: **genres** (music genres and subgenres), **languages**,
-**locations**, and **categories** (root category icons). The recorded catalog snapshots contain 134 genres,
-91 languages and 2,032 locations; each categories ZIP has eight cards. Each manifest records the image count and
-SHA-256 hashes. The location snapshot completed 2026-11-24 23:08 UTC.
+**locations**, and **categories** (root category icons). The current genre packs contain 140 cards, including
+70s, 80's, 90's and 00's. The recorded catalog snapshots contain 91 languages and 2,032 locations; each categories
+ZIP has eight cards. Each manifest records the image count and SHA-256 hashes. The location snapshot completed
+2026-11-24 23:08 UTC. If you installed a genre pack before the decade cards were added, download and install it again
+and refresh Music.
 
 | Theme | Theme | Theme | Theme |
 |---|---|---|---|
@@ -370,7 +372,8 @@ output folder when switching packs: older files are not deleted and the plugin c
 
 ## How it works
 
-1. **Discovery.** Genres come from `Browse.ashx?c=music` and each top-level genre's `Browse.ashx?id=<id>`.
+1. **Discovery.** Genres come from `Browse.ashx?c=music` and each top-level genre's `Browse.ashx?id=<id>`,
+   including linked `c` category IDs and `g` genre IDs in the latter.
    Languages come from `Browse.ashx?c=lang`, using each link's `filter=l…` rather than its hub ID.
    Locations use the bounded `Browse.ashx?id=r…` hierarchy. Root categories use a static catalog without discovery.
    Each output file is named `<id>.jpg`.

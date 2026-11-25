@@ -1462,7 +1462,7 @@ if ($Scope -eq 'genres') {
         if (-not $Parents.ContainsKey($parent)) { Write-Warning "Unknown parent genre '$parent'; using the Pop style."; $Parents[$parent] = 'Pop', 'notes' }
         $genres[$top.guide_id] = @{ Id = $top.guide_id; Name = $parent; Parent = $parent; Sub = $false }
         foreach ($o in (Get-Opml "https://opml.radiotime.com/Browse.ashx?id=$($top.guide_id)").SelectNodes('//outline[@guide_id]')) {
-            if ($o.guide_id -cmatch '^g[1-9][0-9]{0,9}$' -and -not $genres.Contains($o.guide_id)) { $genres[$o.guide_id] = @{ Id = $o.guide_id; Name = $o.text; Parent = $parent; Sub = $true } }
+            if (($o.guide_id -cmatch '^g[1-9][0-9]{0,9}$' -or ($o.type -eq 'link' -and $o.guide_id -cmatch '^c[1-9][0-9]{0,9}$')) -and -not $genres.Contains($o.guide_id)) { $genres[$o.guide_id] = @{ Id = $o.guide_id; Name = $o.text; Parent = $parent; Sub = $true } }
         }
     }
 } elseif ($Scope -eq 'categories') {
