@@ -932,9 +932,11 @@ function Title-Path([string]$text, $st, [switch]$BreakHyphen) {
         if ($lines.Count -gt 3) { continue }
         for ($size = $st.Max; $size -ge 40; $size -= 6) {
             $path = New-Object Drawing.Drawing2D.GraphicsPath; $path.FillMode = 'Winding'
-            $fmt = [Drawing.StringFormat]::GenericTypographic
+            $fmt = [Drawing.StringFormat]::GenericTypographic.Clone()
+            $fmt.FormatFlags = $fmt.FormatFlags -band (-bnot [int][Drawing.StringFormatFlags]::DirectionRightToLeft)
             if ($script:CurrentRTL) { $fmt.FormatFlags = $fmt.FormatFlags -bor [Drawing.StringFormatFlags]::DirectionRightToLeft }
             for ($i = 0; $i -lt $lines.Count; $i++) { $path.AddString($lines[$i], $family, [int]$fs, $size, (P 0 ($i * $size * 1.02)), $fmt) }
+            $fmt.Dispose()
             $path.Transform($shear); $b = $path.GetBounds()
             if ($b.Width -le 640 -and $b.Height -le 380) {
                 if ($size -gt $bestSize -or ($size -eq $bestSize -and $lines.Count -lt $bestLines)) { $best = $path; $bestSize = $size; $bestLines = $lines.Count }

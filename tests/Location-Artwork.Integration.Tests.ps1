@@ -21,6 +21,7 @@ $responses = @{
 foreach ($id in $responses.Keys) {
     [IO.File]::WriteAllText((Join-Path $snapshot "$id.xml"), "<opml><head><status>200</status></head><body>$($responses[$id])</body></opml>", (New-Object Text.UTF8Encoding $false))
 }
+[IO.File]::WriteAllText((Join-Path $snapshot 'languages.xml'), '<opml><head><status>200</status></head><body><outline type="link" text="Arabic" URL="http://opml.radiotime.com/Browse.ashx?c=lang&amp;filter=l122"/></body></opml>', (New-Object Text.UTF8Encoding $false))
 . (Join-Path $root 'Scoped-Artwork.ps1')
 Add-Type -AssemblyName System.Drawing
 $baseTheme = 'Cartoon'
@@ -79,4 +80,9 @@ $folder = Join-Path $Output 'Retro-long-titles'
 & $build -Scope locations -Theme Retro -CatalogSnapshot $snapshot -Output $folder -Only 'r100169','r100221'
 $manifest = Get-Content -LiteralPath (Join-Path $folder 'tunein-artwork.json') -Raw -Encoding UTF8 | ConvertFrom-Json
 Assert ($manifest.imageCount -eq 2) 'Long hyphenated location titles must render without truncation.'
+$rtlFolder = Join-Path $Output 'Retro-rtl-language'
+& $build -Scope languages -Theme Retro -CatalogSnapshot $snapshot -Output $rtlFolder -Only 'l122'
+$afterRtl = Join-Path $Output 'Retro-after-rtl'
+& $build -Scope locations -Theme Retro -CatalogSnapshot $snapshot -Output $afterRtl -Only 'r100169'
+Assert ((Get-FileHash (Join-Path $folder 'r100169.jpg')).Hash -ceq (Get-FileHash (Join-Path $afterRtl 'r100169.jpg')).Hash) 'RTL language rendering must not alter subsequent LTR location titles.'
 Write-Host 'Location artwork integration tests passed.'
