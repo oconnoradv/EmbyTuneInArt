@@ -912,9 +912,10 @@ function Get-TitleFamily([string]$name) {
     return $family
 }
 
-function Title-Path([string]$text, $st) {
+function Title-Path([string]$text, $st, [switch]$BreakHyphen) {
     $text = switch ($st.Case) { 'Upper' { $text.ToUpperInvariant() } 'Lower' { $text.ToLowerInvariant() } default { $text } }
-    $words = @([regex]::Matches($text, '[^ /]+/?') | ForEach-Object Value)
+    $pattern = if ($BreakHyphen) { '[^ /-]+[-/]*|[-/]+' } else { '[^ /]+/?' }
+    $words = @([regex]::Matches($text, $pattern) | ForEach-Object Value)
     if ($words.Count -eq 0 -or $words.Count -gt 12) { throw "Title has an unsupported number of words: $text" }
     $family = Get-TitleFamily $st.Font
     $fs = if ($st.Bold) { [Drawing.FontStyle]::Bold } else { [Drawing.FontStyle]::Regular }
@@ -925,7 +926,7 @@ function Title-Path([string]$text, $st) {
         $lines = @(); $cur = $words[0]
         for ($i = 1; $i -lt $n; $i++) {
             if ($mask -band (1 -shl ($i - 1))) { $lines += $cur; $cur = $words[$i] }
-            elseif ($cur.EndsWith('/')) { $cur += $words[$i] } else { $cur += ' ' + $words[$i] }
+            elseif ($cur.EndsWith('/') -or ($BreakHyphen -and $cur.EndsWith('-'))) { $cur += $words[$i] } else { $cur += ' ' + $words[$i] }
         }
         $lines += $cur
         if ($lines.Count -gt 3) { continue }
@@ -941,6 +942,7 @@ function Title-Path([string]$text, $st) {
             }
         }
     }
+    if (-not $best -and -not $BreakHyphen -and $text.Contains('-')) { return Title-Path $text $st -BreakHyphen }
     if (-not $best) { throw "Title cannot fit: $text" }
     $b = $best.GetBounds(); $mx = New-Object Drawing.Drawing2D.Matrix
     $mx.Translate(95 - $b.X, 330 - $b.Height / 2 - $b.Y); $best.Transform($mx); $best

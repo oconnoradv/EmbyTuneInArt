@@ -11,7 +11,7 @@ $responses = @{
     r101218='<outline type="link" text="United States" guide_id="r101222"/><outline type="link" text="Canada" guide_id="r101227"/>'
     r101222='<outline type="link" text="Washington" guide_id="r100516"/>'
     r101227='<outline type="link" text="Alberta" guide_id="r100447"/>'
-    r100516='<outline type="link" text="Seattle-Tacoma" guide_id="r100014"/><outline type="link" text="Spokane" guide_id="r100092"/><outline type="link" text="Unknown city" guide_id="r9999999"/>'
+    r100516='<outline type="link" text="Seattle-Tacoma" guide_id="r100014"/><outline type="link" text="Spokane" guide_id="r100092"/><outline type="link" text="Unknown city" guide_id="r9999999"/><outline type="link" text="Hagerstown-Chambersburg-Waynesboro" guide_id="r100169"/><outline type="link" text="Blksbrg-Christiansburg-Radford-Pulaski" guide_id="r100221"/>'
     r100447='<outline type="link" text="Calgary" guide_id="r100598"/><outline type="link" text="Edmonton" guide_id="r100594"/>'
     r101217='<outline type="link" text="Netherlands" guide_id="r100385"/>'
     r100385='<outline type="link" text="Amsterdam" guide_id="r101398"/>'
@@ -75,4 +75,8 @@ try {
     $pixel = $image.GetPixel([int](1000+$point[0]+5), [int](360+$point[1]))
     Assert ($pixel.R -gt 140 -and $pixel.R -gt 2*$pixel.G -and $pixel.R -gt 2*$pixel.B) 'Non-scoped map styles must render verified markers too.'
 } finally { $image.Dispose() }
+$folder = Join-Path $Output 'Retro-long-titles'
+& $build -Scope locations -Theme Retro -CatalogSnapshot $snapshot -Output $folder -Only 'r100169','r100221'
+$manifest = Get-Content -LiteralPath (Join-Path $folder 'tunein-artwork.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+Assert ($manifest.imageCount -eq 2) 'Long hyphenated location titles must render without truncation.'
 Write-Host 'Location artwork integration tests passed.'
