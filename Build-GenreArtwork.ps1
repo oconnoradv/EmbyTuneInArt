@@ -1546,6 +1546,7 @@ if ($Pack) {
     $note = @"
 $PackName - $Scope artwork for the Emby TuneIn plugin ($Theme theme)
 Built by Build-GenreArtwork.ps1 from https://github.com/oconnoradv/EmbyTuneInArt (GPL-3.0).
+Requires a TuneIn plugin build with schema 2 artwork-pack support.
 
 1. Extract the .jpg files and tunein-artwork.json into <Emby data>\plugins\configurations\TuneInArtwork\$Scope
    (Settings > Advanced Settings > Custom Artwork Packs > Details & installation shows the exact folder).
@@ -1554,7 +1555,6 @@ Delete the images and refresh again to return to the default icons. Also delete 
 "@
     if ($Scope -in 'languages','locations') { $note += @"
 
-Scoped packs require the TuneIn 1.2.8.0 RC1 build with scoped artwork support; older builds with the same version number do not support scoped packs.
 Flags are representative, not exclusive to a language. Unknown language names retain the provider's label.
 Cities may use a labeled regional ancestor map. Unmapped locations use a labeled generic location pin, not invented boundaries.
 City markers are approximate and appear only when a reliable matching point is available; unmarked maps do not imply a center point.

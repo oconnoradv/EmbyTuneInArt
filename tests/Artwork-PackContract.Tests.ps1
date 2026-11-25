@@ -41,6 +41,13 @@ for ($i = 0; $i -lt $themes.Count; $i++) {
     $zipName = "artpack-$($theme.ToLowerInvariant())-$scope.zip"
     $zip = Join-Path $Output $zipName
     Assert-ArtworkArchive $zip $manifest $manifestPath
+    $archive = [IO.Compression.ZipFile]::OpenRead($zip)
+    try {
+        $reader = New-Object IO.StreamReader ($archive.GetEntry('README.txt').Open())
+        try { $note = $reader.ReadToEnd() } finally { $reader.Dispose() }
+        Assert ($note.Contains('Requires a TuneIn plugin build with schema 2 artwork-pack support.') -and
+            -not $note.Contains('1.2.8.0 RC1')) "$scope/$theme pack must state the schema 2 plugin requirement."
+    } finally { $archive.Dispose() }
     if ($scope -eq 'genres') { Assert ($manifest.packId -ceq "artpack-$($theme.ToLowerInvariant())" -and $manifest.version -ceq '1') 'Default genre identity changed.' }
 }
 
